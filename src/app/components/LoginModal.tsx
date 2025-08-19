@@ -44,7 +44,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
         // Store token in localStorage
         localStorage.setItem('adminToken', result.token);
         localStorage.setItem('adminUser', JSON.stringify(result.user));
-        
+
         onLoginSuccess(result.token, result.user);
         onClose();
         setCredentials({ username: '', password: '' });
@@ -131,13 +131,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
           </div>
         </form>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-md">
+       {/* <div className="mt-6 p-4 bg-gray-50 rounded-md">
           <h3 className="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h3>
           <p className="text-sm text-gray-600">
             <strong>Username:</strong> admin<br />
             <strong>Password:</strong> admin123
           </p>
         </div>
+        */}
       </div>
     </div>
   );
