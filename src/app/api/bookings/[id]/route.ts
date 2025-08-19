@@ -49,10 +49,10 @@ export async function PATCH(
 
     // Only update the fields that are provided
     const updateData: {
-      status?: string;
+      status?: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
       remarks?: string | null;
       paymentAmount?: number | null;
-      paymentType?: string | null;
+      paymentType?: 'CASH' | 'CARD' | 'UPI' | 'BANK_TRANSFER' | null;
       name?: string;
       email?: string;
       phone?: string;
@@ -67,10 +67,14 @@ export async function PATCH(
       specialInstructions?: string;
     } = {};
     
-    if (formData.status !== undefined) updateData.status = formData.status;
+    if (formData.status !== undefined && ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].includes(formData.status)) {
+      updateData.status = formData.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+    }
     if (formData.remarks !== undefined) updateData.remarks = formData.remarks || null;
     if (formData.paymentAmount !== undefined) updateData.paymentAmount = formData.paymentAmount || null;
-    if (formData.paymentType !== undefined) updateData.paymentType = formData.paymentType || null;
+    if (formData.paymentType !== undefined && ['CASH', 'CARD', 'UPI', 'BANK_TRANSFER'].includes(formData.paymentType)) {
+      updateData.paymentType = formData.paymentType as 'CASH' | 'CARD' | 'UPI' | 'BANK_TRANSFER';
+    }
     
     // If all booking fields are provided (for the detailed edit page), update them too
     if (formData.name !== undefined) updateData.name = formData.name;

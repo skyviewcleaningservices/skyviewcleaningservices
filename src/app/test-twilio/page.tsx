@@ -10,12 +10,14 @@ export default function TestTwilioPage() {
     date: '2024-01-15',
     time: '14:00'
   });
+  
+  const contentVariablesExample = '{"1":"Customer Name","2":"Service Type","3":"Date","4":"Time"}';
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
     message: string;
-    data?: unknown;
-    error?: unknown;
+    data?: any;
+    error?: any;
     curlEquivalent?: string;
   } | null>(null);
 
@@ -87,7 +89,7 @@ export default function TestTwilioPage() {
                 <strong>ContentSid:</strong> HXb5b62575e6e4ff6129ad7c8efe1f983e
               </div>
               <div className="md:col-span-2">
-                <strong>ContentVariables:</strong> {'{"1":"Customer Name","2":"Service Type","3":"Date","4":"Time"}'}
+                <strong>ContentVariables:</strong> {contentVariablesExample}
               </div>
             </div>
           </div>
@@ -203,7 +205,7 @@ export default function TestTwilioPage() {
                   <div className="mt-3">
                     <h4 className="font-semibold text-gray-800 mb-1">Response Data:</h4>
                     <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
-                      {JSON.stringify(result.data, null, 2)}
+                      {JSON.stringify(result.data as object, null, 2)}
                     </pre>
                   </div>
                 )}
@@ -212,7 +214,7 @@ export default function TestTwilioPage() {
                   <div className="mt-3">
                     <h4 className="font-semibold text-red-800 mb-1">Error Details:</h4>
                     <pre className="text-xs bg-red-100 p-2 rounded overflow-x-auto">
-                      {JSON.stringify(result.error, null, 2)}
+                      {JSON.stringify(result.error as object, null, 2)}
                     </pre>
                   </div>
                 )}

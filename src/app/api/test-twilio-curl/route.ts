@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Use booking data for content variables
     const contentVariables = {
       "1": bookingData?.name || "Customer",
-      "2": bookingData?.serviceType?.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || "Cleaning Service",
+      "2": bookingData?.serviceType?.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || "Cleaning Service",
       "3": bookingData?.date || "TBD",
       "4": bookingData?.time || "TBD"
     };

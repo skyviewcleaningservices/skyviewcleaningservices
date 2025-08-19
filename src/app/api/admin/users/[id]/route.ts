@@ -63,10 +63,16 @@ export async function PATCH(
     }
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: {
+      username?: string;
+      password?: string;
+      role?: 'ADMIN' | 'STAFF' | 'MANAGER';
+    } = {};
     if (username) updateData.username = username;
     if (password && password.trim() !== '') updateData.password = password;
-    if (role) updateData.role = role;
+    if (role && ['ADMIN', 'STAFF', 'MANAGER'].includes(role)) {
+      updateData.role = role as 'ADMIN' | 'STAFF' | 'MANAGER';
+    }
 
     // Update user
     const updatedUser = await prisma.user.update({

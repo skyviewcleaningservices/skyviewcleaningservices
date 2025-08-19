@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const { email, phone } = await request.json();
     
     let existingCustomer = null;
-    let validationResult = {
+    const validationResult = {
       email: { exists: false, message: '' },
       phone: { exists: false, message: '' }
     };
