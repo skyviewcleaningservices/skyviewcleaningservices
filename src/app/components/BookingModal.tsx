@@ -8,6 +8,19 @@ interface BookingModalProps {
   onClose: () => void;
 }
 
+interface SuccessData {
+  message: string;
+  bookingId?: string;
+  isReturningCustomer: boolean;
+  previousBookings: number;
+  whatsappNotifications?: {
+    customerSent: boolean;
+    adminSent: boolean;
+    customerError?: string;
+    adminError?: string;
+  };
+}
+
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [formData, setFormData] = useState({
     name: '',
@@ -30,6 +43,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [validationMessage, setValidationMessage] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationTimeout, setValidationTimeout] = useState(null as NodeJS.Timeout | null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState<SuccessData | null>(null);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -54,19 +69,26 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       [name]: value
     }));
 
-    // Real-time validation for phone only with debouncing
+    // Real-time validation for phone only after 10 digits with debouncing
     if (name === 'phone') {
       // Clear existing timeout
       if (validationTimeout) {
         clearTimeout(validationTimeout);
       }
 
-      // Set new timeout for debounced validation
-      const timeout = setTimeout(() => {
-        validateField(value);
-      }, 500); // 500ms delay
+      // Only validate if phone number has exactly 10 digits
+      const digitsOnly = value.replace(/\D/g, '');
+      if (digitsOnly.length === 10) {
+        // Set new timeout for debounced validation
+        const timeout = setTimeout(() => {
+          validateField(value);
+        }, 500); // 500ms delay
 
-      setValidationTimeout(timeout);
+        setValidationTimeout(timeout);
+      } else {
+        // Clear validation message if not 10 digits
+        setValidationMessage('');
+      }
     }
   };
 
@@ -74,11 +96,17 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     // Clear previous validation message
     setValidationMessage('');
 
-    // Don't validate if field is empty or too short
-    if (!value || value.length < 3) {
+    // Extract only digits from phone number
+    const digitsOnly = value.replace(/\D/g, '');
+    
+    // Don't validate if not exactly 10 digits
+    if (!value || digitsOnly.length !== 10) {
+      console.log('Phone validation skipped: Not 10 digits', { value, digitsOnly, length: digitsOnly.length });
       return;
     }
 
+    console.log('Phone validation triggered: 10 digits detected', { value, digitsOnly });
+    
     // Set validating state
     setIsValidating(true);
 
@@ -95,11 +123,15 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       });
 
       const result = await response.json();
+      console.log('Validation API response:', result);
 
       if (result.success) {
         const fieldValidation = result.validation.phone;
         if (fieldValidation.exists) {
           setValidationMessage(fieldValidation.message);
+          console.log('Returning customer detected:', fieldValidation.message);
+        } else {
+          console.log('New customer - no previous bookings found');
         }
       }
     } catch (error) {
@@ -120,24 +152,24 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate that the selected date is not in the past
     if (!formData.date) {
       alert('Please select a preferred date.');
       return;
     }
-    
+
     const selectedDate = new Date(formData.date + 'T00:00:00');
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
-    
+
     if (selectedDate < today) {
       alert('Please select a date that is not in the past.');
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // Try API route first
       const response = await fetch('/api/book', {
@@ -151,51 +183,63 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       const result = await response.json();
 
       if (result.success) {
-        // Show special popup for returning customers
-        if (result.isReturningCustomer) {
-          showReturningCustomerPopup(result.message, result.previousBookings);
-        } else {
-          alert(result.message);
-        }
-        onClose();
-        resetForm();
+        // Show success modal with booking details
+        setSuccessData(result);
+        setShowSuccessModal(true);
       } else {
         // Fallback to EmailJS if API fails
         const emailResult = await sendBookingEmail(formData);
-        
+
         if (emailResult.success) {
-          alert(emailResult.message);
-          onClose();
-          resetForm();
+          setSuccessData({
+            message: emailResult.message,
+            isReturningCustomer: false,
+            previousBookings: 0
+          });
+          setShowSuccessModal(true);
         } else {
           // Final fallback to mailto
-          alert('Opening email client to send booking details...');
+          setSuccessData({
+            message: 'Opening email client to send booking details...',
+            isReturningCustomer: false,
+            previousBookings: 0
+          });
+          setShowSuccessModal(true);
           sendEmailViaMailto(formData);
-          onClose();
-          resetForm();
         }
       }
     } catch (error) {
       console.error('Error submitting booking:', error);
-      
+
       // Try EmailJS as fallback
       try {
         const emailResult = await sendBookingEmail(formData);
-        
+
         if (emailResult.success) {
-          alert(emailResult.message);
-          onClose();
-          resetForm();
+          setSuccessData({
+            message: emailResult.message,
+            isReturningCustomer: false,
+            previousBookings: 0
+          });
+          setShowSuccessModal(true);
         } else {
           // Final fallback to mailto
-          alert('Opening email client to send booking details...');
+          setSuccessData({
+            message: 'Opening email client to send booking details...',
+            isReturningCustomer: false,
+            previousBookings: 0
+          });
+          setShowSuccessModal(true);
           sendEmailViaMailto(formData);
-          onClose();
-          resetForm();
         }
       } catch (emailError) {
         console.error('EmailJS error:', emailError);
-        alert('Failed to submit booking. Please try again or contact us directly.');
+        setSuccessData({
+          message: 'Failed to submit booking. Please try again or contact us directly.',
+          isReturningCustomer: false,
+          previousBookings: 0
+        });
+        setShowSuccessModal(true);
       }
     } finally {
       setIsSubmitting(false);
@@ -206,6 +250,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     setReturningCustomerMessage(message);
     setPreviousBookingsCount(previousBookings);
     setShowReturningCustomerModal(true);
+  };
+
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    setSuccessData(null);
+    onClose();
+    resetForm();
   };
 
   const resetForm = () => {
@@ -223,7 +274,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       additionalServices: [],
       specialInstructions: '',
     });
-    
+
     // Clear validation message and timeout
     setValidationMessage('');
     if (validationTimeout) clearTimeout(validationTimeout);
@@ -246,20 +297,20 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             </button>
           </div>
 
-                     <form onSubmit={handleSubmit} className="space-y-6">
-             {/* Validation Message */}
-             {validationMessage && (
-               <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-                 <p className="text-sm text-green-800 flex items-center">
-                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                   </svg>
-                   {validationMessage}
-                 </p>
-               </div>
-             )}
-             
-             {/* Personal Information */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Validation Message */}
+            {validationMessage && (
+              <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                <p className="text-sm text-green-800 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  {validationMessage}
+                </p>
+              </div>
+            )}
+
+            {/* Personal Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -275,48 +326,59 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-                             <div>
-                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                   Email *
-                 </label>
-                 <input
-                   type="email"
-                   id="email"
-                   name="email"
-                   required
-                   value={formData.email}
-                   onChange={handleInputChange}
-                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                 />
-               </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email 
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div>
-                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                   Phone Number *
-                 </label>
-                 <div className="relative">
-                   <input
-                     type="tel"
-                     id="phone"
-                     name="phone"
-                     required
-                     value={formData.phone}
-                     onChange={handleInputChange}
-                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                       validationMessage 
-                         ? 'border-green-500 bg-green-50' 
-                         : 'border-gray-300'
-                     }`}
-                   />
-                   {isValidating && (
-                     <div className="absolute right-3 top-2">
-                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
-                     </div>
-                   )}
-                 </div>
-               </div>
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number * 
+                  <span className="text-xs text-gray-500 ml-1">(10 digits required for validation)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    required
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Enter 10-digit phone number"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      validationMessage
+                        ? 'border-green-500 bg-green-50'
+                        : formData.phone.replace(/\D/g, '').length === 10
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-300'
+                    }`}
+                  />
+                  {isValidating && (
+                    <div className="absolute right-3 top-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                    </div>
+                  )}
+                  {formData.phone.replace(/\D/g, '').length === 10 && !isValidating && !validationMessage && (
+                    <div className="absolute right-3 top-2">
+                      <div className="text-blue-500">✓</div>
+                    </div>
+                  )}
+                </div>
+                {validationMessage && (
+                  <p className="mt-1 text-sm text-green-600">{validationMessage}</p>
+                )}
+              </div>
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
                   Address *
@@ -337,39 +399,38 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Service Type *
+                  Service Type 
                 </label>
                 <select
                   id="serviceType"
                   name="serviceType"
-                  required
                   value={formData.serviceType}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="deep-cleaning">Deep Cleaning</option>
                   <option value="regular-cleaning">Regular Cleaning</option>
-                  <option value="move-in-out">Move-in/Move-out Cleaning</option>
+                  <option value="full-deep-cleaning">Full Deep Cleaning</option>
                   <option value="post-construction">Post-Construction Cleaning</option>
                   <option value="special-occasion">Special Occasion Cleaning</option>
                 </select>
               </div>
               <div>
                 <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 mb-1">
-                  Frequency *
+                  Frequency 
                 </label>
                 <select
                   id="frequency"
                   name="frequency"
-                  required
+                  
                   value={formData.frequency}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="one-time">One Time</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="bi-weekly">Bi-Weekly</option>
-                  <option value="monthly">Monthly</option>
+                  <option value="quaterly">Every 3 months</option>
+                  <option value="bi-yearly">Every 6 months</option>
+                  <option value="yearly">Yearly</option>
                 </select>
               </div>
             </div>
@@ -412,34 +473,34 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   <option value="5+">5+</option>
                 </select>
               </div>
-                             <div>
-                 <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                   Preferred Date *
-                 </label>
-                                   <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    required
-                    min={getTodayDate()}
-                    value={formData.date}
-                    onChange={(e) => {
-                      const selectedDate = new Date(e.target.value + 'T00:00:00');
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      
-                      if (selectedDate < today) {
-                        alert('Please select a date that is not in the past.');
-                        e.target.value = '';
-                        setFormData(prev => ({ ...prev, date: '' }));
-                        return;
-                      }
-                      
-                      handleInputChange(e);
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-               </div>
+              <div>
+                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Preferred Date *
+                </label>
+                <input
+                  type="date"
+                  id="date"
+                  name="date"
+                  required
+                  min={getTodayDate()}
+                  value={formData.date}
+                  onChange={(e) => {
+                    const selectedDate = new Date(e.target.value + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (selectedDate < today) {
+                      alert('Please select a date that is not in the past.');
+                      e.target.value = '';
+                      setFormData(prev => ({ ...prev, date: '' }));
+                      return;
+                    }
+
+                    handleInputChange(e);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
             </div>
 
             <div>
@@ -558,6 +619,149 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             >
               Thank You!
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Success Modal */}
+      {showSuccessModal && successData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="text-center mb-6">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Booking Successful! 🎉</h3>
+              <p className="text-lg text-gray-600">{successData.message}</p>
+            </div>
+
+            {/* Booking Details */}
+            <div className="bg-gray-50 rounded-lg p-6 mb-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p><strong>Name:</strong> {formData.name}</p>
+                  <p><strong>Phone:</strong> {formData.phone}</p>
+                  <p><strong>Email:</strong> {formData.email || 'Not provided'}</p>
+                  <p><strong>Address:</strong> {formData.address}</p>
+                </div>
+                <div>
+                  <p><strong>Service:</strong> {formData.serviceType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p><strong>Frequency:</strong> {formData.frequency.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p><strong>Date:</strong> {formData.date}</p>
+                  <p><strong>Time:</strong> {formData.time}</p>
+                </div>
+              </div>
+              {formData.additionalServices.length > 0 && (
+                <div className="mt-4">
+                  <p><strong>Additional Services:</strong></p>
+                  <ul className="list-disc list-inside text-sm text-gray-600">
+                    {formData.additionalServices.map((service, index) => (
+                      <li key={index}>{service}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {formData.specialInstructions && (
+                <div className="mt-4">
+                  <p><strong>Special Instructions:</strong></p>
+                  <p className="text-sm text-gray-600">{formData.specialInstructions}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Booking ID and Status */}
+            {successData.bookingId && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-blue-800">
+                  <strong>Booking ID:</strong> {successData.bookingId}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">Please keep this ID for reference</p>
+              </div>
+            )}
+
+            {/* Returning Customer Info */}
+            {successData.isReturningCustomer && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-yellow-800">
+                  <strong>Welcome Back!</strong> This is your {successData.previousBookings + 1} booking with us.
+                </p>
+              </div>
+            )}
+
+                         {/* WhatsApp Notification Status */}
+             {successData.whatsappNotifications && (
+               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                 <h5 className="font-semibold text-green-800 mb-2">WhatsApp Notifications</h5>
+                 <div className="text-sm text-green-700">
+                   <p>✓ Customer notification: {successData.whatsappNotifications.customerSent ? 'Sent' : 'Failed'}</p>
+                   <p>✓ Admin notification: {successData.whatsappNotifications.adminSent ? 'Sent' : 'Failed'}</p>
+                 </div>
+                 {/* Show error details if any notifications failed */}
+                 {(successData.whatsappNotifications.customerError || successData.whatsappNotifications.adminError) && (
+                   <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+                     <h6 className="font-semibold text-red-800 mb-2">Error Details:</h6>
+                     {successData.whatsappNotifications.customerError && (
+                       <p className="text-xs text-red-700 mb-1">
+                         <strong>Customer Error:</strong> {successData.whatsappNotifications.customerError}
+                       </p>
+                     )}
+                     {successData.whatsappNotifications.adminError && (
+                       <p className="text-xs text-red-700 mb-1">
+                         <strong>Admin Error:</strong> {successData.whatsappNotifications.adminError}
+                       </p>
+                     )}
+                     <button
+                       onClick={() => {
+                         const errorInfo = {
+                           customerError: successData.whatsappNotifications?.customerError,
+                           adminError: successData.whatsappNotifications?.adminError,
+                           templateContentSid: process.env.TWILIO_TEMPLATE_CONTENT_SID || 'HXb5b62575e6e4ff6129ad7c8efe1f983e',
+                           customerPhone: formData.phone,
+                           adminPhone: process.env.ADMIN_WHATSAPP_PHONE || '+917840938282'
+                         };
+                         alert(`WhatsApp Error Details:\n\nCustomer Error: ${errorInfo.customerError || 'None'}\nAdmin Error: ${errorInfo.adminError || 'None'}\n\nTemplate ContentSid: ${errorInfo.templateContentSid}\nCustomer Phone: ${errorInfo.customerPhone}\nAdmin Phone: ${errorInfo.adminPhone}`);
+                       }}
+                       className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                     >
+                       Show Detailed Error Info
+                     </button>
+                   </div>
+                 )}
+               </div>
+             )}
+
+            {/* Next Steps */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+              <h5 className="font-semibold text-indigo-800 mb-2">What&apos;s Next?</h5>
+              <ul className="text-sm text-indigo-700 space-y-1">
+                <li>• We&apos;ll contact you within 24 hours to confirm your appointment</li>
+                <li>• Please ensure someone is available at the scheduled time</li>
+                <li>• For any changes, please call us at +91 9623707524</li>
+              </ul>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleSuccessModalClose}
+                className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+              >
+                Done
+              </button>
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setSuccessData(null);
+                  // Keep the modal open for another booking
+                }}
+                className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 font-medium"
+              >
+                Book Another Service
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,17 +1,23 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Booking {
-  id                  String   @id @default(cuid())
+  id                  String        @id @default(cuid())
   name                String
   email               String
   phone               String
@@ -22,11 +28,15 @@ model Booking {
   preferredTime       String
   bedrooms            String
   bathrooms           String
-  additionalServices  String // JSON string of additional services
+  additionalServices  String
   specialInstructions String?
   status              BookingStatus @default(PENDING)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  statusReason        String?
+  paymentAmount       Float?
+  paymentType         PaymentType?
+  remarks             String?
 }
 
 enum BookingStatus {
@@ -34,4 +44,17 @@ enum BookingStatus {
   CONFIRMED
   COMPLETED
   CANCELLED
+}
+
+enum PaymentType {
+  CASH
+  CARD
+  UPI
+  BANK_TRANSFER
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  MANAGER
 }

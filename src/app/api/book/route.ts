@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
+import WhatsAppBusinessAPI from '../../services/WhatsAppBusinessAPI';
 
 export async function POST(request: NextRequest) {
   try {
@@ -143,6 +144,32 @@ Submitted on: ${new Date().toLocaleString()}
     // Send email using a simple service (you can replace this with your preferred email service)
     const emailResponse = await sendEmail(emailData);
 
+    // Send WhatsApp notifications to both customer and admin using template
+    const whatsappService = WhatsAppBusinessAPI.getInstance();
+    const whatsappResult = await whatsappService.sendBookingTemplateNotification({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+      serviceType: formData.serviceType,
+      frequency: formData.frequency,
+      date: formData.date,
+      time: formData.time,
+      bedrooms: formData.bedrooms,
+      bathrooms: formData.bathrooms,
+      additionalServices: formData.additionalServices,
+      specialInstructions: formData.specialInstructions,
+      bookingId: booking?.id
+    });
+
+    // Log WhatsApp results
+    console.log('WhatsApp notification results:', {
+      customerSuccess: whatsappResult.customerSuccess,
+      adminSuccess: whatsappResult.adminSuccess,
+      customerError: whatsappResult.customerError,
+      adminError: whatsappResult.adminError
+    });
+
     // Determine response message based on whether customer is returning
     let responseMessage = 'Booking submitted successfully! We will contact you soon to confirm your appointment.';
     let isReturningCustomer = false;
@@ -166,7 +193,13 @@ Submitted on: ${new Date().toLocaleString()}
         message: responseMessage,
         bookingId: booking?.id,
         isReturningCustomer: isReturningCustomer,
-        previousBookings: previousBookingsCount
+        previousBookings: previousBookingsCount,
+        whatsappNotifications: {
+          customerSent: whatsappResult.customerSuccess,
+          adminSent: whatsappResult.adminSuccess,
+          customerError: whatsappResult.customerError,
+          adminError: whatsappResult.adminError
+        }
       });
     } else {
       // If email fails but database succeeded, still return success
@@ -176,7 +209,13 @@ Submitted on: ${new Date().toLocaleString()}
           message: responseMessage,
           bookingId: booking.id,
           isReturningCustomer: isReturningCustomer,
-          previousBookings: previousBookingsCount
+          previousBookings: previousBookingsCount,
+          whatsappNotifications: {
+            customerSent: whatsappResult.customerSuccess,
+            adminSent: whatsappResult.adminSuccess,
+            customerError: whatsappResult.customerError,
+            adminError: whatsappResult.adminError
+          }
         });
       }
       throw new Error('Failed to send email and save booking');

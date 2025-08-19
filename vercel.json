@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "DATABASE_URL": "postgresql://neondb_owner:npg_MaRy9ZbNj0dB@ep-delicate-wave-a1fumgfn-pooler.ap-southeast-1.aws.neon.tech/SkyViewCleaningServices?sslmode=require&channel_binding=require"
+  }
+}
