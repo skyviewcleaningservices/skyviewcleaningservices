@@ -101,6 +101,6 @@ Special Instructions: ${formData.specialInstructions || 'None'}
 Submitted on: ${new Date().toLocaleString()}
   `;
 
-  const mailtoLink = `mailto:info@skyviewcleaning.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const mailtoLink = `mailto:skyviewcleaningservices@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.open(mailtoLink);
 }

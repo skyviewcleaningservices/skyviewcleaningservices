@@ -36,7 +36,7 @@ Submitted on: ${new Date().toLocaleString()}
     // For now, we'll use a simple email service
     // You can replace this with your preferred email service (SendGrid, Mailgun, etc.)
     const emailData = {
-      to: 'info@skyviewcleaning.com', // Replace with your email
+      to: 'skyviewcleaningservices@gmail.com', // Replace with your email
       subject: 'New Booking Request - SkyView Cleaning Services',
       text: emailContent,
       html: `

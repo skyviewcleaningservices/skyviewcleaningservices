@@ -98,7 +98,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
     // Extract only digits from phone number
     const digitsOnly = value.replace(/\D/g, '');
-    
+
     // Don't validate if not exactly 10 digits
     if (!value || digitsOnly.length !== 10) {
       console.log('Phone validation skipped: Not 10 digits', { value, digitsOnly, length: digitsOnly.length });
@@ -106,7 +106,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     }
 
     console.log('Phone validation triggered: 10 digits detected', { value, digitsOnly });
-    
+
     // Set validating state
     setIsValidating(true);
 
@@ -328,7 +328,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email 
+                  Email
                 </label>
                 <input
                   type="email"
@@ -344,7 +344,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number * 
+                  Phone Number *
                   <span className="text-xs text-gray-500 ml-1">(10 digits required for validation)</span>
                 </label>
                 <div className="relative">
@@ -356,13 +356,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="Enter 10-digit phone number"
-                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      validationMessage
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${validationMessage
                         ? 'border-green-500 bg-green-50'
                         : formData.phone.replace(/\D/g, '').length === 10
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300'
-                    }`}
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-300'
+                      }`}
                   />
                   {isValidating && (
                     <div className="absolute right-3 top-2">
@@ -399,7 +398,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Service Type 
+                  Service Type
                 </label>
                 <select
                   id="serviceType"
@@ -408,21 +407,19 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
+                  <option value="regular-cleaning">General Cleaning</option>
                   <option value="deep-cleaning">Deep Cleaning</option>
-                  <option value="regular-cleaning">Regular Cleaning</option>
                   <option value="full-deep-cleaning">Full Deep Cleaning</option>
-                  <option value="post-construction">Post-Construction Cleaning</option>
-                  <option value="special-occasion">Special Occasion Cleaning</option>
                 </select>
               </div>
               <div>
                 <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 mb-1">
-                  Frequency 
+                  Frequency
                 </label>
                 <select
                   id="frequency"
                   name="frequency"
-                  
+
                   value={formData.frequency}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -539,9 +536,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   'Window Cleaning',
                   'Carpet Cleaning',
                   'Oven Cleaning',
-                  'Fridge Cleaning',
-                  'Laundry Service',
-                  'Pet Hair Removal'
+                  'Fridge Cleaning'
                 ].map((service) => (
                   <label key={service} className="flex items-center">
                     <input
@@ -691,53 +686,53 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </div>
             )}
 
-                         {/* WhatsApp Notification Status */}
-             {successData.whatsappNotifications && (
-               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                 <h5 className="font-semibold text-green-800 mb-2">WhatsApp Notifications</h5>
-                 <div className="text-sm text-green-700">
-                   <p>✓ Customer notification: {successData.whatsappNotifications.customerSent ? 'Sent' : 'Failed'}</p>
-                   <p>✓ Admin notification: {successData.whatsappNotifications.adminSent ? 'Sent' : 'Failed'}</p>
-                 </div>
-                 {/* Show error details if any notifications failed */}
-                 {(successData.whatsappNotifications.customerError || successData.whatsappNotifications.adminError) && (
-                   <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-                     <h6 className="font-semibold text-red-800 mb-2">Error Details:</h6>
-                     {successData.whatsappNotifications.customerError && (
-                       <p className="text-xs text-red-700 mb-1">
-                         <strong>Customer Error:</strong> {successData.whatsappNotifications.customerError}
-                       </p>
-                     )}
-                     {successData.whatsappNotifications.adminError && (
-                       <p className="text-xs text-red-700 mb-1">
-                         <strong>Admin Error:</strong> {successData.whatsappNotifications.adminError}
-                       </p>
-                     )}
-                     <button
-                       onClick={() => {
-                         const errorInfo = {
-                           customerError: successData.whatsappNotifications?.customerError,
-                           adminError: successData.whatsappNotifications?.adminError,
-                           templateContentSid: process.env.TWILIO_TEMPLATE_CONTENT_SID || 'HXb5b62575e6e4ff6129ad7c8efe1f983e',
-                           customerPhone: formData.phone,
-                           adminPhone: process.env.ADMIN_WHATSAPP_PHONE || '+917840938282'
-                         };
-                         alert(`WhatsApp Error Details:\n\nCustomer Error: ${errorInfo.customerError || 'None'}\nAdmin Error: ${errorInfo.adminError || 'None'}\n\nTemplate ContentSid: ${errorInfo.templateContentSid}\nCustomer Phone: ${errorInfo.customerPhone}\nAdmin Phone: ${errorInfo.adminPhone}`);
-                       }}
-                       className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                     >
-                       Show Detailed Error Info
-                     </button>
-                   </div>
-                 )}
-               </div>
-             )}
+            {/* WhatsApp Notification Status */}
+            {successData.whatsappNotifications && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <h5 className="font-semibold text-green-800 mb-2">WhatsApp Notifications</h5>
+                <div className="text-sm text-green-700">
+                  <p>✓ Customer notification: {successData.whatsappNotifications.customerSent ? 'Sent' : 'Failed'}</p>
+                  <p>✓ Admin notification: {successData.whatsappNotifications.adminSent ? 'Sent' : 'Failed'}</p>
+                </div>
+                {/* Show error details if any notifications failed */}
+                {(successData.whatsappNotifications.customerError || successData.whatsappNotifications.adminError) && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+                    <h6 className="font-semibold text-red-800 mb-2">Error Details:</h6>
+                    {successData.whatsappNotifications.customerError && (
+                      <p className="text-xs text-red-700 mb-1">
+                        <strong>Customer Error:</strong> {successData.whatsappNotifications.customerError}
+                      </p>
+                    )}
+                    {successData.whatsappNotifications.adminError && (
+                      <p className="text-xs text-red-700 mb-1">
+                        <strong>Admin Error:</strong> {successData.whatsappNotifications.adminError}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => {
+                        const errorInfo = {
+                          customerError: successData.whatsappNotifications?.customerError,
+                          adminError: successData.whatsappNotifications?.adminError,
+                          templateContentSid: process.env.TWILIO_TEMPLATE_CONTENT_SID || 'HXb5b62575e6e4ff6129ad7c8efe1f983e',
+                          customerPhone: formData.phone,
+                          adminPhone: process.env.ADMIN_WHATSAPP_PHONE || '+917840938282'
+                        };
+                        alert(`WhatsApp Error Details:\n\nCustomer Error: ${errorInfo.customerError || 'None'}\nAdmin Error: ${errorInfo.adminError || 'None'}\n\nTemplate ContentSid: ${errorInfo.templateContentSid}\nCustomer Phone: ${errorInfo.customerPhone}\nAdmin Phone: ${errorInfo.adminPhone}`);
+                      }}
+                      className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                    >
+                      Show Detailed Error Info
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Next Steps */}
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
               <h5 className="font-semibold text-indigo-800 mb-2">What&apos;s Next?</h5>
               <ul className="text-sm text-indigo-700 space-y-1">
-                <li>• We&apos;ll contact you within 24 hours to confirm your appointment</li>
+                <li>• We&apos;ll contact you within 3 hours to confirm your Booking</li>
                 <li>• Please ensure someone is available at the scheduled time</li>
                 <li>• For any changes, please call us at +91 9623707524</li>
               </ul>
