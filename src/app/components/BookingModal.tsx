@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { sendBookingEmail, sendEmailViaMailto } from './EmailService';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -64,24 +63,39 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
 
-    // Real-time validation for phone only after 10 digits with debouncing
+    // Special handling for phone number
     if (name === 'phone') {
+      // Remove all non-digit characters
+      let digitsOnly = value.replace(/\D/g, '');
+
+      // Remove initial 0 or +91
+      if (digitsOnly.startsWith('91') && digitsOnly.length > 10) {
+        digitsOnly = digitsOnly.substring(2);
+      }
+      if (digitsOnly.startsWith('0')) {
+        digitsOnly = digitsOnly.substring(1);
+      }
+
+      // Limit to 10 digits
+      digitsOnly = digitsOnly.substring(0, 10);
+
+      // Update form data with cleaned phone number
+      setFormData(prev => ({
+        ...prev,
+        [name]: digitsOnly
+      }));
+
       // Clear existing timeout
       if (validationTimeout) {
         clearTimeout(validationTimeout);
       }
 
       // Only validate if phone number has exactly 10 digits
-      const digitsOnly = value.replace(/\D/g, '');
       if (digitsOnly.length === 10) {
         // Set new timeout for debounced validation
         const timeout = setTimeout(() => {
-          validateField(value);
+          validateField(digitsOnly);
         }, 500); // 500ms delay
 
         setValidationTimeout(timeout);
@@ -89,6 +103,27 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
         // Clear validation message if not 10 digits
         setValidationMessage('');
       }
+    } else if (name === 'serviceType') {
+      // Special handling for service type changes
+      setFormData(prev => {
+        const newFormData = {
+          ...prev,
+          [name]: value
+        };
+
+        // If Full Deep Cleaning is selected, clear additional services
+        if (value === 'full-deep-cleaning') {
+          newFormData.additionalServices = [];
+        }
+
+        return newFormData;
+      });
+    } else {
+      // Handle other fields normally
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
@@ -183,64 +218,27 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       const result = await response.json();
 
       if (result.success) {
-        // Show success modal with booking details
+        // Show success modal with booking details and WhatsApp status
         setSuccessData(result);
         setShowSuccessModal(true);
       } else {
-        // Fallback to EmailJS if API fails
-        const emailResult = await sendBookingEmail(formData);
-
-        if (emailResult.success) {
-          setSuccessData({
-            message: emailResult.message,
-            isReturningCustomer: false,
-            previousBookings: 0
-          });
-          setShowSuccessModal(true);
-        } else {
-          // Final fallback to mailto
-          setSuccessData({
-            message: 'Opening email client to send booking details...',
-            isReturningCustomer: false,
-            previousBookings: 0
-          });
-          setShowSuccessModal(true);
-          sendEmailViaMailto(formData);
-        }
-      }
-    } catch (error) {
-      console.error('Error submitting booking:', error);
-
-      // Try EmailJS as fallback
-      try {
-        const emailResult = await sendBookingEmail(formData);
-
-        if (emailResult.success) {
-          setSuccessData({
-            message: emailResult.message,
-            isReturningCustomer: false,
-            previousBookings: 0
-          });
-          setShowSuccessModal(true);
-        } else {
-          // Final fallback to mailto
-          setSuccessData({
-            message: 'Opening email client to send booking details...',
-            isReturningCustomer: false,
-            previousBookings: 0
-          });
-          setShowSuccessModal(true);
-          sendEmailViaMailto(formData);
-        }
-      } catch (emailError) {
-        console.error('EmailJS error:', emailError);
+        // Show error message if API fails
         setSuccessData({
-          message: 'Failed to submit booking. Please try again or contact us directly.',
+          message: result.message || 'Failed to submit booking. Please try again.',
           isReturningCustomer: false,
           previousBookings: 0
         });
         setShowSuccessModal(true);
       }
+    } catch (error) {
+      console.error('Error submitting booking:', error);
+
+      setSuccessData({
+        message: 'Failed to submit booking. Please try again or contact us directly.',
+        isReturningCustomer: false,
+        previousBookings: 0
+      });
+      setShowSuccessModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -355,12 +353,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     required
                     value={formData.phone}
                     onChange={handleInputChange}
-                    placeholder="Enter 10-digit phone number"
+                    placeholder="Enter 10-digit mobile number"
+                    maxLength={15}
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${validationMessage
-                        ? 'border-green-500 bg-green-50'
-                        : formData.phone.replace(/\D/g, '').length === 10
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-300'
+                      ? 'border-green-500 bg-green-50'
+                      : formData.phone.length === 10
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-300'
                       }`}
                   />
                   {isValidating && (
@@ -368,15 +367,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
                     </div>
                   )}
-                  {formData.phone.replace(/\D/g, '').length === 10 && !isValidating && !validationMessage && (
+                  {formData.phone.length === 10 && !isValidating && !validationMessage && (
                     <div className="absolute right-3 top-2">
                       <div className="text-blue-500">✓</div>
                     </div>
                   )}
                 </div>
-                {validationMessage && (
-                  <p className="mt-1 text-sm text-green-600">{validationMessage}</p>
-                )}
               </div>
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
@@ -531,6 +527,19 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Additional Services
               </label>
+
+              {/* Message for Full Deep Cleaning */}
+              {formData.serviceType === 'full-deep-cleaning' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
+                  <p className="text-sm text-blue-800 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <strong>Note:</strong> Full Deep Cleaning already includes all additional services. No need to select them separately.
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {[
                   'Window Cleaning',
@@ -538,12 +547,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   'Oven Cleaning',
                   'Fridge Cleaning'
                 ].map((service) => (
-                  <label key={service} className="flex items-center">
+                  <label key={service} className={`flex items-center ${formData.serviceType === 'full-deep-cleaning' ? 'opacity-50' : ''}`}>
                     <input
                       type="checkbox"
                       checked={formData.additionalServices.includes(service)}
                       onChange={() => handleCheckboxChange(service)}
-                      className="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      disabled={formData.serviceType === 'full-deep-cleaning'}
+                      className="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <span className="text-sm text-gray-700">{service}</span>
                   </label>
@@ -677,58 +687,75 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               </div>
             )}
 
-            {/* Returning Customer Info */}
-            {successData.isReturningCustomer && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-yellow-800">
-                  <strong>Welcome Back!</strong> This is your {successData.previousBookings + 1} booking with us.
-                </p>
-              </div>
-            )}
+                         {/* Returning Customer Info */}
+             {successData.isReturningCustomer && (
+               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                 <p className="text-sm text-yellow-800">
+                   <strong>Welcome Back!</strong> This is your {successData.previousBookings + 1} booking with us.
+                 </p>
+               </div>
+             )}
 
-            {/* WhatsApp Notification Status */}
-            {successData.whatsappNotifications && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h5 className="font-semibold text-green-800 mb-2">WhatsApp Notifications</h5>
-                <div className="text-sm text-green-700">
-                  <p>✓ Customer notification: {successData.whatsappNotifications.customerSent ? 'Sent' : 'Failed'}</p>
-                  <p>✓ Admin notification: {successData.whatsappNotifications.adminSent ? 'Sent' : 'Failed'}</p>
-                </div>
-                {/* Show error details if any notifications failed */}
-                {(successData.whatsappNotifications.customerError || successData.whatsappNotifications.adminError) && (
-                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-                    <h6 className="font-semibold text-red-800 mb-2">Error Details:</h6>
-                    {successData.whatsappNotifications.customerError && (
-                      <p className="text-xs text-red-700 mb-1">
-                        <strong>Customer Error:</strong> {successData.whatsappNotifications.customerError}
-                      </p>
-                    )}
-                    {successData.whatsappNotifications.adminError && (
-                      <p className="text-xs text-red-700 mb-1">
-                        <strong>Admin Error:</strong> {successData.whatsappNotifications.adminError}
-                      </p>
-                    )}
-                    <button
-                      onClick={() => {
-                        const errorInfo = {
-                          customerError: successData.whatsappNotifications?.customerError,
-                          adminError: successData.whatsappNotifications?.adminError,
-                          templateContentSid: process.env.TWILIO_TEMPLATE_CONTENT_SID || 'HXb5b62575e6e4ff6129ad7c8efe1f983e',
-                          customerPhone: formData.phone,
-                          adminPhone: process.env.ADMIN_WHATSAPP_PHONE || '+917840938282'
-                        };
-                        alert(`WhatsApp Error Details:\n\nCustomer Error: ${errorInfo.customerError || 'None'}\nAdmin Error: ${errorInfo.adminError || 'None'}\n\nTemplate ContentSid: ${errorInfo.templateContentSid}\nCustomer Phone: ${errorInfo.customerPhone}\nAdmin Phone: ${errorInfo.adminPhone}`);
-                      }}
-                      className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                    >
-                      Show Detailed Error Info
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+             {/* WhatsApp Notification Status */}
+             {successData.whatsappNotifications && (
+               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                 <h5 className="font-semibold text-gray-800 mb-3">WhatsApp Notifications</h5>
+                 <div className="space-y-2 text-sm">
+                   <div className="flex items-center justify-between">
+                     <span className="text-gray-600">Customer Notification:</span>
+                     <span className={`flex items-center ${successData.whatsappNotifications.customerSent ? 'text-green-600' : 'text-red-600'}`}>
+                       {successData.whatsappNotifications.customerSent ? (
+                         <>
+                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                           </svg>
+                           Sent
+                         </>
+                       ) : (
+                         <>
+                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                           </svg>
+                           Failed
+                         </>
+                       )}
+                     </span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <span className="text-gray-600">Admin Notification:</span>
+                     <span className={`flex items-center ${successData.whatsappNotifications.adminSent ? 'text-green-600' : 'text-red-600'}`}>
+                       {successData.whatsappNotifications.adminSent ? (
+                         <>
+                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                           </svg>
+                           Sent
+                         </>
+                       ) : (
+                         <>
+                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                           </svg>
+                           Failed
+                         </>
+                       )}
+                     </span>
+                   </div>
+                   {successData.whatsappNotifications.customerError && (
+                     <div className="text-xs text-red-600 mt-1">
+                       Customer Error: {successData.whatsappNotifications.customerError}
+                     </div>
+                   )}
+                   {successData.whatsappNotifications.adminError && (
+                     <div className="text-xs text-red-600 mt-1">
+                       Admin Error: {successData.whatsappNotifications.adminError}
+                     </div>
+                   )}
+                 </div>
+               </div>
+             )}
 
-            {/* Next Steps */}
+             {/* Next Steps */}
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
               <h5 className="font-semibold text-indigo-800 mb-2">What&apos;s Next?</h5>
               <ul className="text-sm text-indigo-700 space-y-1">
