@@ -74,26 +74,46 @@ export async function POST(request: NextRequest) {
     try {
       const whatsappService = WhatsAppBusinessAPI.getInstance();
       
-      // Send customer notification
-      const customerResult = await whatsappService.sendCustomerNotification({
-        ...formData,
-        bookingId: booking?.id || 'N/A'
-      });
-      
-      // Send admin notification
-      const adminResult = await whatsappService.sendAdminNotification({
-        ...formData,
-        bookingId: booking?.id || 'N/A'
-      });
+      // Check if WhatsApp is properly configured
+      if (!whatsappService.isConfigured()) {
+        console.warn('WhatsApp not configured - skipping notifications');
+        whatsappResult = {
+          customerSent: false,
+          adminSent: false,
+          customerError: 'WhatsApp not configured',
+          adminError: 'WhatsApp not configured'
+        };
+      } else {
+        console.log('WhatsApp configured, attempting to send notifications');
+        
+        // Send customer notification
+        const customerResult = await whatsappService.sendCustomerNotification({
+          ...formData,
+          bookingId: booking?.id || 'N/A'
+        });
+        
+        console.log('Customer notification result:', customerResult);
+        
+        // Send admin notification
+        const adminResult = await whatsappService.sendAdminNotification({
+          ...formData,
+          bookingId: booking?.id || 'N/A'
+        });
+        
+        console.log('Admin notification result:', adminResult);
 
-      whatsappResult = {
-        customerSent: customerResult.success,
-        adminSent: adminResult.success,
-        customerError: customerResult.error || null,
-        adminError: adminResult.error || null
-      };
+        whatsappResult = {
+          customerSent: customerResult.success,
+          adminSent: adminResult.success,
+          customerError: customerResult.error || null,
+          adminError: adminResult.error || null
+        };
+      }
     } catch (whatsappError) {
-      console.error('WhatsApp notification error:', whatsappError);
+      console.error('WhatsApp notification error:', {
+        error: whatsappError instanceof Error ? whatsappError.message : whatsappError,
+        stack: whatsappError instanceof Error ? whatsappError.stack : undefined
+      });
       whatsappResult = {
         customerSent: false,
         adminSent: false,

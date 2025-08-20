@@ -30,16 +30,36 @@ export class WhatsAppBusinessAPI {
   private fromNumber: string;
   private adminPhone: string;
   private contentSid: string;
+  private isSandbox: boolean;
 
   private constructor() {
     // Twilio WhatsApp Business API credentials
-    const accountSid = process.env.TWILIO_ACCOUNT_SID || 'AC6eaa92e13be2a009ba6dd7461dc2ff35';
-    const authToken = process.env.TWILIO_AUTH_TOKEN || '[AuthToken]'; // Replace with your actual auth token
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    
+    // Validate required environment variables
+    if (!accountSid || !authToken) {
+      console.error('Missing Twilio credentials:', {
+        hasAccountSid: !!accountSid,
+        hasAuthToken: !!authToken
+      });
+      throw new Error('Missing Twilio credentials');
+    }
 
     this.client = twilio(accountSid, authToken);
     this.fromNumber = process.env.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886';
     this.adminPhone = process.env.ADMIN_WHATSAPP_PHONE || 'whatsapp:+917840938282';
     this.contentSid = process.env.TWILIO_TEMPLATE_CONTENT_SID || 'HXb5b62575e6e4ff6129ad7c8efe1f983e';
+    
+    // Check if we're using sandbox (common in production when not approved)
+    this.isSandbox = this.fromNumber.includes('+14155238886');
+    
+    console.log('WhatsApp API initialized:', {
+      fromNumber: this.fromNumber,
+      adminPhone: this.adminPhone,
+      isSandbox: this.isSandbox,
+      hasContentSid: !!this.contentSid
+    });
   }
 
   public static getInstance(): WhatsAppBusinessAPI {
@@ -51,7 +71,26 @@ export class WhatsAppBusinessAPI {
 
   private async sendMessage(messageData: WhatsAppMessage): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      console.log("Sending message to Whatsapp: " + messageData.to + " with message: " + messageData.message);
+      console.log("Attempting to send WhatsApp message:", {
+        to: messageData.to,
+        type: messageData.type,
+        messageLength: messageData.message?.length,
+        isSandbox: this.isSandbox
+      });
+
+      // Validate phone number format
+      if (!messageData.to.startsWith('whatsapp:')) {
+        return {
+          success: false,
+          error: 'Invalid phone number format. Must start with "whatsapp:"'
+        };
+      }
+
+      // For sandbox mode, only allow messages to approved numbers
+      if (this.isSandbox) {
+        console.log('Sandbox mode detected - messages will only work with approved numbers');
+      }
+
       if (messageData.type === 'template' && messageData.contentSid) {
         // Send template message
         const message = await this.client.messages.create({
@@ -61,7 +100,10 @@ export class WhatsAppBusinessAPI {
           to: messageData.to
         });
 
-        console.log('Template message sent successfully:', message.sid);
+        console.log('Template message sent successfully:', {
+          sid: message.sid,
+          status: message.status
+        });
         return { success: true, message: 'Template message sent successfully' };
       } else {
         // Send text message
@@ -71,11 +113,43 @@ export class WhatsAppBusinessAPI {
           to: messageData.to
         });
 
-        console.log('Text message sent successfully:', message.sid);
+        console.log('Text message sent successfully:', {
+          sid: message.sid,
+          status: message.status,
+          direction: message.direction
+        });
         return { success: true, message: 'Text message sent successfully' };
       }
     } catch (error) {
-      console.error('Error sending WhatsApp message:', error);
+      console.error('Error sending WhatsApp message:', {
+        error: error instanceof Error ? error.message : error,
+        code: (error as any)?.code,
+        status: (error as any)?.status,
+        moreInfo: (error as any)?.moreInfo
+      });
+
+      // Handle specific Twilio errors
+      if (error instanceof Error) {
+        if (error.message.includes('not in your approved list')) {
+          return {
+            success: false,
+            error: 'Phone number not approved for sandbox testing. Please join the sandbox first.'
+          };
+        }
+        if (error.message.includes('Authentication failed')) {
+          return {
+            success: false,
+            error: 'Twilio authentication failed. Please check your credentials.'
+          };
+        }
+        if (error.message.includes('not a valid phone number')) {
+          return {
+            success: false,
+            error: 'Invalid phone number format.'
+          };
+        }
+      }
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to send WhatsApp message'
@@ -91,31 +165,31 @@ export class WhatsAppBusinessAPI {
 
     return `🎉 *Booking Confirmation - SkyView Cleaning Services*
 
-  Dear ${bookingData.name},
+Dear ${bookingData.name},
 
-  Thank you for choosing SkyView Cleaning Services! Your booking has been successfully received.
+Thank you for choosing SkyView Cleaning Services! Your booking has been successfully received.
 
-  *Booking Details:*
-  • Service: ${serviceType}
-  • Frequency: ${bookingData.frequency}
-  • Date: ${bookingData.date}
-  • Time: ${bookingData.time}
-  • Property: ${bookingData.bedrooms} bed, ${bookingData.bathrooms} bath
+*Booking Details:*
+• Service: ${serviceType}
+• Frequency: ${bookingData.frequency}
+• Date: ${bookingData.date}
+• Time: ${bookingData.time}
+• Property: ${bookingData.bedrooms} bed, ${bookingData.bathrooms} bath
 
-  *Additional Services:* ${additionalServices}
+*Additional Services:* ${additionalServices}
 
-  *Address:* ${bookingData.address}
+*Address:* ${bookingData.address}
 
-  ${bookingData.specialInstructions ? `*Special Instructions:* ${bookingData.specialInstructions}\n` : ''}
+${bookingData.specialInstructions ? `*Special Instructions:* ${bookingData.specialInstructions}\n` : ''}
 
-  We will contact you within 24 hours to confirm your appointment and discuss any specific requirements.
+We will contact you within 24 hours to confirm your appointment and discuss any specific requirements.
 
-  *Booking ID:* ${bookingData.bookingId || 'N/A'}
+*Booking ID:* ${bookingData.bookingId || 'N/A'}
 
-  For any questions, please contact us at +91 9623707524.
+For any questions, please contact us at +91 9623707524.
 
-  Thank you for trusting SkyView Cleaning Services! 🏠✨`;
- }
+Thank you for trusting SkyView Cleaning Services! 🏠✨`;
+  }
 
   private formatAdminMessage(bookingData: BookingData): string {
     const serviceType = bookingData.serviceType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -125,50 +199,80 @@ export class WhatsAppBusinessAPI {
 
     return `📋 *New Booking Alert - SkyView Cleaning Services*
 
-  *Customer Information:*
-  • Name: ${bookingData.name}
-  • Phone: ${bookingData.phone}
-  • Email: ${bookingData.email}
+*Customer Information:*
+• Name: ${bookingData.name}
+• Phone: ${bookingData.phone}
+• Email: ${bookingData.email}
 
-  *Service Details:*
-  • Service: ${serviceType}
-  • Frequency: ${bookingData.frequency}
-  • Date: ${bookingData.date}
-  • Time: ${bookingData.time}
-  • Property: ${bookingData.bedrooms} bed, ${bookingData.bathrooms} bath
+*Service Details:*
+• Service: ${serviceType}
+• Frequency: ${bookingData.frequency}
+• Date: ${bookingData.date}
+• Time: ${bookingData.time}
+• Property: ${bookingData.bedrooms} bed, ${bookingData.bathrooms} bath
 
-  *Additional Services:* ${additionalServices}
+*Additional Services:* ${additionalServices}
 
-  *Address:* ${bookingData.address}
+*Address:* ${bookingData.address}
 
-  ${bookingData.specialInstructions ? `*Special Instructions:* ${bookingData.specialInstructions}\n` : ''}
+${bookingData.specialInstructions ? `*Special Instructions:* ${bookingData.specialInstructions}\n` : ''}
 
-  *Booking ID:* ${bookingData.bookingId || 'N/A'}
+*Booking ID:* ${bookingData.bookingId || 'N/A'}
 
-  Please review and confirm this booking in the admin dashboard.
+Please review and confirm this booking in the admin dashboard.
 
-  Action required: Contact customer within 24 hours.`;
+Action required: Contact customer within 24 hours.`;
   }
 
   public async sendCustomerNotification(bookingData: BookingData): Promise<{ success: boolean; error?: string }> {
-    const customerPhone = `whatsapp:+91${bookingData.phone}`;
-    const message = this.formatCustomerMessage(bookingData);
+    try {
+      // Clean phone number - remove any non-digit characters except +
+      const cleanPhone = bookingData.phone.replace(/[^\d+]/g, '');
+      
+      // Ensure it starts with +91
+      const customerPhone = cleanPhone.startsWith('+91') 
+        ? `whatsapp:${cleanPhone}`
+        : `whatsapp:+91${cleanPhone.replace(/^\+/, '')}`;
 
-    return await this.sendMessage({
-      to: customerPhone,
-      message: message,
-      type: 'text'
-    });
+      console.log('Sending customer notification:', {
+        originalPhone: bookingData.phone,
+        cleanedPhone: customerPhone
+      });
+
+      const message = this.formatCustomerMessage(bookingData);
+
+      return await this.sendMessage({
+        to: customerPhone,
+        message: message,
+        type: 'text'
+      });
+    } catch (error) {
+      console.error('Error in sendCustomerNotification:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to send customer notification'
+      };
+    }
   }
 
   public async sendAdminNotification(bookingData: BookingData): Promise<{ success: boolean; error?: string }> {
-    const message = this.formatAdminMessage(bookingData);
+    try {
+      console.log('Sending admin notification to:', this.adminPhone);
+      
+      const message = this.formatAdminMessage(bookingData);
 
-    return await this.sendMessage({
-      to: this.adminPhone,
-      message: message,
-      type: 'text'
-    });
+      return await this.sendMessage({
+        to: this.adminPhone,
+        message: message,
+        type: 'text'
+      });
+    } catch (error) {
+      console.error('Error in sendAdminNotification:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to send admin notification'
+      };
+    }
   }
 
   public async sendTemplateMessage(to: string, contentVariables: Record<string, string>): Promise<{ success: boolean; error?: string }> {
@@ -188,6 +292,16 @@ export class WhatsAppBusinessAPI {
       message: message,
       type: 'text'
     });
+  }
+
+  // Method to check if WhatsApp is properly configured
+  public isConfigured(): boolean {
+    return !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN);
+  }
+
+  // Method to get sandbox status
+  public getSandboxStatus(): boolean {
+    return this.isSandbox;
   }
 }
 
