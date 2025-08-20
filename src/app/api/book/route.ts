@@ -111,11 +111,11 @@ export async function POST(request: NextRequest) {
 
       // Personalized message based on number of previous bookings
       if (previousBookingsCount === 1) {
-        responseMessage = `Welcome back, ${formData.name}! 🎉 Thank you for choosing SkyView Cleaning Services again. We're excited to serve you once more and will contact you soon to confirm your appointment.`;
+        responseMessage = `Welcome back, ${formData.name}, Ji! 🎉 Thank you for choosing SkyView Cleaning Services again. We're excited to serve you once more and will contact you soon to confirm your appointment.`;
       } else if (previousBookingsCount === 2) {
-        responseMessage = `Welcome back, ${formData.name}! 🌟 You're becoming a regular with us! Thank you for your continued trust in SkyView Cleaning Services. We'll contact you soon to confirm your appointment.`;
+        responseMessage = `Welcome back, ${formData.name}, ji! 🌟 You're becoming a regular with us! Thank you for your continued trust in SkyView Cleaning Services. We'll contact you soon to confirm your appointment.`;
       } else {
-        responseMessage = `Welcome back, ${formData.name}! 🏆 You're one of our valued regular customers! Thank you for your loyalty to SkyView Cleaning Services. We'll contact you soon to confirm your appointment.`;
+        responseMessage = `Welcome back, ${formData.name}, ji! 🏆 You're one of our valued regular customers! Thank you for your loyalty to SkyView Cleaning Services. We'll contact you soon to confirm your appointment.`;
       }
     }
 

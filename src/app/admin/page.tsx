@@ -31,8 +31,8 @@ export default function AdminPage() {
         console.error('Error parsing user data:', error);
       }
     } else {
-      // Redirect to home page if not authenticated
-      window.location.href = '/';
+      // Redirect to admin login page if not authenticated
+      window.location.href = '/admin/login';
     }
     setIsLoading(false);
   }, []);

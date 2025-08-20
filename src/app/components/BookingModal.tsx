@@ -608,15 +608,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Welcome Back! 🎉</h3>
-              <p className="text-sm text-gray-600 mb-4">{returningCustomerMessage}</p>
-              {previousBookingsCount > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-                  <p className="text-sm text-blue-800">
-                    <strong>Loyalty Note:</strong> This is your {previousBookingsCount + 1} booking with us!
-                  </p>
-                </div>
-              )}
             </div>
             <button
               onClick={() => setShowReturningCustomerModal(false)}
@@ -686,81 +677,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 <p className="text-xs text-blue-600 mt-1">Please keep this ID for reference</p>
               </div>
             )}
-
-                         {/* Returning Customer Info */}
-             {successData.isReturningCustomer && (
-               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                 <p className="text-sm text-yellow-800">
-                   <strong>Welcome Back!</strong> This is your {successData.previousBookings + 1} booking with us.
-                 </p>
-               </div>
-             )}
-
-             {/* WhatsApp Notification Status */}
-             {successData.whatsappNotifications && (
-               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-                 <h5 className="font-semibold text-gray-800 mb-3">WhatsApp Notifications</h5>
-                 <div className="space-y-2 text-sm">
-                   <div className="flex items-center justify-between">
-                     <span className="text-gray-600">Customer Notification:</span>
-                     <span className={`flex items-center ${successData.whatsappNotifications.customerSent ? 'text-green-600' : 'text-red-600'}`}>
-                       {successData.whatsappNotifications.customerSent ? (
-                         <>
-                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                           </svg>
-                           Sent
-                         </>
-                       ) : (
-                         <>
-                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                           </svg>
-                           Failed
-                         </>
-                       )}
-                     </span>
-                   </div>
-                   <div className="flex items-center justify-between">
-                     <span className="text-gray-600">Admin Notification:</span>
-                     <span className={`flex items-center ${successData.whatsappNotifications.adminSent ? 'text-green-600' : 'text-red-600'}`}>
-                       {successData.whatsappNotifications.adminSent ? (
-                         <>
-                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                           </svg>
-                           Sent
-                         </>
-                       ) : (
-                         <>
-                           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                           </svg>
-                           Failed
-                         </>
-                       )}
-                     </span>
-                   </div>
-                   {successData.whatsappNotifications.customerError && (
-                     <div className="text-xs text-red-600 mt-1">
-                       Customer Error: {successData.whatsappNotifications.customerError}
-                     </div>
-                   )}
-                   {successData.whatsappNotifications.adminError && (
-                     <div className="text-xs text-red-600 mt-1">
-                       Admin Error: {successData.whatsappNotifications.adminError}
-                     </div>
-                   )}
-                 </div>
-               </div>
-             )}
-
-             {/* Next Steps */}
+            {/* Next Steps */}
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
               <h5 className="font-semibold text-indigo-800 mb-2">What&apos;s Next?</h5>
               <ul className="text-sm text-indigo-700 space-y-1">
                 <li>• We&apos;ll contact you within 3 hours to confirm your Booking</li>
-                <li>• Please ensure someone is available at the scheduled time</li>
                 <li>• For any changes, please call us at +91 9623707524</li>
               </ul>
             </div>
