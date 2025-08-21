@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
 
     // Send WhatsApp notifications to both customer and admin
     let whatsappResult = {
-      customerSent: false,
+      // customerSent: false,
       adminSent: false,
-      customerError: null as string | null,
+      // customerError: null as string | null,
       adminError: null as string | null
     };
 
@@ -78,21 +78,21 @@ export async function POST(request: NextRequest) {
       if (!whatsappService.isConfigured()) {
         console.warn('WhatsApp not configured - skipping notifications');
         whatsappResult = {
-          customerSent: false,
+          // customerSent: false,
           adminSent: false,
-          customerError: 'WhatsApp not configured',
+          // customerError: 'WhatsApp not configured',
           adminError: 'WhatsApp not configured'
         };
       } else {
         console.log('WhatsApp configured, attempting to send notifications');
         
         // Send customer notification
-        const customerResult = await whatsappService.sendCustomerNotification({
-          ...formData,
-          bookingId: booking?.id || 'N/A'
-        });
+        // const customerResult = await whatsappService.sendCustomerNotification({
+        //   ...formData,
+        //   bookingId: booking?.id || 'N/A'
+        // });
         
-        console.log('Customer notification result:', customerResult);
+        // console.log('Customer notification result:', customerResult);
         
         // Send admin notification
         const adminResult = await whatsappService.sendAdminNotification({
@@ -103,9 +103,9 @@ export async function POST(request: NextRequest) {
         console.log('Admin notification result:', adminResult);
 
         whatsappResult = {
-          customerSent: customerResult.success,
+          // customerSent: customerResult.success,
           adminSent: adminResult.success,
-          customerError: customerResult.error || null,
+          // customerError: customerResult.error || null,
           adminError: adminResult.error || null
         };
       }
@@ -115,9 +115,9 @@ export async function POST(request: NextRequest) {
         stack: whatsappError instanceof Error ? whatsappError.stack : undefined
       });
       whatsappResult = {
-        customerSent: false,
+        // customerSent: false,
         adminSent: false,
-        customerError: 'WhatsApp notification failed',
+        // customerError: 'WhatsApp notification failed',
         adminError: 'WhatsApp notification failed'
       };
     }
