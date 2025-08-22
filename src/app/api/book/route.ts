@@ -6,9 +6,8 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.json();
 
-    // Check for existing customer and count previous bookings
+    // Check for existing customer
     let existingCustomer = null;
-    let previousBookingsCount = 0;
     try {
       // Find the most recent booking by this customer
       existingCustomer = await prisma.booking.findFirst({
@@ -22,19 +21,6 @@ export async function POST(request: NextRequest) {
           createdAt: 'desc'
         }
       });
-
-      // Count total previous bookings
-      if (existingCustomer) {
-        const previousBookings = await prisma.booking.count({
-          where: {
-            OR: [
-              { email: formData.email },
-              { phone: formData.phone }
-            ]
-          }
-        });
-        previousBookingsCount = previousBookings;
-      }
     } catch (error) {
       console.error('Error checking existing customer:', error);
     }
@@ -60,52 +46,37 @@ export async function POST(request: NextRequest) {
       });
     } catch (dbError) {
       console.error('Database error:', dbError);
-      // Continue with WhatsApp notifications even if database fails
     }
 
-    // Send WhatsApp notifications to both customer and admin
+    // Send WhatsApp notifications to admin
     let whatsappResult = {
-      // customerSent: false,
       adminSent: false,
-      // customerError: null as string | null,
       adminError: null as string | null
     };
 
     try {
       const whatsappService = WhatsAppBusinessAPI.getInstance();
-      
+
       // Check if WhatsApp is properly configured
       if (!whatsappService.isConfigured()) {
         console.warn('WhatsApp not configured - skipping notifications');
         whatsappResult = {
-          // customerSent: false,
           adminSent: false,
-          // customerError: 'WhatsApp not configured',
           adminError: 'WhatsApp not configured'
         };
       } else {
         console.log('WhatsApp configured, attempting to send notifications');
-        
-        // Send customer notification
-        // const customerResult = await whatsappService.sendCustomerNotification({
-        //   ...formData,
-        //   bookingId: booking?.id || 'N/A'
-        // });
-        
-        // console.log('Customer notification result:', customerResult);
-        
+
         // Send admin notification
         const adminResult = await whatsappService.sendAdminNotification({
           ...formData,
           bookingId: booking?.id || 'N/A'
         });
-        
+
         console.log('Admin notification result:', adminResult);
 
         whatsappResult = {
-          // customerSent: customerResult.success,
           adminSent: adminResult.success,
-          // customerError: customerResult.error || null,
           adminError: adminResult.error || null
         };
       }
@@ -115,9 +86,7 @@ export async function POST(request: NextRequest) {
         stack: whatsappError instanceof Error ? whatsappError.stack : undefined
       });
       whatsappResult = {
-        // customerSent: false,
         adminSent: false,
-        // customerError: 'WhatsApp notification failed',
         adminError: 'WhatsApp notification failed'
       };
     }
@@ -128,15 +97,7 @@ export async function POST(request: NextRequest) {
 
     if (existingCustomer) {
       isReturningCustomer = true;
-
-      // Personalized message based on number of previous bookings
-      if (previousBookingsCount === 1) {
-        responseMessage = `Welcome back, ${formData.name}, Ji! 🎉 Thank you for choosing SkyView Cleaning Services again. We're excited to serve you once more and will contact you soon to confirm your appointment.`;
-      } else if (previousBookingsCount === 2) {
-        responseMessage = `Welcome back, ${formData.name}, ji! 🌟 You're becoming a regular with us! Thank you for your continued trust in SkyView Cleaning Services. We'll contact you soon to confirm your appointment.`;
-      } else {
-        responseMessage = `Welcome back, ${formData.name}, ji! 🏆 You're one of our valued regular customers! Thank you for your loyalty to SkyView Cleaning Services. We'll contact you soon to confirm your appointment.`;
-      }
+      responseMessage = `Welcome back, ${formData.name}! Thank you for choosing SkyView Cleaning Services again. We will contact you soon to confirm your appointment.`;
     }
 
     // Return success response
@@ -145,7 +106,6 @@ export async function POST(request: NextRequest) {
       message: responseMessage,
       bookingId: booking?.id,
       isReturningCustomer: isReturningCustomer,
-      previousBookings: previousBookingsCount,
       whatsappNotifications: whatsappResult
     });
 

@@ -189,7 +189,7 @@ export default function UserManagement() {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             {editingUser ? 'Edit User' : 'Add New User'}
           </h3>
@@ -203,7 +203,7 @@ export default function UserManagement() {
                 value={formData.username}
                 onChange={(e) => handleInputChange('username', e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
               />
             </div>
             <div>
@@ -215,7 +215,7 @@ export default function UserManagement() {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 required={!editingUser}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
               />
             </div>
             <div>
@@ -225,7 +225,7 @@ export default function UserManagement() {
               <select
                 value={formData.role}
                 onChange={(e) => handleInputChange('role', e.target.value as 'ADMIN' | 'STAFF' | 'MANAGER')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
               >
                 <option value="STAFF">Staff</option>
                 <option value="MANAGER">Manager</option>
@@ -256,7 +256,7 @@ export default function UserManagement() {
       )}
 
       {/* Users Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Users</h3>
         </div>
@@ -278,7 +278,7 @@ export default function UserManagement() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {users.map((user) => (
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

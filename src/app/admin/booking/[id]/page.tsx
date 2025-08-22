@@ -270,7 +270,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   value={formData.name || ''}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   disabled={!isEditing}
-                  className={`w-full px-3 py-2 border rounded-md disabled:bg-gray-100 ${
+                  className={`w-full px-3 py-2 border rounded-md text-gray-700 disabled:bg-gray-100 ${
                     isFieldModified('name') 
                       ? 'border-orange-300 bg-orange-50' 
                       : 'border-gray-300'
@@ -289,7 +289,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                    value={formData.email || ''}
                    onChange={(e) => handleTextInputChange('email', e.target.value)}
                    disabled={!isEditing}
-                   className={`w-full px-3 py-2 border rounded-md disabled:bg-gray-100 ${
+                   className={`w-full px-3 py-2 border rounded-md text-gray-700 disabled:bg-gray-100 ${
                      isFieldModified('email') 
                        ? 'border-orange-300 bg-orange-50' 
                        : 'border-gray-300'
@@ -303,7 +303,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   value={formData.phone || ''}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   disabled={!isEditing}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                 />
               </div>
               <div>
@@ -313,7 +313,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   disabled={!isEditing}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                 />
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.serviceType || ''}
                     onChange={(e) => handleInputChange('serviceType', e.target.value)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -339,7 +339,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.frequency || ''}
                     onChange={(e) => handleInputChange('frequency', e.target.value)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -349,7 +349,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.preferredDate ? new Date(formData.preferredDate).toISOString().split('T')[0] : ''}
                     onChange={(e) => handleInputChange('preferredDate', e.target.value)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -359,7 +359,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.preferredTime || ''}
                     onChange={(e) => handleInputChange('preferredTime', e.target.value)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -369,7 +369,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.bedrooms || ''}
                     onChange={(e) => handleInputChange('bedrooms', e.target.value)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   />
                 </div>
                 <div>
@@ -379,7 +379,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.bathrooms || ''}
                     onChange={(e) => handleInputChange('bathrooms', e.target.value)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   />
                 </div>
               </div>
@@ -395,7 +395,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.status || 'PENDING'}
                     onChange={(e) => handleInputChange('status', e.target.value)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   >
                     <option value="PENDING">Pending</option>
                     <option value="CONFIRMED">Confirmed</option>
@@ -416,7 +416,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                      onChange={(e) => handleNumberInputChange('paymentAmount', e.target.value)}
                      disabled={!isEditing}
                      placeholder="Enter amount (e.g., 1500.50)"
-                     className={`w-full px-3 py-2 border rounded-md disabled:bg-gray-100 ${
+                     className={`w-full px-3 py-2 border rounded-md text-gray-700 disabled:bg-gray-100 ${
                        isFieldModified('paymentAmount') 
                          ? 'border-orange-300 bg-orange-50' 
                          : 'border-gray-300'
@@ -429,7 +429,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     value={formData.paymentType || ''}
                     onChange={(e) => handleInputChange('paymentType', e.target.value || undefined)}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   >
                     <option value="">Select Type</option>
                     <option value="CASH">Cash</option>
@@ -451,7 +451,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                      disabled={!isEditing}
                      rows={3}
                      placeholder="Add any remarks or notes..."
-                     className={`w-full px-3 py-2 border rounded-md disabled:bg-gray-100 ${
+                     className={`w-full px-3 py-2 border rounded-md text-gray-700 disabled:bg-gray-100 ${
                        isFieldModified('remarks') 
                          ? 'border-orange-300 bg-orange-50' 
                          : 'border-gray-300'
@@ -519,7 +519,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                      onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
                      disabled={!isEditing}
                      rows={3}
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                    />
                  </div>
                </div>
@@ -535,7 +535,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     type="text"
                     value={formatDate(booking.createdAt)}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-gray-100"
                   />
                 </div>
                 <div>
@@ -544,7 +544,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                     type="text"
                     value={formatDate(booking.updatedAt)}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-gray-100"
                   />
                 </div>
               </div>

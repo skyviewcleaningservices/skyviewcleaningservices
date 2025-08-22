@@ -60,7 +60,7 @@ const DebouncedInput = memo(function DebouncedInput({
   type = 'text',
   placeholder,
   min,
-  className = "border border-gray-300 rounded-md px-2 py-1 text-sm w-full"
+  className = "border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700"
 }: {
   value: string | number | undefined;
   onChange: (val: string) => void;
@@ -93,8 +93,8 @@ const DebouncedInput = memo(function DebouncedInput({
 
   const handleBlur = useCallback(() => {
     if (val !== initialValue?.toString()) {
-      onChange(val);
-    }
+        onChange(val);
+      }
   }, [val, initialValue, onChange]);
 
   useEffect(() => {
@@ -228,7 +228,7 @@ const BookingRow = memo(function BookingRow({
         <select
           value={booking.status}
           onChange={handleStatusChange}
-          className={`border border-gray-300 rounded-md px-2 py-1 text-sm w-32 ${isOverdue ? 'border-red-300' : ''}`}
+          className={`border border-gray-300 rounded-md px-2 py-1 text-sm w-32 text-gray-700 ${isOverdue ? 'border-red-300' : ''}`}
         >
           {STATUS_OPTIONS.map(option => (
             <option key={option.value} value={option.value}>
@@ -255,7 +255,7 @@ const BookingRow = memo(function BookingRow({
         <select
           value={booking.paymentType || ''}
           onChange={handlePaymentTypeChange}
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full"
+          className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700"
         >
           {PAYMENT_OPTIONS.map(option => (
             <option key={option.value} value={option.value}>
@@ -356,7 +356,7 @@ const BookingStats = memo(function BookingStats({
       </div>
       
       {activeTab === 'upcoming' && (
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center">
             <div className="p-2 bg-red-100 rounded-lg">
               <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -419,7 +419,7 @@ export default function AdminDashboard() {
       if (showRefreshing) {
         setRefreshing(true);
       } else {
-        setLoading(true);
+      setLoading(true);
       }
       
       const url = includePast ? '/api/bookings?includePast=true' : '/api/bookings';
@@ -448,16 +448,16 @@ export default function AdminDashboard() {
     async (bookingId, status, remarks, paymentAmount, paymentType) => {
       try {
         const payload = { status, remarks, paymentAmount, paymentType };
-        
+  
         // Check if values have actually changed since last update
         const lastUpdate = lastUpdateCache.current[bookingId];
         if (lastUpdate && JSON.stringify(lastUpdate) === JSON.stringify(payload)) {
           return; // No changes detected, skip API call
         }
-
+  
         // Save new payload to cache
         lastUpdateCache.current[bookingId] = payload;
-
+  
         // Optimistic UI update
         setBookings((prev) =>
           prev.map((b) =>
@@ -466,21 +466,21 @@ export default function AdminDashboard() {
               : b
           )
         );
-
+  
         setUpdatingBookings((prev) => new Set(prev).add(bookingId));
-
+  
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), API_TIMEOUT);
-
+  
         const response = await fetch(`/api/bookings/${bookingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
           signal: controller.signal,
         });
-
+  
         clearTimeout(timeout);
-
+  
         if (!response.ok) {
           throw new Error("Update failed");
         }
@@ -602,7 +602,7 @@ export default function AdminDashboard() {
                 ) : (
                   'Refresh'
                 )}
-              </button>
+            </button>
             </div>
             
             {activeTab === 'upcoming' && (
