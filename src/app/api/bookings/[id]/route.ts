@@ -12,7 +12,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const booking = await prisma.booking.findUnique({ where: { id: id as any } });
+    const booking = await prisma.booking.findUnique({ where: { id: parseInt(id) } });
 
     if (!booking) {
       return jsonResponse(false, { message: 'Booking not found' }, 404);
@@ -67,7 +67,7 @@ export async function PATCH(
     }
 
     const booking = await prisma.booking.update({
-      where: { id: id as any },
+      where: { id: parseInt(id) },
       data: updateData,
     });
 
