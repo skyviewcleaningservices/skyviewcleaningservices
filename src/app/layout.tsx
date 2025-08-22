@@ -16,8 +16,11 @@ export const metadata: Metadata = {
   title: "SkyView Cleaning Services - Professional Deep Cleaning & Home Cleaning",
   description: "Professional deep cleaning and home cleaning services. Transform your space with our expert cleaning solutions. Book your cleaning service today!",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.json",
 };
@@ -30,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-slate-900 text-gray-900 dark:text-white`}
       >
         {children}
       </body>

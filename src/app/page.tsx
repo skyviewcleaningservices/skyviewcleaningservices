@@ -43,7 +43,7 @@ function HeroSlideshow() {
       <img
         src={heroImages[current].src}
         alt={heroImages[current].alt}
-        className="w-full h-80 md:h-96 lg:h-[300px] object-cover rounded-lg shadow-2xl transition-all duration-700"
+        className="w-full h-64 md:h-80 lg:h-[250px] object-cover rounded-lg shadow-2xl transition-all duration-700"
         key={heroImages[current].src}
       />
       {/* Optional: Dots for navigation */}
@@ -64,17 +64,17 @@ export default function Home() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <nav className="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-28">
             <div className="flex items-center">
               <div className="flex items-center space-x-5">
                 <img 
                   src="/logo.png" 
                   alt="SkyView Logo" 
-                  className="w-20 h-20"
+                  className="w-24 h-24"
                 />
                 <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">SkyView Cleaning Services</h1>
               </div>
@@ -102,7 +102,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-700 dark:to-purple-700 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
@@ -114,7 +114,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="bg-white dark:bg-gray-100 text-indigo-600 dark:text-indigo-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100 dark:hover:bg-gray-200 transition-colors"
+                  className="bg-white dark:bg-slate-100 text-indigo-600 dark:text-indigo-700 px-8 py-3 rounded-md font-semibold hover:bg-gray-100 dark:hover:bg-slate-200 transition-colors"
                 >
                   Book Your Cleaning
                 </button>
@@ -134,9 +134,9 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section id="services" className="py-12 bg-gray-50 dark:bg-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Our Cleaning Services
             </h2>
@@ -147,11 +147,11 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Deep Cleaning */}
-            <div className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-slate-700 rounded-lg shadow-md overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                 alt="Professional deep cleaning service"
-                className="w-full h-48 object-cover"
+                className="w-full h-40 object-cover"
               />
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Deep Cleaning</h3>
@@ -168,11 +168,11 @@ export default function Home() {
             </div>
 
             {/* Regular Cleaning */}
-            <div className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-slate-700 rounded-lg shadow-md overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                 alt="Professional regular cleaning service"
-                className="w-full h-48 object-cover"
+                className="w-full h-40 object-cover"
               />
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">General Cleaning</h3>
@@ -189,11 +189,11 @@ export default function Home() {
             </div>
 
             {/* Specialized Cleaning */}
-            <div className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-slate-700 rounded-lg shadow-md overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                 alt="Professional specialized cleaning service"
-                className="w-full h-48 object-cover"
+                className="w-full h-40 object-cover"
               />
               <div className="p-6">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Specialized Services</h3>
@@ -213,7 +213,7 @@ export default function Home() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section className="py-12 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -274,7 +274,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-indigo-600 dark:bg-indigo-700 text-white relative overflow-hidden">
+      <section className="py-12 bg-indigo-600 dark:bg-indigo-700 text-white relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -327,7 +327,7 @@ export default function Home() {
           </div>
 
           {/* Customer Testimonials */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 max-w-4xl mx-auto">
             <div className="bg-white/10 dark:bg-white/5 rounded-lg p-6 backdrop-blur-sm hover:transform hover:-translate-y-2 hover:shadow-xl transition-all duration-300 cursor-pointer hover:bg-white/20 dark:hover:bg-white/10">
               <div className="flex items-center mb-3">
                 <div className="flex text-yellow-400">
@@ -396,7 +396,7 @@ export default function Home() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-3xl mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold text-yellow-400 mb-1">5,000+</div>
               <div className="text-sm text-indigo-200">Happy Customers</div>
@@ -419,7 +419,7 @@ export default function Home() {
           <div className="space-y-4">
           <button
             onClick={() => setIsModalOpen(true)}
-              className="bg-white dark:bg-gray-100 text-indigo-600 dark:text-indigo-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-200 transition-all duration-300 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="bg-white dark:bg-slate-100 text-indigo-600 dark:text-indigo-700 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-slate-200 transition-all duration-300 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
           >
             Book Your Cleaning Now
           </button>
@@ -431,10 +431,10 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-50 dark:bg-gray-800">
+      <section id="contact" className="py-6 bg-gray-50 dark:bg-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <div className="text-center mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
               Get in Touch
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300">
@@ -442,7 +442,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
               <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,11 +476,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-gray-900 text-white py-12">
+      <footer className="bg-slate-900 dark:bg-slate-900 text-white py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h3 className="text-2xl font-bold mb-4">SkyView Cleaning Services</h3>
-            <p className="text-gray-400 dark:text-gray-500 mb-6">
+            <h3 className="text-2xl font-bold mb-2">SkyView Cleaning Services</h3>
+            <p className="text-gray-400 dark:text-gray-500 mb-4">
               Professional cleaning solutions for your home and office
             </p>
             <div className="flex justify-center space-x-6">
@@ -491,7 +491,7 @@ export default function Home() {
                 Terms of Service
               </a>
             </div>
-            <p className="text-gray-400 dark:text-gray-500 mt-6">
+            <p className="text-gray-400 dark:text-gray-500 mt-4">
               © 2024 SkyView Cleaning Services. All rights reserved.
             </p>
           </div>
