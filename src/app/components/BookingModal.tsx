@@ -42,6 +42,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [validationMessage, setValidationMessage] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationTimeout, setValidationTimeout] = useState(null as NodeJS.Timeout | null);
+  const [emailError, setEmailError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
 
@@ -51,6 +52,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       if (validationTimeout) clearTimeout(validationTimeout);
     };
   }, [validationTimeout]);
+
+  // Email validation regex
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
 
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
@@ -102,6 +109,25 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       } else {
         // Clear validation message if not 10 digits
         setValidationMessage('');
+      }
+    } else if (name === 'email') {
+      // Handle email with validation
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+
+      // Clear email error if field is empty
+      if (!value) {
+        setEmailError('');
+        return;
+      }
+
+      // Validate email if it has content
+      if (!validateEmail(value)) {
+        setEmailError('Please enter a valid email address');
+      } else {
+        setEmailError('');
       }
     } else if (name === 'serviceType') {
       // Special handling for service type changes
@@ -187,6 +213,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate email if provided
+    if (formData.email && !validateEmail(formData.email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
 
     // Validate that the selected date is not in the past
     if (!formData.date) {
@@ -334,8 +366,20 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className={`w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    emailError 
+                      ? 'border-red-500 bg-red-50' 
+                      : formData.email && !emailError 
+                        ? 'border-green-500 bg-green-50' 
+                        : 'border-gray-300'
+                  }`}
                 />
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                )}
+                {formData.email && !emailError && (
+                  <p className="text-green-500 text-sm mt-1">✓ Valid email address</p>
+                )}
               </div>
             </div>
 
