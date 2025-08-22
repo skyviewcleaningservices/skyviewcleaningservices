@@ -312,7 +312,7 @@ const BookingStats = memo(function BookingStats({
   activeTab 
 }: { 
   bookings: Booking[]; 
-  activeTab: 'upcoming' | 'past';
+  activeTab: 'upcoming' | 'past' | 'completed' | 'cancelled' | 'pending';
 }) {
   const stats = useMemo(() => {
     const today = new Date();
@@ -336,70 +336,7 @@ const BookingStats = memo(function BookingStats({
     
     return { total, overdue, upcoming, completed, pending, confirmed, cancelled };
   }, [bookings]);
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-white p-4 rounded-lg shadow">
-        <div className="flex items-center">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600">
-              {activeTab === 'upcoming' ? 'Upcoming' : 'Past'} Bookings
-            </p>
-            <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
-          </div>
-        </div>
-      </div>
-      
-      {activeTab === 'upcoming' && (
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          <div className="flex items-center">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Overdue</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.overdue}</p>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <div className="bg-white p-4 rounded-lg shadow">
-        <div className="flex items-center">
-          <div className="p-2 bg-yellow-100 rounded-lg">
-            <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600">Pending</p>
-            <p className="text-2xl font-semibold text-gray-900">{stats.pending}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white p-4 rounded-lg shadow">
-        <div className="flex items-center">
-          <div className="p-2 bg-purple-100 rounded-lg">
-            <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600">Completed</p>
-            <p className="text-2xl font-semibold text-gray-900">{stats.completed}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+return null;
 });
 
 // ---- Main Dashboard Component ----
@@ -409,20 +346,76 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [updatingBookings, setUpdatingBookings] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [tabLoading, setTabLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  const [countsLoading, setCountsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'completed' | 'cancelled' | 'pending'>('upcoming');
+  
+  // Memoize the current tab to prevent unnecessary re-renders
+  const currentTab = useMemo(() => activeTab, [activeTab]);
+  
+  // Memoize filtered bookings for better performance
+  const filteredBookings = useMemo(() => {
+    if (!searchTerm.trim()) return bookings;
+    
+    const term = searchTerm.toLowerCase();
+    return bookings.filter(booking => 
+      booking.name.toLowerCase().includes(term) ||
+      booking.phone.includes(term) ||
+      booking.email.toLowerCase().includes(term) ||
+      booking.serviceType.toLowerCase().includes(term)
+    );
+  }, [bookings, searchTerm]);
+
+  // Calculate counts for each tab
+  const tabCounts = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return {
+      upcoming: allBookings.filter(booking => {
+        const bookingDate = new Date(booking.preferredDate);
+        return bookingDate >= today;
+      }).length,
+      pending: allBookings.filter(booking => booking.status === 'PENDING').length,
+      completed: allBookings.filter(booking => booking.status === 'COMPLETED').length,
+      cancelled: allBookings.filter(booking => booking.status === 'CANCELLED').length,
+      past: allBookings.filter(booking => {
+        const bookingDate = new Date(booking.preferredDate);
+        return bookingDate < today;
+      }).length
+    };
+  }, [allBookings]);
 
   // Cache for last update to prevent unnecessary API calls
   const lastUpdateCache = useRef<Record<string, any>>({});
 
-  const fetchBookings = useCallback(async (showRefreshing = false, includePast = false) => {
+  const fetchAllBookings = useCallback(async () => {
+    try {
+      setCountsLoading(true);
+      const response = await fetch('/api/bookings?tab=all');
+      if (response.ok) {
+        const data = await response.json();
+        setAllBookings(data.bookings);
+      }
+    } catch (err) {
+      console.error('Error fetching all bookings for counts:', err);
+    } finally {
+      setCountsLoading(false);
+    }
+  }, []);
+
+  const fetchBookings = useCallback(async (showRefreshing = false) => {
     try {
       if (showRefreshing) {
         setRefreshing(true);
-      } else {
+      } else if (!tabLoading) {
       setLoading(true);
       }
       
-      const url = includePast ? '/api/bookings?includePast=true' : '/api/bookings';
+      // Use server-side filtering based on active tab
+      const url = `/api/bookings?tab=${activeTab}`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch bookings');
@@ -437,12 +430,27 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setTabLoading(false);
     }
-  }, []);
+  }, [activeTab, tabLoading]);
 
   useEffect(() => {
-    fetchBookings(false, activeTab === 'past');
+    fetchBookings(false);
   }, [fetchBookings, activeTab]);
+
+  // Fetch all bookings for tab counts on component mount
+  useEffect(() => {
+    fetchAllBookings();
+  }, [fetchAllBookings]);
+
+  // Refresh all bookings periodically to keep tab counts updated
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAllBookings();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [fetchAllBookings]);
 
   const updateBookingStatus = useCallback<UpdateFn>(
     async (bookingId, status, remarks, paymentAmount, paymentType) => {
@@ -460,6 +468,15 @@ export default function AdminDashboard() {
   
         // Optimistic UI update
         setBookings((prev) =>
+          prev.map((b) =>
+            b.id === bookingId 
+              ? { ...b, ...payload, updatedAt: new Date().toISOString() } 
+              : b
+          )
+        );
+        
+        // Also update allBookings for tab counts
+        setAllBookings((prev) =>
           prev.map((b) =>
             b.id === bookingId 
               ? { ...b, ...payload, updatedAt: new Date().toISOString() } 
@@ -484,10 +501,20 @@ export default function AdminDashboard() {
         if (!response.ok) {
           throw new Error("Update failed");
         }
+        
+        // Update allBookings to refresh tab counts
+        setAllBookings((prev) =>
+          prev.map((b) =>
+            b.id === bookingId 
+              ? { ...b, ...payload, updatedAt: new Date().toISOString() } 
+              : b
+          )
+        );
       } catch (err) {
         console.error("Error updating booking:", err);
         // Revert optimistic update on error
         setBookings((prev) => prev.map((b) => b.id === bookingId ? { ...b } : b));
+        setAllBookings((prev) => prev.map((b) => b.id === bookingId ? { ...b } : b));
       } finally {
         setUpdatingBookings((prev) => {
           const newSet = new Set(prev);
@@ -508,12 +535,17 @@ export default function AdminDashboard() {
   }, []);
 
   const handleRefresh = useCallback(() => {
-    fetchBookings(true, activeTab === 'past');
-  }, [fetchBookings, activeTab]);
+    fetchBookings(true);
+    // Also refresh all bookings to update tab counts
+    fetchAllBookings();
+  }, [fetchBookings, fetchAllBookings, activeTab]);
 
-  const handleTabChange = useCallback((tab: 'upcoming' | 'past') => {
-    setActiveTab(tab);
-  }, []);
+  const handleTabChange = useCallback((tab: 'upcoming' | 'past' | 'completed' | 'cancelled' | 'pending') => {
+    if (tab !== activeTab) {
+      setTabLoading(true);
+      setActiveTab(tab);
+    }
+  }, [activeTab]);
 
   if (loading) {
     return (
@@ -542,71 +574,142 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Booking Management</h1>
-
-        {/* Booking Statistics */}
+                {/* Booking Statistics */}
         <BookingStats bookings={bookings} activeTab={activeTab} />
 
-        <div className="bg-white shadow rounded-lg">
-          {/* Tab Navigation */}
+        <div className="bg-white shadow rounded-lg relative mt-6">
+          {/* Tab Navigation with Search and Refresh */}
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6">
-              <button
-                onClick={() => handleTabChange('upcoming')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'upcoming'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <div className="flex justify-between items-center px-6">
+              <nav className="-mb-px flex space-x-8 overflow-x-auto">
+                <button
+                  onClick={() => handleTabChange('upcoming')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === 'upcoming'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Upcoming ({countsLoading ? '...' : tabCounts.upcoming})
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleTabChange('pending')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === 'pending'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Pending ({countsLoading ? '...' : tabCounts.pending})
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleTabChange('completed')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === 'completed'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Completed ({countsLoading ? '...' : tabCounts.completed})
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleTabChange('cancelled')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === 'cancelled'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Cancelled ({countsLoading ? '...' : tabCounts.cancelled})
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleTabChange('past')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeTab === 'past'
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Past ({countsLoading ? '...' : tabCounts.past})
+                  </div>
+                </button>
+              </nav>
+              
+              {/* Search and Refresh aligned with tabs */}
+              <div className="flex items-center space-x-4 ml-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search bookings..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 pr-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <svg className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  Upcoming Bookings
                 </div>
-              </button>
-              <button
-                onClick={() => handleTabChange('past')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'past'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Past Bookings
-                </div>
-              </button>
-            </nav>
+                <button 
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {refreshing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Refreshing...
+                    </>
+                  ) : (
+                    'Refresh'
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">
-                {activeTab === 'upcoming' ? 'Upcoming Bookings' : 'Past Bookings'} ({bookings.length})
+          {/* Tab Content Header */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-white relative z-10">
+            <div className="flex items-center">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {activeTab === 'upcoming'}
+                {activeTab === 'pending'}
+                {activeTab === 'completed'}
+                {activeTab === 'cancelled'}
+                {activeTab === 'past'}
               </h2>
-              <button 
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                {refreshing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Refreshing...
-                  </>
-                ) : (
-                  'Refresh'
-                )}
-            </button>
+              {tabLoading && (
+                <div className="ml-3">
+                  <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
             </div>
             
             {activeTab === 'upcoming' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-3">
                 <p className="text-sm text-blue-800 flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -616,8 +719,41 @@ export default function AdminDashboard() {
               </div>
             )}
 
+            {activeTab === 'pending' && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mt-3">
+                <p className="text-sm text-yellow-800 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  Showing all pending bookings across all dates
+                </p>
+              </div>
+            )}
+
+            {activeTab === 'completed' && (
+              <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-3">
+                <p className="text-sm text-green-800 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  Showing all completed bookings across all dates
+                </p>
+              </div>
+            )}
+
+            {activeTab === 'cancelled' && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3 mt-3">
+                <p className="text-sm text-red-800 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  Showing all cancelled bookings across all dates
+                </p>
+              </div>
+            )}
+
             {activeTab === 'past' && (
-              <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+              <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mt-3">
                 <p className="text-sm text-gray-800 flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -628,11 +764,11 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto bg-white">
             <table className="min-w-full divide-y divide-gray-200">
               <TableHeader />
               <tbody className="bg-white divide-y divide-gray-200">
-                {bookings.map((booking) => (
+                {filteredBookings.map((booking) => (
                   <BookingRow 
                     key={booking.id} 
                     booking={booking} 
@@ -645,9 +781,19 @@ export default function AdminDashboard() {
             </table>
           </div>
 
-          {bookings.length === 0 && (
+          {filteredBookings.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              {activeTab === 'upcoming' ? 'No upcoming bookings found' : 'No past bookings found'}
+              {searchTerm.trim() ? (
+                `No bookings found matching "${searchTerm}"`
+              ) : (
+                <>
+                  {activeTab === 'upcoming' && 'No upcoming bookings found'}
+                  {activeTab === 'pending' && 'No pending bookings found'}
+                  {activeTab === 'completed' && 'No completed bookings found'}
+                  {activeTab === 'cancelled' && 'No cancelled bookings found'}
+                  {activeTab === 'past' && 'No past bookings found'}
+                </>
+              )}
             </div>
           )}
         </div>

@@ -136,7 +136,7 @@ export default function AdminPage() {
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
             >
-              Bookings
+              Booking Management
             </button>
             <button
               onClick={() => setActiveTab('users')}
