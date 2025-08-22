@@ -4,13 +4,14 @@ import { prisma } from '../../../../lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const includePast = searchParams.get('includePast') === 'true';
-    const status = searchParams.get('status');
     const tab = searchParams.get('tab');
 
-    // Get today's date at midnight (start of day)
+    // Get today's date at midnight (start of day) in local timezone
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+
 
     let whereClause: any = {};
     
@@ -19,15 +20,19 @@ export async function GET(request: NextRequest) {
       // Return all bookings for count calculations
       whereClause = {};
     } else if (tab === 'upcoming') {
+      // For upcoming bookings, get all bookings with dates from today onwards
+      const todayString = today.toISOString().split('T')[0]; // Get YYYY-MM-DD format
       whereClause = {
         preferredDate: {
-          gte: today
+          gte: new Date(todayString + 'T00:00:00.000Z')
         }
       };
     } else if (tab === 'past') {
+      // For past bookings, get all bookings with dates before today
+      const todayString = today.toISOString().split('T')[0]; // Get YYYY-MM-DD format
       whereClause = {
         preferredDate: {
-          lt: today
+          lt: new Date(todayString + 'T00:00:00.000Z')
         }
       };
     } else if (tab === 'pending') {
@@ -43,25 +48,12 @@ export async function GET(request: NextRequest) {
         status: 'CANCELLED'
       };
     } else {
-      // Fallback to original logic
-      if (includePast) {
-        whereClause = {
-          preferredDate: {
-            lt: today
-          }
-        };
-      } else {
-        whereClause = {
-          preferredDate: {
-            gte: today
-          }
-        };
-      }
-    }
-
-    // Add status filter if provided
-    if (status) {
-      whereClause.status = status;
+      // Default to upcoming
+      whereClause = {
+        preferredDate: {
+          gte: todayEnd
+        }
+      };
     }
 
     const bookings = await prisma.booking.findMany({
@@ -80,7 +72,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        message: 'Failed to fetch bookings' 
+        message: 'Failed to fetch bookings',
+        error: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
