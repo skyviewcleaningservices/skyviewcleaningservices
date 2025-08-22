@@ -4,13 +4,13 @@ import { prisma } from '../../../../../../lib/prisma';
 // GET - Get specific user
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: number }> }
 ) {
   try {
     const { id } = await params;
     
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: id as any }, 
       select: {
         id: true,
         username: true,
@@ -52,7 +52,7 @@ export async function PATCH(
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id }
+      where: { id: id as any }
     });
 
     if (!existingUser) {
@@ -76,7 +76,7 @@ export async function PATCH(
 
     // Update user
     const updatedUser = await prisma.user.update({
-      where: { id },
+      where: { id: id as any },
       data: updateData,
       select: {
         id: true,
@@ -111,7 +111,7 @@ export async function DELETE(
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { id }
+      where: { id: id as any }
     });
 
     if (!existingUser) {
@@ -137,7 +137,7 @@ export async function DELETE(
 
     // Delete user
     await prisma.user.delete({
-      where: { id }
+      where: { id: id as any }
     });
 
     return NextResponse.json({

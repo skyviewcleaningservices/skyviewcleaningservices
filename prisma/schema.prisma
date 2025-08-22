@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   username  String   @unique
   password  String
   role      UserRole @default(ADMIN)
@@ -17,7 +17,7 @@ model User {
 }
 
 model Booking {
-  id                  String        @id @default(cuid())
+  id                  Int           @id @default(autoincrement())
   name                String
   email               String
   phone               String

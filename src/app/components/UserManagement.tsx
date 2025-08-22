@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 interface User {
-  id: string;
+  id: number;
   username: string;
   role: 'ADMIN' | 'STAFF' | 'MANAGER';
   createdAt: string;
@@ -124,7 +124,7 @@ export default function UserManagement() {
     setShowAddForm(true);
   };
 
-  const handleDelete = async (userId: string) => {
+  const handleDelete = async (userId: number) => {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {

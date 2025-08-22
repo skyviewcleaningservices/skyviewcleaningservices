@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, memo, useRef, useMemo } from 'react';
 
 // ---- Interfaces ----
 interface Booking {
-  id: string;
+  id: number;
   name: string;
   email: string;
   phone: string;
@@ -26,7 +26,7 @@ interface Booking {
   updatedAt: string;
 }
 type UpdateFn = (
-  bookingId: string,
+  bookingId: number,
   status: Booking['status'],
   remarks?: string,
   paymentAmount?: number,
@@ -281,7 +281,7 @@ export default function AdminDashboard() {
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [updatingBookings, setUpdatingBookings] = useState<Set<string>>(new Set());
+  const [updatingBookings, setUpdatingBookings] = useState<Set<number>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
   const [tabLoading, setTabLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

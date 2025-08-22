@@ -3,6 +3,16 @@
 import { useState, useEffect } from 'react';
 import { checkTokenValidity, setupTokenExpiryRedirect } from '../utils/tokenUtils';
 
+// Simple hash function for password encryption
+const hashPassword = async (password: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+};
+
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,12 +52,18 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
     setError('');
 
     try {
+      // Encrypt the password before sending
+      const encryptedPassword = await hashPassword(credentials.password);
+      
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({
+          username: credentials.username,
+          password: encryptedPassword
+        }),
       });
 
       const result = await response.json();

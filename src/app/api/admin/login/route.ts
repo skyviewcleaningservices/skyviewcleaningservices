@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
+import crypto from 'crypto';
+
+// Hash function to match the frontend encryption
+const hashPassword = (password: string): string => {
+  return crypto.createHash('sha256').update(password).digest('hex');
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,10 +31,10 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // For now, using simple password comparison
-    // In production, you should use bcrypt or similar for password hashing
-    if (user.password !== password) {
-
+    // Hash the stored password for comparison with the encrypted password from frontend
+    const hashedStoredPassword = hashPassword(user.password);
+    
+    if (hashedStoredPassword !== password) {
       return NextResponse.json({
         success: false,
         message: "Invalid credentials"

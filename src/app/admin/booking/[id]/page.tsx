@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Booking {
-  id: string;
+  id: number;
   name: string;
   email: string;
   phone: string;
