@@ -1,0 +1,13 @@
+[1mdiff --git a/src/app/components/BookingModal.tsx b/src/app/components/BookingModal.tsx[m
+[1mindex 9a7e727..8d13a77 100644[m
+[1m--- a/src/app/components/BookingModal.tsx[m
+[1m+++ b/src/app/components/BookingModal.tsx[m
+[36m@@ -298,7 +298,7 @@[m [mexport default function BookingModal({ isOpen, onClose }: BookingModalProps) {[m
+       serviceType: 'deep-cleaning',[m
+       frequency: 'one-time',[m
+       date: '',[m
+[31m-      time: '',[m
+[32m+[m[32m      time: '10:00',[m
+       bedrooms: '1',[m
+       bathrooms: '1',[m
+       additionalServices: [],[m

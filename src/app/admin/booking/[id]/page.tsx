@@ -13,8 +13,7 @@ interface Booking {
   frequency: string;
   preferredDate: string;
   preferredTime: string;
-  bedrooms: string;
-  bathrooms: string;
+  flatType: string;
   additionalServices: string;
   specialInstructions?: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
@@ -101,8 +100,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         frequency: formData.frequency,
         preferredDate: formData.preferredDate,
         preferredTime: formData.preferredTime,
-        bedrooms: formData.bedrooms,
-        bathrooms: formData.bathrooms,
+        flatType: formData.flatType,
         additionalServices: formData.additionalServices,
         specialInstructions: formData.specialInstructions,
       };
@@ -363,24 +361,20 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
-                  <input
-                    type="text"
-                    value={formData.bedrooms || ''}
-                    onChange={(e) => handleInputChange('bedrooms', e.target.value)}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Flat Type</label>
+                  <select
+                    value={formData.flatType || '1_BHK'}
+                    onChange={(e) => handleInputChange('flatType', e.target.value)}
                     disabled={!isEditing}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bathrooms</label>
-                  <input
-                    type="text"
-                    value={formData.bathrooms || ''}
-                    onChange={(e) => handleInputChange('bathrooms', e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
-                  />
+                  >
+                    <option value="1_BHK">1 BHK</option>
+                    <option value="2_BHK">2 BHK</option>
+                    <option value="3_BHK">3 BHK</option>
+                    <option value="4_BHK">4 BHK</option>
+                    <option value="STUDIO">Studio</option>
+                    <option value="PENTHOUSE">Penthouse</option>
+                  </select>
                 </div>
               </div>
             </div>

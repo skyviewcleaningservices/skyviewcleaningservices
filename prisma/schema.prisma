@@ -26,8 +26,7 @@ model Booking {
   frequency           String
   preferredDate       DateTime
   preferredTime       String
-  bedrooms            String
-  bathrooms           String
+  flatType            FlatType
   additionalServices  String
   specialInstructions String?
   status              BookingStatus @default(PENDING)
@@ -51,6 +50,15 @@ enum PaymentType {
   CARD
   UPI
   BANK_TRANSFER
+}
+
+enum FlatType {
+  ONE_BHK
+  TWO_BHK
+  THREE_BHK
+  FOUR_BHK
+  STUDIO
+  PENTHOUSE
 }
 
 enum UserRole {

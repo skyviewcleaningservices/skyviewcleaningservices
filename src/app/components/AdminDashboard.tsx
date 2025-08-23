@@ -13,8 +13,7 @@ interface Booking {
   frequency: string;
   preferredDate: string;
   preferredTime: string;
-  bedrooms: string;
-  bathrooms: string;
+  flatType: string;
   additionalServices: string;
   specialInstructions?: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
@@ -191,7 +190,7 @@ const BookingRow = memo(function BookingRow({
         <div>
           <div className="text-sm font-medium text-gray-900">{booking.serviceType}</div>
           <div className="text-sm text-gray-500">{booking.frequency}</div>
-          <div className="text-sm text-gray-500">{booking.bedrooms} bed, {booking.bathrooms} bath</div>
+          <div className="text-sm text-gray-500">{booking.flatType.replace('_', ' ')}</div>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">

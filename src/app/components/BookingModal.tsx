@@ -30,8 +30,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     frequency: 'one-time',
     date: '',
     time: '',
-    bedrooms: '1',
-    bathrooms: '1',
+    flatType: '1_BHK',
     additionalServices: [] as string[],
     specialInstructions: '',
   });
@@ -299,8 +298,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       frequency: 'one-time',
       date: '',
       time: '10:00',
-      bedrooms: '1',
-      bathrooms: '1',
+      flatType: '1_BHK',
       additionalServices: [],
       specialInstructions: '',
     });
@@ -473,41 +471,24 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             </div>
 
             {/* Property Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700 mb-1">
-                  Bedrooms
+                <label htmlFor="flatType" className="block text-sm font-medium text-gray-700 mb-1">
+                  Flat Type
                 </label>
                 <select
-                  id="bedrooms"
-                  name="bedrooms"
-                  value={formData.bedrooms}
+                  id="flatType"
+                  name="flatType"
+                  value={formData.flatType}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5+">5+</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700 mb-1">
-                  Bathrooms
-                </label>
-                <select
-                  id="bathrooms"
-                  name="bathrooms"
-                  value={formData.bathrooms}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5+">5+</option>
+                  <option value="1_BHK">1 BHK</option>
+                  <option value="2_BHK">2 BHK</option>
+                  <option value="3_BHK">3 BHK</option>
+                  <option value="4_BHK">4 BHK</option>
+                  <option value="STUDIO">Studio</option>
+                  <option value="PENTHOUSE">Penthouse</option>
                 </select>
               </div>
               <div>
