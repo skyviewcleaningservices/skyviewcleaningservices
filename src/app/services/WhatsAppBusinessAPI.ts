@@ -17,8 +17,7 @@ interface BookingData {
   frequency: string;
   date: string;
   time: string;
-  bedrooms: string;
-  bathrooms: string;
+  flatType: string;
   additionalServices: string[];
   specialInstructions?: string;
   bookingId?: string;

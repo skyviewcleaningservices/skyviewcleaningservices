@@ -51,7 +51,7 @@ export async function PATCH(
 
     // ✅ Handle nullable fields
     ['remarks', 'paymentAmount', 'name', 'email', 'phone', 'address',
-     'serviceType', 'frequency', 'preferredTime', 'bedrooms', 'bathrooms',
+     'serviceType', 'frequency', 'preferredTime', 'flatType',
      'additionalServices', 'specialInstructions'
     ].forEach((field) => {
       if (formData[field] !== undefined) {
