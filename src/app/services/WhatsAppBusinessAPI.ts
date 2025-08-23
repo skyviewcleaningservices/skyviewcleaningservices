@@ -157,8 +157,8 @@ export class WhatsAppBusinessAPI {
   }
 
   private formatAdminMessage(bookingData: BookingData): string {
-    return `Name: ${bookingData.name}, 
-     Phone: ${bookingData.phone}`;
+    return `Name: ${bookingData.name},
+    Phone: ${bookingData.phone}`;
   }
 
   public async sendAdminNotification(bookingData: BookingData): Promise<{ success: boolean; error?: string }> {
