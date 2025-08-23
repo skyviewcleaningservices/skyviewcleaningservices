@@ -568,9 +568,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {[
                   'Window Cleaning',
-                  'Carpet Cleaning',
-                  'Oven Cleaning',
-                  'Fridge Cleaning'
+                       'Oven Cleaning',
+                       'Carpet Cleaning',
+                       'Fridge Cleaning',
+                       'Deep Kitchen Cleaning',
+                       'Bathroom Deep Cleaning',
+                       'Balcony Cleaning'
                 ].map((service) => (
                   <label key={service} className={`flex items-center ${formData.serviceType === 'full-deep-cleaning' ? 'opacity-50' : ''}`}>
                     <input

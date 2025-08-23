@@ -363,15 +363,15 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Flat Type</label>
                   <select
-                    value={formData.flatType || '1_BHK'}
+                    value={formData.flatType || 'ONE_BHK'}
                     onChange={(e) => handleInputChange('flatType', e.target.value)}
                     disabled={!isEditing}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                   >
-                    <option value="1_BHK">1 BHK</option>
-                    <option value="2_BHK">2 BHK</option>
-                    <option value="3_BHK">3 BHK</option>
-                    <option value="4_BHK">4 BHK</option>
+                    <option value="ONE_BHK">1 BHK</option>
+                    <option value="TWO_BHK">2 BHK</option>
+                    <option value="THREE_BHK">3 BHK</option>
+                    <option value="FOUR_BHK">4 BHK</option>
                     <option value="STUDIO">Studio</option>
                     <option value="PENTHOUSE">Penthouse</option>
                   </select>
