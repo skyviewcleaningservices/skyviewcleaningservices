@@ -30,7 +30,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     frequency: 'one-time',
     date: '',
     time: '',
-    flatType: '1_BHK',
+    flatType: 'ONE_BHK',
     additionalServices: [] as string[],
     specialInstructions: '',
   });
@@ -298,7 +298,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       frequency: 'one-time',
       date: '',
       time: '10:00',
-      flatType: '1_BHK',
+      flatType: 'ONE_BHK',
       additionalServices: [],
       specialInstructions: '',
     });
@@ -483,10 +483,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  <option value="1_BHK">1 BHK</option>
-                  <option value="2_BHK">2 BHK</option>
-                  <option value="3_BHK">3 BHK</option>
-                  <option value="4_BHK">4 BHK</option>
+                  <option value="ONE_BHK">1 BHK</option>
+                  <option value="TWO_BHK">2 BHK</option>
+                  <option value="THREE_BHK">3 BHK</option>
+                  <option value="FOUR_BHK">4 BHK</option>
                   <option value="STUDIO">Studio</option>
                   <option value="PENTHOUSE">Penthouse</option>
                 </select>

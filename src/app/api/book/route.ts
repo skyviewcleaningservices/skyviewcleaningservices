@@ -28,6 +28,18 @@ export async function POST(request: NextRequest) {
     // Store booking in database
     let booking;
     try {
+      console.log('Creating booking with data:', {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        serviceType: formData.serviceType,
+        frequency: formData.frequency,
+        date: formData.date,
+        time: formData.time,
+        flatType: formData.flatType,
+        additionalServices: formData.additionalServices
+      });
+
       booking = await prisma.booking.create({
         data: {
           name: formData.name,
@@ -43,8 +55,11 @@ export async function POST(request: NextRequest) {
           specialInstructions: formData.specialInstructions || null,
         },
       });
+
+      console.log('Booking created successfully:', booking.id);
     } catch (dbError) {
       console.error('Database error:', dbError);
+      throw new Error(`Failed to create booking: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`);
     }
 
     // Send WhatsApp notifications to admin
