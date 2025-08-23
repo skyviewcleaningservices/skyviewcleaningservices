@@ -108,8 +108,19 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Login</h2>
+        {/* Header with Logo and Close Button */}
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/logo.png" 
+              alt="SkyView Logo" 
+              className="w-10 h-10"
+            />
+            <div>
+              <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">SkyView</h1>
+              <p className="text-xs text-gray-600 dark:text-gray-300">Cleaning Services</p>
+            </div>
+          </div>
           <button
             onClick={onClose}
             className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold"
@@ -117,6 +128,15 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
             ×
           </button>
         </div>
+
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Admin Login</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Access the admin dashboard</p>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-gray-200 dark:border-gray-700 mb-6"></div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -157,22 +177,33 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-6 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Logging in...' : 'Login'}
-            </button>
-          </div>
+                     <div className="flex justify-between items-center pt-4">
+             <a
+               href="/"
+               className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors"
+             >
+               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+               </svg>
+               <span>Home</span>
+             </a>
+             <div className="flex space-x-3">
+               <button
+                 type="button"
+                 onClick={onClose}
+                 className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+               >
+                 Cancel
+               </button>
+               <button
+                 type="submit"
+                 disabled={isLoading}
+                 className="px-6 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+               >
+                 {isLoading ? 'Logging in...' : 'Login'}
+               </button>
+             </div>
+           </div>
         </form>
 
         {/* Token expiration info */}
@@ -181,15 +212,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
             <strong>Security Note:</strong> Your session will automatically expire after 1 hour for security purposes.
           </p>
         </div>
-
-       {/* <div className="mt-6 p-4 bg-gray-50 rounded-md">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h3>
-          <p className="text-sm text-gray-600">
-            <strong>Username:</strong> admin<br />
-            <strong>Password:</strong> admin123
-          </p>
-        </div>
-        */}
       </div>
     </div>
   );

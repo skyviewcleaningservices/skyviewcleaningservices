@@ -100,7 +100,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">SkyView Cleaning</h1>
+          <a href="/" className="inline-block hover:opacity-80 transition-opacity cursor-pointer">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">SkyView Cleaning</h1>
+          </a>
           <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-300">Admin Login</h2>
         </div>
       </div>

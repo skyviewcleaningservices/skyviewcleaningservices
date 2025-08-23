@@ -467,7 +467,6 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                        'Oven Cleaning',
                        'Carpet Cleaning',
                        'Fridge Cleaning',
-                       'Laundry Service',
                        'Deep Kitchen Cleaning',
                        'Bathroom Deep Cleaning',
                        'Balcony Cleaning'

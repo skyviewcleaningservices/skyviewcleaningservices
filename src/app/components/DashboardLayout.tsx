@@ -39,7 +39,7 @@ export default function DashboardLayout({
           <div className="flex justify-between items-center h-20">
             {/* Logo and Title */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
+              <a href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
                 <img 
                   src="/logo.png" 
                   alt="SkyView Logo" 
@@ -49,7 +49,7 @@ export default function DashboardLayout({
                   <h1 className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">SkyView</h1>
                   <p className="text-sm text-gray-600 dark:text-gray-300">Cleaning Services</p>
                 </div>
-              </div>
+              </a>
               <div className="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
             </div>
