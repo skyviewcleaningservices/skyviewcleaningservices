@@ -298,7 +298,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       serviceType: 'deep-cleaning',
       frequency: 'one-time',
       date: '',
-      time: '',
+      time: '10:00',
       bedrooms: '1',
       bathrooms: '1',
       additionalServices: [],
