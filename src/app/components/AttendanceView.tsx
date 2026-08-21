@@ -32,6 +32,12 @@ const getCurrentMonth = () => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 };
 
+// "2026-08" -> "August 2026"
+const formatMonthLabel = (month: string) => {
+  const [y, m] = month.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+};
+
 const key = (employeeId: number, day: number) => `${employeeId}-${day}`;
 
 export default function AttendanceView() {
@@ -284,10 +290,9 @@ export default function AttendanceView() {
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {selectedMonth}</h3>
+            <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {formatMonthLabel(selectedMonth)}</h3>
             <p className="text-xs text-gray-500 mt-1">
               Monthly-rate staff are (monthly salary ÷ 30) × days worked; daily-rate staff are days worked × rate. Per Job isn&apos;t computed from attendance alone.
-              Total Pay is gross salary minus any advance taken this month. {advancesUnlocked ? 'Advance is unlocked — click Save when done.' : 'Advance is locked. Click Edit to change it.'}
             </p>
           </div>
           <button
@@ -377,7 +382,7 @@ export default function AttendanceView() {
               <tfoot>
                 <tr className="border-t-2 border-gray-200 bg-gray-50">
                   <td colSpan={5} className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
-                    Total payroll for {selectedMonth}
+                    Total payroll for {formatMonthLabel(selectedMonth)}
                   </td>
                   <td className="px-6 py-3 text-sm font-bold text-gray-900 text-right tabular-nums bg-indigo-100">
                     ₹{activeEmployees
