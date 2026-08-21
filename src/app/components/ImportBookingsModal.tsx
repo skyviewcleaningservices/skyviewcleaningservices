@@ -13,6 +13,7 @@ interface ImportBookingsModalProps {
 interface ParsedRow {
   name?: string;
   phone?: string;
+  address?: string;
   lastServiceDate?: string;
   review?: string;
   paymentAmount?: string;
@@ -27,6 +28,7 @@ interface ImportResult {
 const HEADER_ALIASES: Record<keyof ParsedRow, string[]> = {
   name: ['name', 'customer name', 'customer'],
   phone: ['phone', 'mobile', 'mobile number', 'phone number', 'contact number'],
+  address: ['address', 'customer address'],
   lastServiceDate: ['last service date', 'service date', 'date'],
   review: ['review', 'remarks', 'feedback', 'notes'],
   paymentAmount: ['payment amount', 'amount', 'amount paid', 'payment'],
@@ -43,6 +45,7 @@ function mapRows(table: string[][]): ParsedRow[] {
   const columns = {
     name: columnFor('name'),
     phone: columnFor('phone'),
+    address: columnFor('address'),
     lastServiceDate: columnFor('lastServiceDate'),
     review: columnFor('review'),
     paymentAmount: columnFor('paymentAmount'),
@@ -52,6 +55,7 @@ function mapRows(table: string[][]): ParsedRow[] {
   return table.slice(1).map(cells => ({
     name: columns.name >= 0 ? cells[columns.name] : undefined,
     phone: columns.phone >= 0 ? cells[columns.phone] : undefined,
+    address: columns.address >= 0 ? cells[columns.address] : undefined,
     lastServiceDate: columns.lastServiceDate >= 0 ? cells[columns.lastServiceDate] : undefined,
     review: columns.review >= 0 ? cells[columns.review] : undefined,
     paymentAmount: columns.paymentAmount >= 0 ? cells[columns.paymentAmount] : undefined,
@@ -155,8 +159,9 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
             <>
               <p className="text-sm text-gray-500 mb-4">
                 Upload a CSV with columns for customer name, mobile number, last service date,
-                review, payment amount, and service given. Each row is added as a completed
-                booking so it shows up in Booking Management and customer history.
+                review, payment amount, and service given (address is optional). Each row is
+                added as a completed booking so it shows up in Booking Management and customer
+                history.
               </p>
 
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4">

@@ -5,13 +5,14 @@ import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 interface ImportRow {
   name?: string;
   phone?: string;
+  address?: string;
   lastServiceDate?: string;
   review?: string;
   paymentAmount?: string;
   serviceType?: string;
 }
 
-const MAX_ROWS = 1000;
+const MAX_ROWS = 5000;
 
 // Parses dates in ISO (YYYY-MM-DD) or DD/MM/YYYY / DD-MM-YYYY form — the two
 // formats a customer spreadsheet from this (India-based) business is likely to use.
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
             name,
             email: '',
             phone,
-            address: '',
+            address: row.address?.trim() || '',
             area: null,
             serviceType: row.serviceType?.trim() || 'regular-cleaning',
             frequency: 'one-time',
