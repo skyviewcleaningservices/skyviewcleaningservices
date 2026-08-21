@@ -309,8 +309,11 @@ export default function ReportsView() {
           </div>
           <button
             onClick={handleExportCollectionsPdf}
-            className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-xs font-medium transition-colors"
+            className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center text-xs font-medium transition-colors"
           >
+            <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2h-4.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
             Export PDF
           </button>
         </div>

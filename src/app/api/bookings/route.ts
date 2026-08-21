@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { requireAuth, isAdminPayload } from '@/lib/auth';
+import { requireAuth, requireAdminOrManager, isAdminPayload } from '@/lib/auth';
+import { SERVED_PUNE_AREAS } from '@/lib/areas';
 
 export async function GET(request: NextRequest) {
   const auth = requireAuth(request);
@@ -74,10 +75,68 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching bookings:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Failed to fetch bookings',
         error: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Manually add a booking from the admin side (e.g. a phone-in or walk-in customer).
+export async function POST(request: NextRequest) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
+  try {
+    const formData = await request.json();
+
+    if (!formData.name || !formData.phone || !formData.address || !formData.serviceType ||
+        !formData.frequency || !formData.date || !formData.time || !formData.flatType) {
+      return NextResponse.json(
+        { success: false, message: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    if (!formData.area || !SERVED_PUNE_AREAS.includes(formData.area)) {
+      return NextResponse.json(
+        { success: false, message: "We don't currently serve this area yet." },
+        { status: 400 }
+      );
+    }
+
+    const booking = await prisma.booking.create({
+      data: {
+        name: formData.name,
+        email: formData.email || '',
+        phone: formData.phone,
+        address: formData.address,
+        area: formData.area,
+        serviceType: formData.serviceType,
+        frequency: formData.frequency,
+        preferredDate: new Date(formData.date),
+        preferredTime: formData.time,
+        flatType: formData.flatType,
+        additionalServices: JSON.stringify(formData.additionalServices || []),
+        specialInstructions: formData.specialInstructions || null,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Booking added successfully',
+      booking,
+    });
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to create booking',
+        error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

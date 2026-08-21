@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, memo, useRef, useMemo } from 'react';
 import CustomerHistoryModal from './CustomerHistoryModal';
+import AddBookingModal from './AddBookingModal';
 import { authFetch } from '@/lib/tokenUtils';
 import { startPdf, PDF_TABLE_START_Y } from '@/lib/pdf';
 import { autoTable } from 'jspdf-autotable';
@@ -395,6 +396,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<AdminTab>('upcoming');
   const [historyPhone, setHistoryPhone] = useState<string | null>(null);
+  const [showAddBookingModal, setShowAddBookingModal] = useState(false);
 
   const lastUpdateCache = useRef<Record<string, any>>({});
   const fetchAbortRef = useRef<AbortController | null>(null);
@@ -633,6 +635,15 @@ export default function AdminDashboard() {
                   </svg>
                 </div>
                 <button
+                  onClick={() => setShowAddBookingModal(true)}
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center text-sm font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Booking
+                </button>
+                <button
                   onClick={handleExportCsv}
                   disabled={filteredBookings.length === 0}
                   className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium transition-colors"
@@ -742,6 +753,15 @@ export default function AdminDashboard() {
           onClose={() => setHistoryPhone(null)}
         />
       )}
+
+      <AddBookingModal
+        isOpen={showAddBookingModal}
+        onClose={() => setShowAddBookingModal(false)}
+        onCreated={() => {
+          fetchBookings(activeTab);
+          fetchAllBookings();
+        }}
+      />
     </>
   );
 }
