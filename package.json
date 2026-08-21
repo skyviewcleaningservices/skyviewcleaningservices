@@ -12,14 +12,14 @@
     "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
-    "@prisma/client": "^6.14.0",
+    "@prisma/client": "^6.19.3",
     "@vercel/analytics": "^1.5.0",
     "jsonwebtoken": "^9.0.3",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "next": "^15.5.23",
     "nodemailer": "^9.0.5",
-    "prisma": "^6.14.0",
+    "prisma": "^6.19.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tsx": "^4.7.0",
