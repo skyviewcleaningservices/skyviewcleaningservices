@@ -394,6 +394,7 @@ export default function AdminDashboard() {
   const [historyPhone, setHistoryPhone] = useState<string | null>(null);
 
   const lastUpdateCache = useRef<Record<string, any>>({});
+  const fetchAbortRef = useRef<AbortController | null>(null);
 
   const filteredBookings = useMemo(() => {
     if (!searchTerm.trim()) return bookings;
@@ -414,7 +415,18 @@ export default function AdminDashboard() {
     } as Record<AdminTab, number>;
   }, [allBookings]);
 
-  const fetchBookings = useCallback(async (showRefreshing = false, showTabLoading = false) => {
+  // `tab` is always passed explicitly (never read from `activeTab` state) so a fast tab
+  // switch can't fetch with a stale tab value from before React commits the new one.
+  // The abort controller cancels any in-flight request from a previous tab so an
+  // out-of-order response can never overwrite the currently-selected tab's data.
+  const fetchBookings = useCallback(async (
+    tab: AdminTab,
+    { showRefreshing = false, showTabLoading = false }: { showRefreshing?: boolean; showTabLoading?: boolean } = {}
+  ) => {
+    fetchAbortRef.current?.abort();
+    const controller = new AbortController();
+    fetchAbortRef.current = controller;
+
     try {
       if (showRefreshing) {
         setRefreshing(true);
@@ -424,21 +436,24 @@ export default function AdminDashboard() {
         setLoading(true);
       }
 
-      const response = await fetch(`/api/bookings?tab=${activeTab}`);
+      const response = await fetch(`/api/bookings?tab=${tab}`, { signal: controller.signal });
       if (!response.ok) throw new Error('Failed to fetch bookings');
 
       const data = await response.json();
       setBookings(data.bookings);
       setError(null);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       console.error(err);
       setError('Error fetching bookings. Please try again.');
     } finally {
-      setLoading(false);
-      setRefreshing(false);
-      setTabLoading(false);
+      if (fetchAbortRef.current === controller) {
+        setLoading(false);
+        setRefreshing(false);
+        setTabLoading(false);
+      }
     }
-  }, [activeTab]);
+  }, []);
 
   const fetchAllBookings = useCallback(async () => {
     try {
@@ -452,10 +467,12 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  // Runs once on mount — fetchBookings/fetchAllBookings are stable (empty dep arrays).
   useEffect(() => {
-    fetchBookings();
+    fetchBookings(activeTab);
     fetchAllBookings();
-  }, [fetchBookings, fetchAllBookings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateBookingStatus = useCallback<UpdateFn>(
     async (bookingId, status, remarks, paymentAmount, paymentType, statusReason) => {
@@ -488,7 +505,7 @@ export default function AdminDashboard() {
       } catch (err) {
         console.error('Update error:', err);
         // rollback: re-fetch instead of manual revert
-        fetchBookings();
+        fetchBookings(activeTab);
       } finally {
         setUpdatingBookings(prev => {
           const newSet = new Set(prev);
@@ -497,13 +514,13 @@ export default function AdminDashboard() {
         });
       }
     },
-    [fetchBookings]
+    [fetchBookings, activeTab]
   );
 
   const handleRefresh = useCallback(() => {
-    fetchBookings(true);
+    fetchBookings(activeTab, { showRefreshing: true });
     fetchAllBookings();
-  }, [fetchBookings, fetchAllBookings]);
+  }, [fetchBookings, fetchAllBookings, activeTab]);
 
   const handleExportCsv = useCallback(() => {
     const columns: (keyof Booking)[] = [
@@ -531,11 +548,8 @@ export default function AdminDashboard() {
   
   const handleTabChange = useCallback((tab: AdminTab) => {
     setActiveTab(tab);
-    fetchBookings(false, true); // Show tab loading state
+    fetchBookings(tab, { showTabLoading: true });
   }, [fetchBookings]);
-
-  if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  if (error) return <div className="flex justify-center items-center min-h-screen text-red-600">{error}</div>;
 
   return (
     <>
@@ -621,7 +635,17 @@ export default function AdminDashboard() {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            {tabLoading ? (
+            {error ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <span className="text-red-600">{error}</span>
+                <button
+                  onClick={() => fetchBookings(activeTab, { showTabLoading: true })}
+                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium underline"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : loading || tabLoading ? (
               <div className="flex justify-center items-center py-12">
                 <div className="flex items-center space-x-3">
                   <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
@@ -648,7 +672,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Empty State */}
-          {filteredBookings.length === 0 && (
+          {!error && !loading && !tabLoading && filteredBookings.length === 0 && (
             <div className="text-center py-16">
               <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
