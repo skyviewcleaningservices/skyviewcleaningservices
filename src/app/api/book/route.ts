@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
-import WhatsAppBusinessAPI from '../../services/WhatsAppBusinessAPI';
+import { prisma } from '@/lib/prisma';
+import WhatsAppBusinessAPI from '@/lib/whatsapp';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
           email: formData.email,
           phone: formData.phone,
           address: formData.address,
+          area: formData.area || null,
           serviceType: formData.serviceType,
           frequency: formData.frequency,
           preferredDate: new Date(formData.date),

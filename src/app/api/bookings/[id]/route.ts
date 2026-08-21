@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '../../../../../lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 // Helper for consistent JSON responses
 const jsonResponse = (success: boolean, data: any, status: number = 200) =>
@@ -52,7 +52,7 @@ export async function PATCH(
     // ✅ Handle nullable fields
     ['remarks', 'paymentAmount', 'name', 'email', 'phone', 'address',
      'serviceType', 'frequency', 'preferredTime', 'flatType',
-     'additionalServices', 'specialInstructions'
+     'additionalServices', 'specialInstructions', 'statusReason', 'area'
     ].forEach((field) => {
       if (formData[field] !== undefined) {
         updateData[field] = formData[field] || null;

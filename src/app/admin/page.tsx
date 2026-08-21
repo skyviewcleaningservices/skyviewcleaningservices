@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import AdminDashboard from '../components/AdminDashboard';
 import UserManagement from '../components/UserManagement';
+import PricingManagement from '../components/PricingManagement';
 import DashboardLayout from '../components/DashboardLayout';
-import { checkTokenValidity, clearTokenData, formatTimeUntilExpiry, redirectToLogin } from '../utils/tokenUtils';
+import { checkTokenValidity, clearTokenData, formatTimeUntilExpiry, redirectToLogin } from '@/lib/tokenUtils';
 
 interface AdminUser {
   id: number;
@@ -15,7 +16,7 @@ interface AdminUser {
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'bookings' | 'users'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'pricing'>('bookings');
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionTimeLeft, setSessionTimeLeft] = useState<string | null>(null);
@@ -98,10 +99,18 @@ export default function AdminPage() {
           label: 'User Management',
           isActive: activeTab === 'users',
           onClick: () => setActiveTab('users')
+        },
+        {
+          id: 'pricing',
+          label: 'Pricing',
+          isActive: activeTab === 'pricing',
+          onClick: () => setActiveTab('pricing')
         }
       ]}
     >
-      {activeTab === 'bookings' ? <AdminDashboard /> : <UserManagement />}
+      {activeTab === 'bookings' && <AdminDashboard />}
+      {activeTab === 'users' && <UserManagement />}
+      {activeTab === 'pricing' && <PricingManagement />}
     </DashboardLayout>
   );
 }

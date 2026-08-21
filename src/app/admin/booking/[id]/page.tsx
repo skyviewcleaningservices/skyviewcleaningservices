@@ -9,6 +9,7 @@ interface Booking {
   email: string;
   phone: string;
   address: string;
+  area?: string;
   serviceType: string;
   frequency: string;
   preferredDate: string;
@@ -89,6 +90,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     try {
       const updateData = {
         status: formData.status,
+        statusReason: formData.statusReason,
         remarks: formData.remarks,
         paymentAmount: formData.paymentAmount,
         paymentType: formData.paymentType,
@@ -96,6 +98,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
         email: formData.email,
         phone: formData.phone,
         address: formData.address,
+        area: formData.area,
         serviceType: formData.serviceType,
         frequency: formData.frequency,
         preferredDate: formData.preferredDate,
@@ -314,6 +317,16 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Area in Pune</label>
+                <input
+                  type="text"
+                  value={formData.area || 'Not provided'}
+                  onChange={(e) => handleInputChange('area', e.target.value)}
+                  disabled={!isEditing}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
+                />
+              </div>
             </div>
 
             {/* Service Details */}
@@ -446,10 +459,24 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                      rows={3}
                      placeholder="Add any remarks or notes..."
                      className={`w-full px-3 py-2 border rounded-md text-gray-700 disabled:bg-gray-100 ${
-                       isFieldModified('remarks') 
-                         ? 'border-orange-300 bg-orange-50' 
+                       isFieldModified('remarks')
+                         ? 'border-orange-300 bg-orange-50'
                          : 'border-gray-300'
                      }`}
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Status Reason
+                     <span className="ml-2 text-xs text-gray-400">(e.g. why a booking was declined)</span>
+                   </label>
+                   <textarea
+                     value={formData.statusReason || ''}
+                     onChange={(e) => handleTextInputChange('statusReason', e.target.value)}
+                     disabled={!isEditing}
+                     rows={2}
+                     placeholder="No reason recorded"
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 disabled:bg-gray-100"
                    />
                  </div>
               </div>

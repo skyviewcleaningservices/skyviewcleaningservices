@@ -9,6 +9,7 @@ interface Booking {
   email: string;
   phone: string;
   address: string;
+  area?: string;
   serviceType: string;
   frequency: string;
   preferredDate: string;
@@ -29,7 +30,8 @@ type UpdateFn = (
   status: Booking['status'],
   remarks?: string,
   paymentAmount?: number,
-  paymentType?: Booking['paymentType']
+  paymentType?: Booking['paymentType'],
+  statusReason?: string
 ) => Promise<void>;
 
 // ---- Constants ----
@@ -82,7 +84,7 @@ const classifyBookings = (bookings: Booking[]) => {
 };
 
 // ---- Components ----
-const DebouncedInput = memo(function DebouncedInput({
+export const DebouncedInput = memo(function DebouncedInput({
   value: initialValue,
   onChange,
   debounce = DEBOUNCE_DELAY,
@@ -163,26 +165,47 @@ const BookingRow = memo(function BookingRow({
   }, [booking.preferredDate, booking.status]);
 
   const handleStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateBookingStatus(booking.id, e.target.value as Booking['status'], booking.remarks, booking.paymentAmount, booking.paymentType);
-  }, [booking.id, booking.remarks, booking.paymentAmount, booking.paymentType, updateBookingStatus]);
+    updateBookingStatus(booking.id, e.target.value as Booking['status'], booking.remarks, booking.paymentAmount, booking.paymentType, booking.statusReason);
+  }, [booking.id, booking.remarks, booking.paymentAmount, booking.paymentType, booking.statusReason, updateBookingStatus]);
 
   const handlePaymentTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateBookingStatus(booking.id, booking.status, booking.remarks, booking.paymentAmount, (e.target.value as Booking['paymentType']) || undefined);
-  }, [booking.id, booking.status, booking.remarks, booking.paymentAmount, updateBookingStatus]);
+    updateBookingStatus(booking.id, booking.status, booking.remarks, booking.paymentAmount, (e.target.value as Booking['paymentType']) || undefined, booking.statusReason);
+  }, [booking.id, booking.status, booking.remarks, booking.paymentAmount, booking.statusReason, updateBookingStatus]);
 
   const handlePaymentAmountChange = useCallback((val: string) => {
-    updateBookingStatus(booking.id, booking.status, booking.remarks, parseFloat(val) || undefined, booking.paymentType);
-  }, [booking.id, booking.status, booking.remarks, booking.paymentType, updateBookingStatus]);
+    updateBookingStatus(booking.id, booking.status, booking.remarks, parseFloat(val) || undefined, booking.paymentType, booking.statusReason);
+  }, [booking.id, booking.status, booking.remarks, booking.paymentType, booking.statusReason, updateBookingStatus]);
 
   const handleRemarksChange = useCallback((val: string) => {
-    updateBookingStatus(booking.id, booking.status, val || undefined, booking.paymentAmount, booking.paymentType);
-  }, [booking.id, booking.status, booking.paymentAmount, booking.paymentType, updateBookingStatus]);
+    updateBookingStatus(booking.id, booking.status, val || undefined, booking.paymentAmount, booking.paymentType, booking.statusReason);
+  }, [booking.id, booking.status, booking.paymentAmount, booking.paymentType, booking.statusReason, updateBookingStatus]);
+
+  const handleAccept = useCallback(() => {
+    updateBookingStatus(booking.id, 'CONFIRMED', booking.remarks, booking.paymentAmount, booking.paymentType, booking.statusReason);
+  }, [booking.id, booking.remarks, booking.paymentAmount, booking.paymentType, booking.statusReason, updateBookingStatus]);
+
+  const handleDecline = useCallback(() => {
+    const reason = window.prompt('Reason for declining this booking?') || undefined;
+    updateBookingStatus(booking.id, 'CANCELLED', booking.remarks, booking.paymentAmount, booking.paymentType, reason);
+  }, [booking.id, booking.remarks, booking.paymentAmount, booking.paymentType, updateBookingStatus]);
+
+  const isOutsideArea = !booking.area || booking.area === 'Other';
 
   return (
     <tr className={`hover:bg-gray-50 ${isOverdue ? 'bg-red-50' : ''}`}>
       <td className="px-6 py-4 whitespace-nowrap">
         <div>
-          <div className="text-sm font-medium text-gray-900">{booking.name}</div>
+          <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+            {booking.name}
+            {isOutsideArea && (
+              <span
+                title="No matching Pune area on this booking — confirm the address before accepting"
+                className="text-[10px] font-semibold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded"
+              >
+                Outside area?
+              </span>
+            )}
+          </div>
           <div className="text-sm text-gray-500">{booking.phone}</div>
         </div>
       </td>
@@ -247,12 +270,30 @@ const BookingRow = memo(function BookingRow({
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-        <button 
-          onClick={() => window.open(`/admin/booking/${booking.id}`, '_blank')}
-          className="text-indigo-600 hover:text-indigo-900 text-xs font-medium"
-        >
-          View Details
-        </button>
+        <div className="flex flex-col items-start gap-1.5">
+          {booking.status === 'PENDING' && (
+            <div className="flex gap-1.5">
+              <button
+                onClick={handleAccept}
+                className="text-xs font-medium px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200"
+              >
+                ✓ Accept
+              </button>
+              <button
+                onClick={handleDecline}
+                className="text-xs font-medium px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
+              >
+                ✕ Decline
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => window.open(`/admin/booking/${booking.id}`, '_blank')}
+            className="text-indigo-600 hover:text-indigo-900 text-xs font-medium"
+          >
+            View Details
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -351,8 +392,8 @@ export default function AdminDashboard() {
   }, [fetchBookings, fetchAllBookings]);
 
   const updateBookingStatus = useCallback<UpdateFn>(
-    async (bookingId, status, remarks, paymentAmount, paymentType) => {
-      const payload = { status, remarks, paymentAmount, paymentType };
+    async (bookingId, status, remarks, paymentAmount, paymentType, statusReason) => {
+      const payload = { status, remarks, paymentAmount, paymentType, statusReason };
       const last = lastUpdateCache.current[bookingId];
       if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
 
@@ -397,6 +438,30 @@ export default function AdminDashboard() {
     fetchBookings(true);
     fetchAllBookings();
   }, [fetchBookings, fetchAllBookings]);
+
+  const handleExportCsv = useCallback(() => {
+    const columns: (keyof Booking)[] = [
+      'id', 'name', 'phone', 'email', 'address', 'area', 'serviceType', 'frequency',
+      'flatType', 'preferredDate', 'preferredTime', 'status', 'statusReason',
+      'paymentAmount', 'paymentType', 'remarks',
+    ];
+    const escapeCsv = (value: unknown) => {
+      const str = value === undefined || value === null ? '' : String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+    const rows = [
+      columns.join(','),
+      ...filteredBookings.map(b => columns.map(col => escapeCsv(b[col])).join(',')),
+    ];
+
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `skyview-bookings-${activeTab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [filteredBookings, activeTab]);
   
   const handleTabChange = useCallback((tab: AdminTab) => {
     setActiveTab(tab);
@@ -452,7 +517,17 @@ export default function AdminDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <button 
+                <button
+                  onClick={handleExportCsv}
+                  disabled={filteredBookings.length === 0}
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3" />
+                  </svg>
+                  Export CSV
+                </button>
+                <button
                   onClick={handleRefresh}
                   disabled={refreshing}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium transition-colors"

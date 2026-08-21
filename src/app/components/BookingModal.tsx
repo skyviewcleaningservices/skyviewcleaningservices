@@ -20,12 +20,42 @@ interface SuccessData {
   };
 }
 
+interface PriceRate {
+  flatType: string;
+  serviceType: string;
+  price: number | null;
+}
+
+interface AddOnPrice {
+  name: string;
+  price: number | null;
+}
+
+export const PUNE_AREAS = [
+  'Kothrud', 'Baner', 'Wakad', 'Hinjewadi', 'Viman Nagar', 'Koregaon Park',
+  'Kharadi', 'Aundh', 'Camp', 'Hadapsar', 'Other',
+];
+
+const ADD_ON_SERVICES = [
+  'Window Cleaning',
+  'Oven Cleaning',
+  'Carpet Cleaning',
+  'Fridge Cleaning',
+  'Deep Kitchen Cleaning',
+  'Bathroom Deep Cleaning',
+  'Balcony Cleaning',
+];
+
+const formatPrice = (amount: number) =>
+  `₹${amount.toLocaleString('en-IN')}`;
+
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     address: '',
+    area: '',
     serviceType: 'deep-cleaning',
     frequency: 'one-time',
     date: '',
@@ -35,15 +65,46 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     specialInstructions: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showReturningCustomerModal, setShowReturningCustomerModal] = useState(false);
-  const [returningCustomerMessage, setReturningCustomerMessage] = useState('');
-  const [previousBookingsCount, setPreviousBookingsCount] = useState(0);
   const [validationMessage, setValidationMessage] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationTimeout, setValidationTimeout] = useState(null as NodeJS.Timeout | null);
   const [emailError, setEmailError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
+  const [rates, setRates] = useState<PriceRate[]>([]);
+  const [addOnPrices, setAddOnPrices] = useState<AddOnPrice[]>([]);
+
+  // Fetch the current rate card once on mount
+  useEffect(() => {
+    fetch('/api/pricing')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setRates(data.rates);
+          setAddOnPrices(data.addOns);
+        }
+      })
+      .catch(error => console.error('Error fetching pricing:', error));
+  }, []);
+
+  // Live price estimate for the currently selected service + flat type + add-ons.
+  // Returns null when any needed rate hasn't been set yet ("Price on request").
+  const estimatedPrice = (() => {
+    if (rates.length === 0) return undefined; // still loading
+
+    const baseRate = rates.find(
+      r => r.flatType === formData.flatType && r.serviceType === formData.serviceType
+    );
+    if (!baseRate || baseRate.price === null) return null;
+
+    let total = baseRate.price;
+    for (const service of formData.additionalServices) {
+      const addOn = addOnPrices.find(a => a.name === service);
+      if (!addOn || addOn.price === null) return null;
+      total += addOn.price;
+    }
+    return total;
+  })();
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -275,12 +336,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     }
   };
 
-  const showReturningCustomerPopup = (message: string, previousBookings: number) => {
-    setReturningCustomerMessage(message);
-    setPreviousBookingsCount(previousBookings);
-    setShowReturningCustomerModal(true);
-  };
-
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     setSuccessData(null);
@@ -294,6 +349,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       email: '',
       phone: '',
       address: '',
+      area: '',
       serviceType: 'deep-cleaning',
       frequency: 'one-time',
       date: '',
@@ -427,8 +483,30 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   required
                   value={formData.address}
                   onChange={handleInputChange}
+                  placeholder="Flat / street details"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">
+                  Area in Pune
+                </label>
+                <select
+                  id="area"
+                  name="area"
+                  value={formData.area}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select your area</option>
+                  {PUNE_AREAS.map((area) => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">We currently serve Pune. Not seeing your area? Pick &quot;Other&quot; — we&apos;ll still take a look.</p>
               </div>
             </div>
 
@@ -566,15 +644,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {[
-                  'Window Cleaning',
-                       'Oven Cleaning',
-                       'Carpet Cleaning',
-                       'Fridge Cleaning',
-                       'Deep Kitchen Cleaning',
-                       'Bathroom Deep Cleaning',
-                       'Balcony Cleaning'
-                ].map((service) => (
+                {ADD_ON_SERVICES.map((service) => (
                   <label key={service} className={`flex items-center ${formData.serviceType === 'full-deep-cleaning' ? 'opacity-50' : ''}`}>
                     <input
                       type="checkbox"
@@ -605,6 +675,16 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               />
             </div>
 
+            {/* Price Estimate */}
+            {estimatedPrice !== undefined && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-md p-4 flex items-center justify-between">
+                <span className="text-sm font-medium text-indigo-900">Estimated total</span>
+                <span className="text-lg font-bold text-indigo-700">
+                  {estimatedPrice === null ? 'Price on request' : formatPrice(estimatedPrice)}
+                </span>
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="flex justify-end space-x-3 pt-4">
               <button
@@ -619,33 +699,16 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 disabled={isSubmitting}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Submitting...' : 'Book Now'}
+                {isSubmitting
+                  ? 'Submitting...'
+                  : typeof estimatedPrice === 'number'
+                    ? `Book Now — ${formatPrice(estimatedPrice)}`
+                    : 'Book Now'}
               </button>
             </div>
           </form>
         </div>
       </div>
-
-      {/* Returning Customer Success Modal */}
-      {showReturningCustomerModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6 text-center">
-            <div className="mb-4">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowReturningCustomerModal(false)}
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              Thank You!
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Booking Success Modal */}
       {showSuccessModal && successData && (

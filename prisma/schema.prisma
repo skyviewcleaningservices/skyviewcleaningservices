@@ -36,6 +36,24 @@ model Booking {
   paymentAmount       Float?
   paymentType         PaymentType?
   remarks             String?
+  area                String?
+}
+
+model PriceRate {
+  id          Int      @id @default(autoincrement())
+  flatType    FlatType
+  serviceType String
+  price       Float?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([flatType, serviceType])
+}
+
+model AddOnPrice {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  price     Float?
+  updatedAt DateTime @updatedAt
 }
 
 enum BookingStatus {
