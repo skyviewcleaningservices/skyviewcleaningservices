@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import WhatsAppBusinessAPI from '@/lib/whatsapp';
+import { SERVED_PUNE_AREAS } from '@/lib/areas';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.json();
+
+    // Hard service-area check — the booking form already blocks this, but
+    // that's only client-side, so enforce it here too before writing anything.
+    if (!formData.area || !SERVED_PUNE_AREAS.includes(formData.area)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Sorry, we don't currently serve this area yet."
+        },
+        { status: 400 }
+      );
+    }
 
     // Check for existing customer
     let existingCustomer = null;

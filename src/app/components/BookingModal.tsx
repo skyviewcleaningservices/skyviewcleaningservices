@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { PUNE_AREAS } from '@/lib/areas';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -30,11 +31,6 @@ interface AddOnPrice {
   name: string;
   price: number | null;
 }
-
-export const PUNE_AREAS = [
-  'Kothrud', 'Baner', 'Wakad', 'Hinjewadi', 'Viman Nagar', 'Koregaon Park',
-  'Kharadi', 'Aundh', 'Camp', 'Hadapsar', 'Other',
-];
 
 const ADD_ON_SERVICES = [
   'Window Cleaning',
@@ -278,6 +274,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   // Required-field guard for each step, run before advancing with Next.
   const validateStep = (step: number): string | null => {
     if (step === 1) {
+      if (!formData.area) return 'Please select your area.';
+      if (formData.area === 'Other') return "Sorry, we don't currently serve this area — we can't take this booking yet.";
       if (!formData.address.trim()) return 'Please enter your address.';
     }
     if (step === 2) {
@@ -546,11 +544,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   </div>
                   <div>
                     <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">
-                      Area in Pune
+                      Area in Pune *
                     </label>
                     <select
                       id="area"
                       name="area"
+                      required
                       value={formData.area}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -560,7 +559,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                         <option key={area} value={area}>{area}</option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">We currently serve Pune. Not seeing your area? Pick &quot;Other&quot; — we&apos;ll still take a look.</p>
+                    <p className="text-xs text-gray-500 mt-1">We currently only serve these Pune areas — if yours isn&apos;t listed, we&apos;re not able to take your booking yet.</p>
                   </div>
                 </div>
 
