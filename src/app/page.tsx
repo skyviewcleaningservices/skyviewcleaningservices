@@ -366,7 +366,7 @@ export default function Home() {
                   <span className="text-xs font-bold">R</span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold">Rajesh Kumar</p>
+                  <p className="text-sm font-semibold">Rajni Shivpuje</p>
                   <p className="text-xs text-indigo-200">Pune, Maharashtra</p>
                 </div>
               </div>
