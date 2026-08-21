@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { authFetch } from '@/lib/tokenUtils';
 
 interface Booking {
   id: number;
@@ -82,7 +83,7 @@ export default function ReportsView() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/bookings?tab=all')
+    authFetch('/api/bookings?tab=all')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch bookings');
         return res.json();

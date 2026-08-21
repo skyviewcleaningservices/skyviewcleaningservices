@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
 // GET - Get specific user
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { id } = await params;
     
@@ -46,6 +50,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { id } = await params;
     const { username, password, role } = await request.json();
@@ -106,6 +113,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { id } = await params;
 

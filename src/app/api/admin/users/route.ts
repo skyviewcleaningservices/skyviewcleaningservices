@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
 // GET - List all users
 export async function GET(request: NextRequest) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -30,6 +34,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Create new user
 export async function POST(request: NextRequest) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { username, password, role = 'STAFF' } = await request.json();
 

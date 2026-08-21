@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { authFetch } from '@/lib/tokenUtils';
 
 interface Booking {
   id: number;
@@ -39,7 +40,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
     const fetchBooking = async () => {
       try {
         const { id } = await params;
-        const response = await fetch(`/api/bookings/${id}`);
+        const response = await authFetch(`/api/bookings/${id}`);
         if (response.ok) {
           const data = await response.json();
           setBooking(data.booking);
@@ -110,7 +111,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       
       console.log('Sending update data:', updateData);
       
-      const response = await fetch(`/api/bookings/${booking.id}`, {
+      const response = await authFetch(`/api/bookings/${booking.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

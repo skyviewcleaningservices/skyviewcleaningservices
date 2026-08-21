@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
 // Helper for consistent JSON responses
 const jsonResponse = (success: boolean, data: any, status: number = 200) =>
@@ -9,6 +10,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { id } = await params;
 
@@ -30,8 +34,11 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> } 
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { id } = await params;
     const formData = await request.json();

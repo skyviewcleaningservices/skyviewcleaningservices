@@ -5,6 +5,8 @@ import AdminDashboard from '../components/AdminDashboard';
 import UserManagement from '../components/UserManagement';
 import PricingManagement from '../components/PricingManagement';
 import ReportsView from '../components/ReportsView';
+import ReminderView from '../components/ReminderView';
+import CrewView from '../components/CrewView';
 import DashboardLayout from '../components/DashboardLayout';
 import { checkTokenValidity, clearTokenData, formatTimeUntilExpiry, redirectToLogin } from '@/lib/tokenUtils';
 
@@ -17,7 +19,7 @@ interface AdminUser {
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'pricing' | 'reports'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'pricing' | 'reports' | 'reminders'>('bookings');
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionTimeLeft, setSessionTimeLeft] = useState<string | null>(null);
@@ -81,6 +83,22 @@ export default function AdminPage() {
     return null; // Will redirect to login page
   }
 
+  // STAFF accounts are crew — a stripped-down, read-only view of today's jobs,
+  // not the full management dashboard.
+  if (adminUser?.role === 'STAFF') {
+    return (
+      <DashboardLayout
+        title="Today's Jobs"
+        user={adminUser}
+        currentTime={currentTime}
+        sessionTimeLeft={sessionTimeLeft}
+        onLogout={handleLogout}
+      >
+        <CrewView />
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout
       title="Admin Dashboard"
@@ -112,6 +130,12 @@ export default function AdminPage() {
           label: 'Reports',
           isActive: activeTab === 'reports',
           onClick: () => setActiveTab('reports')
+        },
+        {
+          id: 'reminders',
+          label: 'Reminders',
+          isActive: activeTab === 'reminders',
+          onClick: () => setActiveTab('reminders')
         }
       ]}
     >
@@ -119,6 +143,7 @@ export default function AdminPage() {
       {activeTab === 'users' && <UserManagement />}
       {activeTab === 'pricing' && <PricingManagement />}
       {activeTab === 'reports' && <ReportsView />}
+      {activeTab === 'reminders' && <ReminderView />}
     </DashboardLayout>
   );
 }

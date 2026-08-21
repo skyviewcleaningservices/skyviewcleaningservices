@@ -62,6 +62,19 @@ export const getValidToken = (): string | null => {
   return null;
 };
 
+// fetch wrapper that attaches the admin session token — use for any call to a
+// protected /api/admin/* or /api/bookings* route.
+export const authFetch = (input: string, init: RequestInit = {}): Promise<Response> => {
+  const token = getValidToken();
+  return fetch(input, {
+    ...init,
+    headers: {
+      ...init.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+};
+
 export const getTokenExpiryTime = (): number | null => {
   const tokenData = localStorage.getItem('adminTokenData');
   if (!tokenData) {

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const [rates, addOns] = await Promise.all([
       prisma.priceRate.findMany(),
@@ -20,6 +24,9 @@ export async function GET() {
 
 // PATCH - update one or more rate/add-on prices
 export async function PATCH(request: NextRequest) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { rates, addOns } = await request.json() as {
       rates?: { id: number; price: number | null }[];

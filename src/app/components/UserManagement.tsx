@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { authFetch } from '@/lib/tokenUtils';
 
 interface User {
   id: number;
@@ -34,7 +35,7 @@ export default function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
+      const response = await authFetch('/api/admin/users');
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users);
@@ -89,7 +90,7 @@ export default function UserManagement() {
       
       console.log('Sending user data:', dataToSend);
       
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +129,7 @@ export default function UserManagement() {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await authFetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
       });
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, memo, useRef, useMemo } from 'react';
 import CustomerHistoryModal from './CustomerHistoryModal';
+import { authFetch } from '@/lib/tokenUtils';
 
 // ---- Interfaces ----
 interface Booking {
@@ -436,7 +437,7 @@ export default function AdminDashboard() {
         setLoading(true);
       }
 
-      const response = await fetch(`/api/bookings?tab=${tab}`, { signal: controller.signal });
+      const response = await authFetch(`/api/bookings?tab=${tab}`, { signal: controller.signal });
       if (!response.ok) throw new Error('Failed to fetch bookings');
 
       const data = await response.json();
@@ -457,7 +458,7 @@ export default function AdminDashboard() {
 
   const fetchAllBookings = useCallback(async () => {
     try {
-      const response = await fetch('/api/bookings?tab=all');
+      const response = await authFetch('/api/bookings?tab=all');
       if (!response.ok) throw new Error('Failed to fetch all bookings');
 
       const data = await response.json();
@@ -493,7 +494,7 @@ export default function AdminDashboard() {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), API_TIMEOUT);
 
-        const res = await fetch(`/api/bookings/${bookingId}`, {
+        const res = await authFetch(`/api/bookings/${bookingId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

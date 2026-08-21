@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { DebouncedInput } from './AdminDashboard';
+import { authFetch } from '@/lib/tokenUtils';
 
 interface PriceRate {
   id: number;
@@ -41,7 +42,7 @@ export default function PricingManagement() {
 
   const fetchPricing = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/pricing');
+      const response = await authFetch('/api/admin/pricing');
       if (!response.ok) throw new Error('Failed to fetch pricing');
       const data = await response.json();
       setRates(data.rates);
@@ -63,7 +64,7 @@ export default function PricingManagement() {
     const price = value === '' ? null : parseFloat(value);
     setRates(prev => prev.map(r => (r.id === id ? { ...r, price } : r)));
     try {
-      await fetch('/api/admin/pricing', {
+      await authFetch('/api/admin/pricing', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rates: [{ id, price }] }),
@@ -77,7 +78,7 @@ export default function PricingManagement() {
     const price = value === '' ? null : parseFloat(value);
     setAddOns(prev => prev.map(a => (a.id === id ? { ...a, price } : a)));
     try {
-      await fetch('/api/admin/pricing', {
+      await authFetch('/api/admin/pricing', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ addOns: [{ id, price }] }),

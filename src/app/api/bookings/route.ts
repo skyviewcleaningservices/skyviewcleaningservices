@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth, isAdminPayload } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
+  const auth = requireAuth(request);
+  if (!isAdminPayload(auth)) return auth;
+
   try {
     const { searchParams } = new URL(request.url);
     const tab = searchParams.get('tab');

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { signAdminToken } from '@/lib/auth';
 import crypto from 'crypto';
 
 // Hash function to match the frontend encryption
@@ -41,9 +42,8 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Create a simple session token (in production, use JWT)
-    const sessionToken = `auth_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+    const sessionToken = signAdminToken({ userId: user.id, username: user.username, role: user.role });
+
     // Login successful
     return NextResponse.json({
       success: true,
