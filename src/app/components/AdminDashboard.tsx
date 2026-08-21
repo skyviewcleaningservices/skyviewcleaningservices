@@ -200,29 +200,17 @@ const BookingRow = memo(function BookingRow({
     updateBookingStatus(booking.id, 'CANCELLED', booking.remarks, booking.paymentAmount, booking.paymentType, reason);
   }, [booking.id, booking.remarks, booking.paymentAmount, booking.paymentType, updateBookingStatus]);
 
-  const isOutsideArea = !booking.area || booking.area === 'Other';
-
   return (
     <tr className={`hover:bg-gray-50 ${isOverdue ? 'bg-red-50' : ''}`}>
       <td className="px-6 py-4 whitespace-nowrap">
         <div>
-          <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
-            {booking.name}
-            {isOutsideArea && (
-              <span
-                title="No matching Pune area on this booking — confirm the address before accepting"
-                className="text-[10px] font-semibold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded"
-              >
-                Outside area?
-              </span>
-            )}
-          </div>
+          <div className="text-sm font-medium text-gray-900">{booking.name}</div>
           <div className="text-sm text-gray-500">{booking.phone}</div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-6 py-4 max-w-[180px]">
         <div>
-          <div className="text-sm font-medium text-gray-900">{booking.serviceType}</div>
+          <div className="text-sm font-medium text-gray-900 break-words" title={booking.serviceType}>{booking.serviceType}</div>
           <div className="text-sm text-gray-500">{booking.frequency}</div>
           <div className="text-sm text-gray-500">{booking.flatType.replace('_', ' ')}</div>
         </div>
