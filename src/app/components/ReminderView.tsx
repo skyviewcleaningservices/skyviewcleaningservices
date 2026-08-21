@@ -50,7 +50,11 @@ function formatTime(time: string): string {
 }
 
 function groupByUpcomingDay(bookings: Booking[]) {
-  const todayKey = getDateKey(new Date().toISOString());
+  // Local calendar date, not new Date().toISOString().slice(0, 10) — that's
+  // the UTC date, which is a day behind local "today" for part of the day
+  // (e.g. 12:00-5:30am IST is still the previous UTC date).
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const buckets: { label: string; dateKey: string; bookings: Booking[] }[] = [
     { label: 'Today', dateKey: todayKey, bookings: [] },
     { label: 'Tomorrow', dateKey: addDaysToKey(todayKey, 1), bookings: [] },
