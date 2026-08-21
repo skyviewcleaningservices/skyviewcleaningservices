@@ -46,6 +46,8 @@ const ADD_ON_SERVICES = [
   'Balcony Cleaning',
 ];
 
+const STEPS = ['Service', 'Property', 'Schedule', 'You'];
+
 const formatPrice = (amount: number) =>
   `₹${amount.toLocaleString('en-IN')}`;
 
@@ -64,6 +66,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     additionalServices: [] as string[],
     specialInstructions: '',
   });
+  const [currentStep, setCurrentStep] = useState(0);
+  const [stepError, setStepError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -271,6 +275,33 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     }));
   };
 
+  // Required-field guard for each step, run before advancing with Next.
+  const validateStep = (step: number): string | null => {
+    if (step === 1) {
+      if (!formData.address.trim()) return 'Please enter your address.';
+    }
+    if (step === 2) {
+      if (!formData.date) return 'Please select a preferred date.';
+      if (!formData.time) return 'Please select a preferred time.';
+    }
+    return null;
+  };
+
+  const handleNext = () => {
+    const error = validateStep(currentStep);
+    if (error) {
+      setStepError(error);
+      return;
+    }
+    setStepError('');
+    setCurrentStep(step => Math.min(step + 1, STEPS.length - 1));
+  };
+
+  const handleBack = () => {
+    setStepError('');
+    setCurrentStep(step => Math.max(step - 1, 0));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -359,6 +390,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       specialInstructions: '',
     });
 
+    setCurrentStep(0);
+    setStepError('');
+
     // Clear validation message and timeout
     setValidationMessage('');
     if (validationTimeout) clearTimeout(validationTimeout);
@@ -366,6 +400,15 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   };
 
   if (!isOpen) return null;
+
+  const priceBanner = currentStep >= 1 && estimatedPrice !== undefined && (
+    <div className="bg-indigo-50 border border-indigo-200 rounded-md p-4 flex items-center justify-between">
+      <span className="text-sm font-medium text-indigo-900">Estimated total</span>
+      <span className="text-lg font-bold text-indigo-700">
+        {estimatedPrice === null ? 'Price on request' : formatPrice(estimatedPrice)}
+      </span>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -381,330 +424,384 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             </button>
           </div>
 
+          {/* Step Progress */}
+          <div className="mb-6">
+            <div className="flex gap-2 mb-2">
+              {STEPS.map((label, index) => (
+                <div
+                  key={label}
+                  className={`flex-1 h-1.5 rounded-full ${index <= currentStep ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                />
+              ))}
+            </div>
+            <p className="text-xs font-medium text-gray-500">
+              Step {currentStep + 1} of {STEPS.length} — {STEPS[currentStep]}
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Validation Message */}
-            {validationMessage && (
-              <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-                <p className="text-sm text-green-800 flex items-center">
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  {validationMessage}
-                </p>
+            {stepError && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                <p className="text-sm text-red-700">{stepError}</p>
               </div>
             )}
 
-            {/* Personal Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                    emailError 
-                      ? 'border-red-500 bg-red-50' 
-                      : formData.email && !emailError 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-300'
-                  }`}
-                />
-                {emailError && (
-                  <p className="text-red-500 text-sm mt-1">{emailError}</p>
-                )}
-                {formData.email && !emailError && (
-                  <p className="text-green-500 text-sm mt-1">✓ Valid email address</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number *
-                  <span className="text-xs text-gray-500 ml-1">(10 digits required for validation)</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    required
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="Enter 10-digit mobile number"
-                    maxLength={15}
-                    className={`w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${validationMessage
-                      ? 'border-green-500 bg-green-50'
-                      : formData.phone.length === 10
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300'
-                      }`}
-                  />
-                  {isValidating && (
-                    <div className="absolute right-3 top-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
-                    </div>
-                  )}
-                  {formData.phone.length === 10 && !isValidating && !validationMessage && (
-                    <div className="absolute right-3 top-2">
-                      <div className="text-blue-500">✓</div>
-                    </div>
-                  )}
+            {/* Step 1: Service */}
+            {currentStep === 0 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
+                      Service Type
+                    </label>
+                    <select
+                      id="serviceType"
+                      name="serviceType"
+                      value={formData.serviceType}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="regular-cleaning">General Cleaning</option>
+                      <option value="deep-cleaning">Deep Cleaning</option>
+                      <option value="full-deep-cleaning">Full Deep Cleaning</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 mb-1">
+                      Frequency
+                    </label>
+                    <select
+                      id="frequency"
+                      name="frequency"
+                      value={formData.frequency}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="one-time">One Time</option>
+                      <option value="quaterly">Every 3 months</option>
+                      <option value="bi-yearly">Every 6 months</option>
+                      <option value="yearly">Yearly</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                  Address *
-                </label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  required
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Flat / street details"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">
-                  Area in Pune
-                </label>
-                <select
-                  id="area"
-                  name="area"
-                  value={formData.area}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Select your area</option>
-                  {PUNE_AREAS.map((area) => (
-                    <option key={area} value={area}>{area}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">We currently serve Pune. Not seeing your area? Pick &quot;Other&quot; — we&apos;ll still take a look.</p>
-              </div>
-            </div>
-
-            {/* Service Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Service Type
-                </label>
-                <select
-                  id="serviceType"
-                  name="serviceType"
-                  value={formData.serviceType}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="regular-cleaning">General Cleaning</option>
-                  <option value="deep-cleaning">Deep Cleaning</option>
-                  <option value="full-deep-cleaning">Full Deep Cleaning</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 mb-1">
-                  Frequency
-                </label>
-                <select
-                  id="frequency"
-                  name="frequency"
-
-                  value={formData.frequency}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="one-time">One Time</option>
-                  <option value="quaterly">Every 3 months</option>
-                  <option value="bi-yearly">Every 6 months</option>
-                  <option value="yearly">Yearly</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Property Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="flatType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Flat Type
-                </label>
-                <select
-                  id="flatType"
-                  name="flatType"
-                  value={formData.flatType}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="ONE_BHK">1 BHK</option>
-                  <option value="TWO_BHK">2 BHK</option>
-                  <option value="THREE_BHK">3 BHK</option>
-                  <option value="FOUR_BHK">4 BHK</option>
-                  <option value="STUDIO">Studio</option>
-                  <option value="PENTHOUSE">Penthouse</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                  Preferred Date *
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  required
-                  min={getTodayDate()}
-                  value={formData.date}
-                  onChange={(e) => {
-                    const selectedDate = new Date(e.target.value + 'T00:00:00');
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-
-                    if (selectedDate < today) {
-                      alert('Please select a date that is not in the past.');
-                      e.target.value = '';
-                      setFormData(prev => ({ ...prev, date: '' }));
-                      return;
-                    }
-
-                    handleInputChange(e);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
-                Preferred Time *
-              </label>
-              <select
-                id="time"
-                name="time"
-                required
-                value={formData.time}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Select a time</option>
-                <option value="8:00">8:00 AM</option>
-                <option value="9:00">9:00 AM</option>
-                <option value="10:00">10:00 AM</option>
-                <option value="11:00">11:00 AM</option>
-                <option value="12:00">12:00 PM</option>
-                <option value="13:00">1:00 PM</option>
-                <option value="14:00">2:00 PM</option>
-                <option value="15:00">3:00 PM</option>
-                <option value="16:00">4:00 PM</option>
-                <option value="17:00">5:00 PM</option>
-              </select>
-            </div>
-
-            {/* Additional Services */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Services
-              </label>
-
-              {/* Message for Full Deep Cleaning */}
-              {formData.serviceType === 'full-deep-cleaning' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
-                  <p className="text-sm text-blue-800 flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <strong>Note:</strong> Full Deep Cleaning already includes all additional services. No need to select them separately.
-                  </p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {ADD_ON_SERVICES.map((service) => (
-                  <label key={service} className={`flex items-center ${formData.serviceType === 'full-deep-cleaning' ? 'opacity-50' : ''}`}>
-                    <input
-                      type="checkbox"
-                      checked={formData.additionalServices.includes(service)}
-                      onChange={() => handleCheckboxChange(service)}
-                      disabled={formData.serviceType === 'full-deep-cleaning'}
-                      className="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
-                    <span className="text-sm text-gray-700">{service}</span>
+                {/* Additional Services */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Additional Services
                   </label>
-                ))}
-              </div>
-            </div>
 
-            {/* Special Instructions */}
-            <div>
-              <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1">
-                Special Instructions
-              </label>
-              <textarea
-                id="specialInstructions"
-                name="specialInstructions"
-                rows={3}
-                value={formData.specialInstructions}
-                onChange={handleInputChange}
-                placeholder="Any special requirements or instructions..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+                  {/* Message for Full Deep Cleaning */}
+                  {formData.serviceType === 'full-deep-cleaning' && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-3">
+                      <p className="text-sm text-blue-800 flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <strong>Note:</strong> Full Deep Cleaning already includes all additional services. No need to select them separately.
+                      </p>
+                    </div>
+                  )}
 
-            {/* Price Estimate */}
-            {estimatedPrice !== undefined && (
-              <div className="bg-indigo-50 border border-indigo-200 rounded-md p-4 flex items-center justify-between">
-                <span className="text-sm font-medium text-indigo-900">Estimated total</span>
-                <span className="text-lg font-bold text-indigo-700">
-                  {estimatedPrice === null ? 'Price on request' : formatPrice(estimatedPrice)}
-                </span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {ADD_ON_SERVICES.map((service) => (
+                      <label key={service} className={`flex items-center ${formData.serviceType === 'full-deep-cleaning' ? 'opacity-50' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={formData.additionalServices.includes(service)}
+                          onChange={() => handleCheckboxChange(service)}
+                          disabled={formData.serviceType === 'full-deep-cleaning'}
+                          className="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        <span className="text-sm text-gray-700">{service}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Submit Button */}
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting
-                  ? 'Submitting...'
-                  : typeof estimatedPrice === 'number'
-                    ? `Book Now — ${formatPrice(estimatedPrice)}`
-                    : 'Book Now'}
-              </button>
+            {/* Step 2: Property */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="flatType" className="block text-sm font-medium text-gray-700 mb-1">
+                      Flat Type
+                    </label>
+                    <select
+                      id="flatType"
+                      name="flatType"
+                      value={formData.flatType}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="ONE_BHK">1 BHK</option>
+                      <option value="TWO_BHK">2 BHK</option>
+                      <option value="THREE_BHK">3 BHK</option>
+                      <option value="FOUR_BHK">4 BHK</option>
+                      <option value="STUDIO">Studio</option>
+                      <option value="PENTHOUSE">Penthouse</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">
+                      Area in Pune
+                    </label>
+                    <select
+                      id="area"
+                      name="area"
+                      value={formData.area}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">Select your area</option>
+                      {PUNE_AREAS.map((area) => (
+                        <option key={area} value={area}>{area}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">We currently serve Pune. Not seeing your area? Pick &quot;Other&quot; — we&apos;ll still take a look.</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                    Address *
+                  </label>
+                  <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    required
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    placeholder="Flat / street details"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {priceBanner}
+              </div>
+            )}
+
+            {/* Step 3: Schedule */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                      Preferred Date *
+                    </label>
+                    <input
+                      type="date"
+                      id="date"
+                      name="date"
+                      required
+                      min={getTodayDate()}
+                      value={formData.date}
+                      onChange={(e) => {
+                        const selectedDate = new Date(e.target.value + 'T00:00:00');
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+
+                        if (selectedDate < today) {
+                          alert('Please select a date that is not in the past.');
+                          e.target.value = '';
+                          setFormData(prev => ({ ...prev, date: '' }));
+                          return;
+                        }
+
+                        handleInputChange(e);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
+                      Preferred Time *
+                    </label>
+                    <select
+                      id="time"
+                      name="time"
+                      required
+                      value={formData.time}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">Select a time</option>
+                      <option value="8:00">8:00 AM</option>
+                      <option value="9:00">9:00 AM</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="12:00">12:00 PM</option>
+                      <option value="13:00">1:00 PM</option>
+                      <option value="14:00">2:00 PM</option>
+                      <option value="15:00">3:00 PM</option>
+                      <option value="16:00">4:00 PM</option>
+                      <option value="17:00">5:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+
+                {priceBanner}
+              </div>
+            )}
+
+            {/* Step 4: You */}
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      required
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                        emailError
+                          ? 'border-red-500 bg-red-50'
+                          : formData.email && !emailError
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-gray-300'
+                      }`}
+                    />
+                    {emailError && (
+                      <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                    )}
+                    {formData.email && !emailError && (
+                      <p className="text-green-500 text-sm mt-1">✓ Valid email address</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number *
+                    <span className="text-xs text-gray-500 ml-1">(10 digits required for validation)</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      required
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Enter 10-digit mobile number"
+                      maxLength={15}
+                      className={`w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${validationMessage
+                        ? 'border-green-500 bg-green-50'
+                        : formData.phone.length === 10
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-300'
+                        }`}
+                    />
+                    {isValidating && (
+                      <div className="absolute right-3 top-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600"></div>
+                      </div>
+                    )}
+                    {formData.phone.length === 10 && !isValidating && !validationMessage && (
+                      <div className="absolute right-3 top-2">
+                        <div className="text-blue-500">✓</div>
+                      </div>
+                    )}
+                  </div>
+                  {validationMessage && (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-2">
+                      <p className="text-sm text-green-800 flex items-center">
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        {validationMessage}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Special Instructions */}
+                <div>
+                  <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1">
+                    Special Instructions
+                  </label>
+                  <textarea
+                    id="specialInstructions"
+                    name="specialInstructions"
+                    rows={3}
+                    value={formData.specialInstructions}
+                    onChange={handleInputChange}
+                    placeholder="Any special requirements or instructions..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {priceBanner}
+              </div>
+            )}
+
+            {/* Footer navigation */}
+            <div className="flex justify-between items-center pt-4">
+              <div>
+                {currentStep > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    Back
+                  </button>
+                )}
+              </div>
+              <div className="flex space-x-3">
+                {currentStep === 0 && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    Cancel
+                  </button>
+                )}
+                {currentStep < STEPS.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting
+                      ? 'Submitting...'
+                      : typeof estimatedPrice === 'number'
+                        ? `Book Now — ${formatPrice(estimatedPrice)}`
+                        : 'Book Now'}
+                  </button>
+                )}
+              </div>
             </div>
           </form>
         </div>

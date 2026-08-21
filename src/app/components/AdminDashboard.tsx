@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, memo, useRef, useMemo } from 'react';
+import CustomerHistoryModal from './CustomerHistoryModal';
 
 // ---- Interfaces ----
 interface Booking {
@@ -37,6 +38,9 @@ type UpdateFn = (
 // ---- Constants ----
 const DEBOUNCE_DELAY = 1000;
 const API_TIMEOUT = 5000;
+// Purely informational thresholds for the week strip below — not a booking limit.
+const BUSY_THRESHOLD = 6;
+const FULL_THRESHOLD = 10;
 const STATUS_OPTIONS = [
   { value: 'PENDING', label: 'Pending' },
   { value: 'CONFIRMED', label: 'Confirmed' },
@@ -152,11 +156,13 @@ const BookingRow = memo(function BookingRow({
   updateBookingStatus,
   formatDate,
   isUpdating,
+  onViewHistory,
 }: {
   booking: Booking;
   updateBookingStatus: UpdateFn;
   formatDate: (d: string) => string;
   isUpdating: boolean;
+  onViewHistory: (phone: string) => void;
 }) {
   const isOverdue = useMemo(() => {
     const today = getToday();
@@ -287,15 +293,74 @@ const BookingRow = memo(function BookingRow({
               </button>
             </div>
           )}
-          <button
-            onClick={() => window.open(`/admin/booking/${booking.id}`, '_blank')}
-            className="text-indigo-600 hover:text-indigo-900 text-xs font-medium"
-          >
-            View Details
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => window.open(`/admin/booking/${booking.id}`, '_blank')}
+              className="text-indigo-600 hover:text-indigo-900 text-xs font-medium"
+            >
+              View Details
+            </button>
+            <button
+              onClick={() => onViewHistory(booking.phone)}
+              className="text-gray-500 hover:text-gray-800 text-xs font-medium"
+            >
+              History
+            </button>
+          </div>
         </div>
       </td>
     </tr>
+  );
+});
+
+const getDateKey = (isoString: string) => isoString.slice(0, 10);
+
+const addDaysToKey = (key: string, days: number) => {
+  const d = new Date(`${key}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return getDateKey(d.toISOString());
+};
+
+const WeekStrip = memo(function WeekStrip({ bookings }: { bookings: Booking[] }) {
+  const days = useMemo(() => {
+    const todayKey = getDateKey(new Date().toISOString());
+    return Array.from({ length: 7 }, (_, i) => {
+      const key = addDaysToKey(todayKey, i);
+      const count = bookings.filter(b => b.status !== 'CANCELLED' && getDateKey(b.preferredDate) === key).length;
+      const label = new Date(`${key}T00:00:00.000Z`).toLocaleDateString('en-US', {
+        weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC',
+      });
+      return { key, count, label };
+    });
+  }, [bookings]);
+
+  return (
+    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Next 7 days at a glance</p>
+      <div className="grid grid-cols-7 gap-2">
+        {days.map(({ key, count, label }) => {
+          const level = count >= FULL_THRESHOLD ? 'full' : count >= BUSY_THRESHOLD ? 'busy' : 'normal';
+          return (
+            <div
+              key={key}
+              title={`${count} booking${count === 1 ? '' : 's'} on ${label}`}
+              className={`rounded-md border px-2 py-2 text-center ${
+                level === 'full' ? 'bg-red-50 border-red-200' :
+                level === 'busy' ? 'bg-amber-50 border-amber-200' :
+                'bg-white border-gray-200'
+              }`}
+            >
+              <div className="text-[10px] font-semibold uppercase text-gray-500">{label}</div>
+              <div className={`text-lg font-bold ${
+                level === 'full' ? 'text-red-600' : level === 'busy' ? 'text-amber-600' : 'text-gray-900'
+              }`}>
+                {count}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 });
 
@@ -326,6 +391,7 @@ export default function AdminDashboard() {
   const [tabLoading, setTabLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<AdminTab>('upcoming');
+  const [historyPhone, setHistoryPhone] = useState<string | null>(null);
 
   const lastUpdateCache = useRef<Record<string, any>>({});
 
@@ -472,9 +538,12 @@ export default function AdminDashboard() {
   if (error) return <div className="flex justify-center items-center min-h-screen text-red-600">{error}</div>;
 
   return (
+    <>
       <div className="max-w-7xl mx-auto">
         {/* Main Dashboard */}
         <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+          <WeekStrip bookings={allBookings} />
+
           {/* Navigation Bar */}
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between">
@@ -570,6 +639,7 @@ export default function AdminDashboard() {
                       updateBookingStatus={updateBookingStatus}
                       formatDate={(d: string) => new Date(d).toLocaleDateString()}
                       isUpdating={updatingBookings.has(b.id)}
+                      onViewHistory={setHistoryPhone}
                     />
                   ))}
                 </tbody>
@@ -598,5 +668,14 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+      {historyPhone && (
+        <CustomerHistoryModal
+          phone={historyPhone}
+          bookings={allBookings.filter(b => b.phone === historyPhone)}
+          onClose={() => setHistoryPhone(null)}
+        />
+      )}
+    </>
   );
 }
