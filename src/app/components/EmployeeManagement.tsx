@@ -15,6 +15,8 @@ interface Employee {
   emergencyContactName: string | null;
   emergencyContactPhone: string | null;
   joiningDate: string | null;
+  salaryAmount: number | null;
+  salaryType: 'MONTHLY' | 'DAILY' | 'HOURLY' | 'PER_JOB' | null;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
 }
@@ -30,8 +32,17 @@ interface EmployeeFormData {
   emergencyContactName: string;
   emergencyContactPhone: string;
   joiningDate: string;
+  salaryAmount: string;
+  salaryType: 'MONTHLY' | 'DAILY' | 'HOURLY' | 'PER_JOB' | '';
   status: 'ACTIVE' | 'INACTIVE';
 }
+
+const SALARY_TYPE_LABELS: Record<string, string> = {
+  MONTHLY: '/ month',
+  DAILY: '/ day',
+  HOURLY: '/ hour',
+  PER_JOB: '/ job',
+};
 
 const EMPTY_FORM: EmployeeFormData = {
   name: '',
@@ -44,6 +55,8 @@ const EMPTY_FORM: EmployeeFormData = {
   emergencyContactName: '',
   emergencyContactPhone: '',
   joiningDate: '',
+  salaryAmount: '',
+  salaryType: '',
   status: 'ACTIVE',
 };
 
@@ -138,6 +151,8 @@ export default function EmployeeManagement() {
       emergencyContactName: employee.emergencyContactName || '',
       emergencyContactPhone: employee.emergencyContactPhone || '',
       joiningDate: employee.joiningDate ? employee.joiningDate.slice(0, 10) : '',
+      salaryAmount: employee.salaryAmount !== null ? String(employee.salaryAmount) : '',
+      salaryType: employee.salaryType || '',
       status: employee.status,
     });
     setShowAddForm(true);
@@ -302,6 +317,36 @@ export default function EmployeeManagement() {
               </div>
             </div>
 
+            <div className="border-t pt-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Salary</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Salary Amount</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 15000"
+                    value={formData.salaryAmount}
+                    onChange={(e) => handleInputChange('salaryAmount', e.target.value.replace(/[^0-9.]/g, ''))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Salary Type</label>
+                  <select
+                    value={formData.salaryType}
+                    onChange={(e) => handleInputChange('salaryType', e.target.value as EmployeeFormData['salaryType'])}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  >
+                    <option value="">Select type</option>
+                    <option value="MONTHLY">Monthly</option>
+                    <option value="DAILY">Daily</option>
+                    <option value="HOURLY">Hourly</option>
+                    <option value="PER_JOB">Per Job</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
@@ -364,6 +409,7 @@ export default function EmployeeManagement() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aadhar</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PAN</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Emergency Contact</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -371,7 +417,7 @@ export default function EmployeeManagement() {
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {employees.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-gray-500">
+                  <td colSpan={10} className="px-6 py-8 text-center text-sm text-gray-500">
                     No employees added yet.
                   </td>
                 </tr>
@@ -389,6 +435,11 @@ export default function EmployeeManagement() {
                     {employee.emergencyContactPhone && (
                       <span className="text-gray-400"> · {employee.emergencyContactPhone}</span>
                     )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {employee.salaryAmount !== null
+                      ? `₹${employee.salaryAmount.toLocaleString('en-IN')} ${employee.salaryType ? SALARY_TYPE_LABELS[employee.salaryType] : ''}`
+                      : '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

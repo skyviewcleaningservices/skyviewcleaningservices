@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
+const SALARY_TYPES = ['MONTHLY', 'DAILY', 'HOURLY', 'PER_JOB'];
+
 // GET - Get a specific employee
 export async function GET(
   request: NextRequest,
@@ -52,6 +54,12 @@ export async function PATCH(
     }
     if (data.joiningDate !== undefined) {
       updateData.joiningDate = data.joiningDate ? new Date(data.joiningDate) : null;
+    }
+    if (data.salaryAmount !== undefined) {
+      updateData.salaryAmount = data.salaryAmount !== '' ? parseFloat(data.salaryAmount) : null;
+    }
+    if (data.salaryType !== undefined) {
+      updateData.salaryType = SALARY_TYPES.includes(data.salaryType) ? data.salaryType : null;
     }
     if (data.status === 'ACTIVE' || data.status === 'INACTIVE') {
       updateData.status = data.status;

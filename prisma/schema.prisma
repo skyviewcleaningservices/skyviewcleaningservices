@@ -68,6 +68,8 @@ model Employee {
   emergencyContactName  String?
   emergencyContactPhone String?
   joiningDate           DateTime?
+  salaryAmount          Float?
+  salaryType            SalaryType?
   status                EmployeeStatus @default(ACTIVE)
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
@@ -105,4 +107,11 @@ enum UserRole {
 enum EmployeeStatus {
   ACTIVE
   INACTIVE
+}
+
+enum SalaryType {
+  MONTHLY
+  DAILY
+  HOURLY
+  PER_JOB
 }

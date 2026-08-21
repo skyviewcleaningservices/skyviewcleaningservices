@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
+const SALARY_TYPES = ['MONTHLY', 'DAILY', 'HOURLY', 'PER_JOB'];
+
 // GET - List all employees. Restricted to ADMIN/MANAGER (not STAFF) — this
 // record holds sensitive PII (Aadhar/PAN), not general operational data.
 export async function GET(request: NextRequest) {
@@ -50,6 +52,9 @@ export async function POST(request: NextRequest) {
         emergencyContactName: data.emergencyContactName || null,
         emergencyContactPhone: data.emergencyContactPhone || null,
         joiningDate: data.joiningDate ? new Date(data.joiningDate) : null,
+        salaryAmount: data.salaryAmount !== undefined && data.salaryAmount !== ''
+          ? parseFloat(data.salaryAmount) : null,
+        salaryType: SALARY_TYPES.includes(data.salaryType) ? data.salaryType : null,
         status: data.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
       },
     });
