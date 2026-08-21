@@ -12,7 +12,11 @@ interface ImportRow {
   serviceType?: string;
 }
 
-const MAX_ROWS = 5000;
+// Kept low so one request comfortably finishes within the 30s function
+// timeout (see vercel.json) even at CONCURRENCY below — the client chunks
+// larger files into batches this size (see ImportBookingsModal).
+const MAX_ROWS = 300;
+const CONCURRENCY = 20;
 
 // Parses dates in ISO (YYYY-MM-DD) or DD/MM/YYYY / DD-MM-YYYY form — the two
 // formats a customer spreadsheet from this (India-based) business is likely to use.
@@ -61,18 +65,30 @@ export async function POST(request: NextRequest) {
 
     let created = 0;
     const failed: { row: number; reason: string }[] = [];
+    const skipped: { row: number; reason: string }[] = [];
 
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+    const createRow = async (row: ImportRow, index: number) => {
       const name = row.name?.trim();
       const phone = row.phone?.trim();
 
       if (!name || !phone) {
-        failed.push({ row: i + 1, reason: 'Missing name or phone number' });
-        continue;
+        failed.push({ row: index + 1, reason: 'Missing name or phone number' });
+        return;
       }
 
       const serviceDate = parseServiceDate(row.lastServiceDate) || new Date();
+
+      // Same phone + same service date already on file — almost certainly this
+      // exact row imported before (e.g. a retry after a partial failure), not
+      // a second real booking. Skip instead of creating a duplicate.
+      const existing = await prisma.booking.findFirst({
+        where: { phone, preferredDate: serviceDate },
+        select: { id: true },
+      });
+      if (existing) {
+        skipped.push({ row: index + 1, reason: `Mobile number ${phone} already has a booking on this date` });
+        return;
+      }
 
       try {
         await prisma.booking.create({
@@ -97,13 +113,21 @@ export async function POST(request: NextRequest) {
         created++;
       } catch (rowError) {
         failed.push({
-          row: i + 1,
+          row: index + 1,
           reason: rowError instanceof Error ? rowError.message : 'Failed to save row',
         });
       }
+    };
+
+    // Bounded concurrency instead of one-row-at-a-time — a fully sequential
+    // loop of network round-trips to the database was blowing past the 30s
+    // function timeout partway through large imports.
+    for (let i = 0; i < rows.length; i += CONCURRENCY) {
+      const batch = rows.slice(i, i + CONCURRENCY);
+      await Promise.all(batch.map((row, j) => createRow(row, i + j)));
     }
 
-    return NextResponse.json({ success: true, created, failed });
+    return NextResponse.json({ success: true, created, failed, skipped });
   } catch (error) {
     console.error('Error importing bookings:', error);
     return NextResponse.json(

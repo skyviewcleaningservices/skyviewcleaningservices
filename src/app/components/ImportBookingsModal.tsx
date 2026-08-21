@@ -23,7 +23,13 @@ interface ParsedRow {
 interface ImportResult {
   created: number;
   failed: { row: number; reason: string }[];
+  skipped: { row: number; reason: string }[];
 }
+
+// Matches the server's MAX_ROWS in api/bookings/import — chunking here keeps
+// each request comfortably under the 30s function timeout regardless of how
+// large the uploaded file is.
+const CHUNK_SIZE = 300;
 
 const HEADER_ALIASES: Record<keyof ParsedRow, string[]> = {
   name: ['name', 'customer name', 'customer'],
@@ -68,6 +74,7 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [error, setError] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -121,22 +128,58 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
   const handleImport = async () => {
     setIsImporting(true);
     setError('');
-    try {
-      const response = await authFetch('/api/bookings/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows }),
-      });
-      const data = await response.json();
+    setProgress(0);
 
-      if (data.success) {
-        setResult({ created: data.created, failed: data.failed || [] });
-        if (data.created > 0) onImported();
-      } else {
-        setError(data.message || 'Import failed.');
+    const combined: ImportResult = { created: 0, failed: [], skipped: [] };
+
+    try {
+      for (let start = 0; start < rows.length; start += CHUNK_SIZE) {
+        const chunk = rows.slice(start, start + CHUNK_SIZE);
+        const response = await authFetch('/api/bookings/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows: chunk }),
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+          setError(
+            `${data.message || 'Import failed.'} (${combined.created} row${combined.created === 1 ? '' : 's'} were already imported before this happened.)`
+          );
+          setResult(combined.created > 0 ? combined : null);
+          if (combined.created > 0) onImported();
+          return;
+        }
+
+        combined.created += data.created;
+        // Row numbers from the server are relative to its chunk — offset them
+        // back to the row's position in the original uploaded file.
+        combined.failed.push(
+          ...(data.failed || []).map((f: { row: number; reason: string }) => ({
+            row: f.row + start,
+            reason: f.reason,
+          }))
+        );
+        combined.skipped.push(
+          ...(data.skipped || []).map((s: { row: number; reason: string }) => ({
+            row: s.row + start,
+            reason: s.reason,
+          }))
+        );
+
+        setProgress(Math.min(start + CHUNK_SIZE, rows.length));
       }
+
+      setResult(combined);
+      if (combined.created > 0) onImported();
     } catch (err) {
-      setError('Import failed. Please try again.');
+      setError(
+        `Import failed. (${combined.created} row${combined.created === 1 ? '' : 's'} were already imported before this happened.)`
+      );
+      if (combined.created > 0) {
+        setResult(combined);
+        onImported();
+      }
     } finally {
       setIsImporting(false);
     }
@@ -202,7 +245,9 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
                   disabled={validRowCount === 0 || isImporting}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isImporting ? 'Importing...' : `Import ${validRowCount || ''} Booking${validRowCount === 1 ? '' : 's'}`}
+                  {isImporting
+                    ? `Importing... ${progress}/${rows.length}`
+                    : `Import ${validRowCount || ''} Booking${validRowCount === 1 ? '' : 's'}`}
                 </button>
               </div>
             </>
@@ -216,10 +261,23 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
                 </p>
               </div>
 
+              {result.skipped.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
+                  <p className="text-sm text-amber-800 font-medium mb-2">
+                    {result.skipped.length} row{result.skipped.length === 1 ? '' : 's'} skipped as duplicates (mobile number already had a booking on that date):
+                  </p>
+                  <ul className="text-sm text-amber-700 space-y-1 max-h-40 overflow-y-auto">
+                    {result.skipped.map((s, idx) => (
+                      <li key={idx}>Row {s.row}: {s.reason}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {result.failed.length > 0 && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-4">
                   <p className="text-sm text-red-800 font-medium mb-2">
-                    {result.failed.length} row{result.failed.length === 1 ? '' : 's'} skipped:
+                    {result.failed.length} row{result.failed.length === 1 ? '' : 's'} failed:
                   </p>
                   <ul className="text-sm text-red-700 space-y-1 max-h-40 overflow-y-auto">
                     {result.failed.map((f, idx) => (
