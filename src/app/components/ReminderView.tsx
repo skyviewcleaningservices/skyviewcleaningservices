@@ -11,7 +11,67 @@ interface Booking {
   serviceType: string;
   frequency: string;
   preferredDate: string;
+  preferredTime: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+}
+
+const STATUS_OPTIONS = [
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'CONFIRMED', label: 'Confirmed' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+] as const;
+
+const STATUS_BADGE: Record<Booking['status'], string> = {
+  PENDING: 'bg-amber-100 text-amber-800',
+  CONFIRMED: 'bg-blue-100 text-blue-800',
+  COMPLETED: 'bg-green-100 text-green-800',
+  CANCELLED: 'bg-gray-200 text-gray-600',
+};
+
+const getDateKey = (isoString: string) => isoString.slice(0, 10);
+
+const addDaysToKey = (key: string, days: number) => {
+  const [y, m, d] = key.split('-').map(Number);
+  const date = new Date(y, m - 1, d + days);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+// Formats a "H:mm" / "HH:mm" 24-hour time string (as stored on the booking)
+// into a readable "h:mm AM/PM" for display on the upcoming-jobs cards.
+function formatTime(time: string): string {
+  const match = time.match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return time;
+  let hour = parseInt(match[1], 10);
+  const minute = match[2];
+  const period = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12 || 12;
+  return `${hour}:${minute} ${period}`;
+}
+
+function groupByUpcomingDay(bookings: Booking[]) {
+  const todayKey = getDateKey(new Date().toISOString());
+  const buckets: { label: string; dateKey: string; bookings: Booking[] }[] = [
+    { label: 'Today', dateKey: todayKey, bookings: [] },
+    { label: 'Tomorrow', dateKey: addDaysToKey(todayKey, 1), bookings: [] },
+    { label: 'Day After Tomorrow', dateKey: addDaysToKey(todayKey, 2), bookings: [] },
+  ];
+
+  for (const booking of bookings) {
+    const key = getDateKey(booking.preferredDate);
+    const bucket = buckets.find(b => b.dateKey === key);
+    if (bucket) bucket.bookings.push(booking);
+  }
+
+  for (const bucket of buckets) {
+    bucket.bookings.sort((a, b) => {
+      const [aH, aM] = a.preferredTime.split(':').map(Number);
+      const [bH, bM] = b.preferredTime.split(':').map(Number);
+      return (aH * 60 + (aM || 0)) - (bH * 60 + (bM || 0));
+    });
+  }
+
+  return buckets;
 }
 
 interface DueCustomer {
@@ -103,6 +163,27 @@ export default function ReminderView() {
   }, []);
 
   const dueCustomers = useMemo(() => computeDueCustomers(bookings), [bookings]);
+  const upcomingByDay = useMemo(() => groupByUpcomingDay(bookings), [bookings]);
+
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+  const handleStatusUpdate = async (bookingId: number, status: Booking['status']) => {
+    setUpdatingId(bookingId);
+    try {
+      const res = await authFetch(`/api/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setBookings(prev => prev.map(b => (b.id === bookingId ? { ...b, status } : b)));
+      }
+    } catch (err) {
+      console.error('Failed to update booking status:', err);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   const handleSend = async (customer: DueCustomer) => {
     setSendingId(customer.bookingId);
@@ -138,6 +219,55 @@ export default function ReminderView() {
           Customers on a recurring plan who are due for their next clean, based on their last completed booking.
           Sending is manual — nothing goes out automatically.
         </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {upcomingByDay.map(({ label, dateKey, bookings: dayBookings }) => (
+          <div key={dateKey} className="bg-white shadow rounded-lg overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <h3 className="text-sm font-semibold text-gray-900">{label}</h3>
+              <p className="text-xs text-gray-500">
+                {new Date(dateKey + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                {' · '}{dayBookings.length} booking{dayBookings.length === 1 ? '' : 's'}
+              </p>
+            </div>
+            <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+              {dayBookings.length === 0 && (
+                <div className="px-4 py-6 text-center text-xs text-gray-400">Nothing scheduled</div>
+              )}
+              {dayBookings.map(booking => {
+                const isIncomplete = booking.status === 'PENDING' || booking.status === 'CONFIRMED';
+                return (
+                  <div key={booking.id} className="px-4 py-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{booking.name}</p>
+                        <p className="text-xs text-gray-500">{formatTime(booking.preferredTime)} · {booking.serviceType}</p>
+                      </div>
+                      {!isIncomplete && (
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap ${STATUS_BADGE[booking.status]}`}>
+                          {booking.status}
+                        </span>
+                      )}
+                    </div>
+                    {isIncomplete && (
+                      <select
+                        value={booking.status}
+                        disabled={updatingId === booking.id}
+                        onChange={(e) => handleStatusUpdate(booking.id, e.target.value as Booking['status'])}
+                        className={`mt-1.5 text-xs font-medium rounded px-2 py-1 border-0 ${STATUS_BADGE[booking.status]} disabled:opacity-50`}
+                      >
+                        {STATUS_OPTIONS.map(({ value, label: optionLabel }) => (
+                          <option key={value} value={value}>{optionLabel}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
