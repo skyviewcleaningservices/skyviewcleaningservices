@@ -16,7 +16,7 @@ interface Employee {
   emergencyContactPhone: string | null;
   joiningDate: string | null;
   salaryAmount: number | null;
-  salaryType: 'MONTHLY' | 'DAILY' | 'HOURLY' | 'PER_JOB' | null;
+  salaryType: 'MONTHLY' | 'DAILY' | 'PER_JOB' | null;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
 }
@@ -33,14 +33,13 @@ interface EmployeeFormData {
   emergencyContactPhone: string;
   joiningDate: string;
   salaryAmount: string;
-  salaryType: 'MONTHLY' | 'DAILY' | 'HOURLY' | 'PER_JOB' | '';
+  salaryType: 'MONTHLY' | 'DAILY' | 'PER_JOB' | '';
   status: 'ACTIVE' | 'INACTIVE';
 }
 
 const SALARY_TYPE_LABELS: Record<string, string> = {
   MONTHLY: '/ month',
   DAILY: '/ day',
-  HOURLY: '/ hour',
   PER_JOB: '/ job',
 };
 
@@ -340,7 +339,6 @@ export default function EmployeeManagement() {
                     <option value="">Select type</option>
                     <option value="MONTHLY">Monthly</option>
                     <option value="DAILY">Daily</option>
-                    <option value="HOURLY">Hourly</option>
                     <option value="PER_JOB">Per Job</option>
                   </select>
                 </div>

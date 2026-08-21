@@ -140,6 +140,5 @@ enum EmployeeStatus {
 enum SalaryType {
   MONTHLY
   DAILY
-  HOURLY
   PER_JOB
 }

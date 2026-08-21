@@ -8,7 +8,7 @@ interface Employee {
   name: string;
   status: 'ACTIVE' | 'INACTIVE';
   salaryAmount: number | null;
-  salaryType: 'MONTHLY' | 'DAILY' | 'HOURLY' | 'PER_JOB' | null;
+  salaryType: 'MONTHLY' | 'DAILY' | 'PER_JOB' | null;
 }
 
 interface AttendanceRecord {
@@ -24,7 +24,6 @@ interface AdvanceRecord {
 const SALARY_TYPE_LABELS: Record<string, string> = {
   MONTHLY: 'Monthly',
   DAILY: 'Daily',
-  HOURLY: 'Hourly',
   PER_JOB: 'Per Job',
 };
 
@@ -146,7 +145,7 @@ export default function AttendanceView() {
     // selected month — matches the per-day rate this business already uses.
     if (employee.salaryType === 'MONTHLY') return Math.round((employee.salaryAmount / 30) * worked);
     if (employee.salaryType === 'DAILY') return employee.salaryAmount * worked;
-    return null; // Hourly / Per Job aren't derivable from day-level attendance alone
+    return null; // Per Job isn't derivable from day-level attendance alone
   };
 
   const handleAdvanceChange = (employeeId: number, value: string) => {
@@ -287,7 +286,7 @@ export default function AttendanceView() {
           <div>
             <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {selectedMonth}</h3>
             <p className="text-xs text-gray-500 mt-1">
-              Monthly-rate staff are (monthly salary ÷ 30) × days worked; daily-rate staff are days worked × rate. Hourly/Per Job aren&apos;t computed from attendance alone.
+              Monthly-rate staff are (monthly salary ÷ 30) × days worked; daily-rate staff are days worked × rate. Per Job isn&apos;t computed from attendance alone.
               Total Pay is gross salary minus any advance taken this month. {advancesUnlocked ? 'Advance is unlocked — click Save when done.' : 'Advance is locked. Click Edit to change it.'}
             </p>
           </div>
@@ -305,11 +304,11 @@ export default function AttendanceView() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days Worked</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Days Worked</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gross Salary</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Advance Taken</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Pay</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gross Salary</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Advance Taken</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider bg-indigo-50">Total Pay</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -324,19 +323,19 @@ export default function AttendanceView() {
                 const advance = parseFloat(advances[employee.id] || '0') || 0;
                 const totalPay = salary !== null ? salary - advance : null;
                 return (
-                  <tr key={employee.id}>
+                  <tr key={employee.id} className="hover:bg-gray-50">
                     <td className="px-6 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{employee.name}</td>
-                    <td className="px-6 py-3 text-sm text-gray-500">{worked}</td>
-                    <td className="px-6 py-3 text-sm text-gray-500">
+                    <td className="px-6 py-3 text-sm text-gray-500 text-right tabular-nums">{worked}</td>
+                    <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">
                       {employee.salaryAmount
-                        ? `₹${employee.salaryAmount.toLocaleString('en-IN')} (${SALARY_TYPE_LABELS[employee.salaryType || ''] || '—'})`
+                        ? <span className="tabular-nums">₹{employee.salaryAmount.toLocaleString('en-IN')} <span className="text-gray-400">({SALARY_TYPE_LABELS[employee.salaryType || ''] || '—'})</span></span>
                         : '—'}
                     </td>
-                    <td className="px-6 py-3 text-sm text-gray-500">
+                    <td className="px-6 py-3 text-sm text-gray-500 text-right tabular-nums">
                       {salary !== null ? `₹${salary.toLocaleString('en-IN')}` : '—'}
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-500">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         <input
                           type="text"
                           placeholder="0"
@@ -346,7 +345,7 @@ export default function AttendanceView() {
                           readOnly={!advancesUnlocked}
                           disabled={savingAdvanceFor === employee.id}
                           title={!advancesUnlocked ? 'Click Edit to change the advance' : undefined}
-                          className={`w-20 px-2 py-1 border border-gray-300 rounded-md text-gray-700 disabled:opacity-50 ${
+                          className={`w-20 px-2 py-1 border border-gray-300 rounded-md text-gray-700 text-right tabular-nums disabled:opacity-50 ${
                             !advancesUnlocked ? 'bg-gray-100 cursor-not-allowed' : ''
                           }`}
                         />
@@ -367,13 +366,32 @@ export default function AttendanceView() {
                         )}
                       </div>
                     </td>
-                    <td className={`px-6 py-3 text-sm font-semibold ${totalPay !== null && totalPay < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                    <td className={`px-6 py-3 text-sm font-semibold text-right tabular-nums bg-indigo-50/50 ${totalPay !== null && totalPay < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                       {totalPay !== null ? `₹${totalPay.toLocaleString('en-IN')}` : '—'}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
+            {activeEmployees.length > 0 && (
+              <tfoot>
+                <tr className="border-t-2 border-gray-200 bg-gray-50">
+                  <td colSpan={5} className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
+                    Total payroll for {selectedMonth}
+                  </td>
+                  <td className="px-6 py-3 text-sm font-bold text-gray-900 text-right tabular-nums bg-indigo-100">
+                    ₹{activeEmployees
+                      .reduce((sum, employee) => {
+                        const worked = daysWorked(employee.id);
+                        const salary = calculateSalary(employee, worked);
+                        const advance = parseFloat(advances[employee.id] || '0') || 0;
+                        return sum + (salary !== null ? salary - advance : 0);
+                      }, 0)
+                      .toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </div>

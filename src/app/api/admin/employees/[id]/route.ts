@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
-const SALARY_TYPES = ['MONTHLY', 'DAILY', 'HOURLY', 'PER_JOB'];
+const SALARY_TYPES = ['MONTHLY', 'DAILY', 'PER_JOB'];
 
 // GET - Get a specific employee
 export async function GET(

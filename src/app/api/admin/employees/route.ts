@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
-const SALARY_TYPES = ['MONTHLY', 'DAILY', 'HOURLY', 'PER_JOB'];
+const SALARY_TYPES = ['MONTHLY', 'DAILY', 'PER_JOB'];
 
 // GET - List all employees. Restricted to ADMIN/MANAGER (not STAFF) — this
 // record holds sensitive PII (Aadhar/PAN), not general operational data.
