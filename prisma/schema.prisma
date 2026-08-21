@@ -103,6 +103,18 @@ model SalaryAdvance {
   @@unique([employeeId, month])
 }
 
+model Expense {
+  id          Int          @id @default(autoincrement())
+  description String
+  category    String?
+  amount      Float
+  date        DateTime
+  paymentType PaymentType?
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
 enum BookingStatus {
   PENDING
   CONFIRMED

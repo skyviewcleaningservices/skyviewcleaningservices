@@ -5,6 +5,7 @@ import AdminDashboard from '../components/AdminDashboard';
 import UserManagement from '../components/UserManagement';
 import EmployeeManagement from '../components/EmployeeManagement';
 import AttendanceView from '../components/AttendanceView';
+import ExpenseView from '../components/ExpenseView';
 import PricingManagement from '../components/PricingManagement';
 import ReportsView from '../components/ReportsView';
 import ReminderView from '../components/ReminderView';
@@ -21,7 +22,7 @@ interface AdminUser {
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'employees' | 'attendance' | 'pricing' | 'reports' | 'reminders'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'employees' | 'attendance' | 'expenses' | 'pricing' | 'reports' | 'reminders'>('bookings');
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionTimeLeft, setSessionTimeLeft] = useState<string | null>(null);
@@ -134,6 +135,12 @@ export default function AdminPage() {
           onClick: () => setActiveTab('attendance')
         },
         {
+          id: 'expenses',
+          label: 'Monthly Expenses',
+          isActive: activeTab === 'expenses',
+          onClick: () => setActiveTab('expenses')
+        },
+        {
           id: 'pricing',
           label: 'Pricing',
           isActive: activeTab === 'pricing',
@@ -157,6 +164,7 @@ export default function AdminPage() {
       {activeTab === 'users' && <UserManagement />}
       {activeTab === 'employees' && <EmployeeManagement />}
       {activeTab === 'attendance' && <AttendanceView />}
+      {activeTab === 'expenses' && <ExpenseView />}
       {activeTab === 'pricing' && <PricingManagement />}
       {activeTab === 'reports' && <ReportsView />}
       {activeTab === 'reminders' && <ReminderView />}
