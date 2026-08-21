@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { checkTokenValidity, setupTokenExpiryRedirect, hashPassword } from '@/lib/tokenUtils';
+import { checkTokenValidity, setupTokenExpiryRedirect } from '@/lib/tokenUtils';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -42,9 +42,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
     setError('');
 
     try {
-      // Encrypt the password before sending
-      const encryptedPassword = await hashPassword(credentials.password);
-      
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: {
@@ -52,7 +49,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginMod
         },
         body: JSON.stringify({
           username: credentials.username,
-          password: encryptedPassword
+          password: credentials.password
         }),
       });
 

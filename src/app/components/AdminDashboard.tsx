@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, memo, useRef, useMemo } from 'react';
 import CustomerHistoryModal from './CustomerHistoryModal';
 import { authFetch } from '@/lib/tokenUtils';
+import { startPdf, PDF_TABLE_START_Y } from '@/lib/pdf';
+import { autoTable } from 'jspdf-autotable';
 
 // ---- Interfaces ----
 interface Booking {
@@ -530,7 +532,10 @@ export default function AdminDashboard() {
       'paymentAmount', 'paymentType', 'remarks',
     ];
     const escapeCsv = (value: unknown) => {
-      const str = value === undefined || value === null ? '' : String(value);
+      let str = value === undefined || value === null ? '' : String(value);
+      // Neutralize spreadsheet formula injection — a leading =, +, -, or @ would
+      // otherwise be evaluated as a formula when opened in Excel/Sheets.
+      if (/^[=+\-@]/.test(str)) str = `'${str}`;
       return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
     };
     const rows = [
@@ -546,7 +551,33 @@ export default function AdminDashboard() {
     link.click();
     URL.revokeObjectURL(url);
   }, [filteredBookings, activeTab]);
-  
+
+  const handleExportPdf = useCallback(() => {
+    // "Rs." not "₹" below — jsPDF's built-in fonts don't include the Rupee glyph,
+    // it renders as a garbled character otherwise.
+    const doc = startPdf(`Bookings — ${TAB_LABELS[activeTab]}`);
+    autoTable(doc, {
+      startY: PDF_TABLE_START_Y,
+      styles: { fontSize: 7, cellPadding: 2 },
+      headStyles: { fillColor: [79, 70, 229] },
+      head: [['ID', 'Name', 'Phone', 'Area', 'Service', 'Date', 'Time', 'Status', 'Amount', 'Payment', 'Remarks']],
+      body: filteredBookings.map(b => [
+        b.id,
+        b.name,
+        b.phone,
+        b.area || '—',
+        `${b.serviceType} (${b.flatType.replace('_', ' ')})`,
+        new Date(b.preferredDate).toLocaleDateString(),
+        b.preferredTime,
+        b.status,
+        b.paymentAmount != null ? `Rs. ${b.paymentAmount}` : '—',
+        b.paymentType || '—',
+        b.remarks || '',
+      ]),
+    });
+    doc.save(`skyview-bookings-${activeTab}-${new Date().toISOString().slice(0, 10)}.pdf`);
+  }, [filteredBookings, activeTab]);
+
   const handleTabChange = useCallback((tab: AdminTab) => {
     setActiveTab(tab);
     fetchBookings(tab, { showTabLoading: true });
@@ -610,6 +641,16 @@ export default function AdminDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3" />
                   </svg>
                   Export CSV
+                </button>
+                <button
+                  onClick={handleExportPdf}
+                  disabled={filteredBookings.length === 0}
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2h-4.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  Export PDF
                 </button>
                 <button
                   onClick={handleRefresh}

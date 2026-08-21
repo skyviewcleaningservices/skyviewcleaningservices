@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { signAdminToken } from '@/lib/auth';
-import crypto from 'crypto';
-
-// Hash function to match the frontend encryption
-const hashPassword = (password: string): string => {
-  return crypto.createHash('sha256').update(password).digest('hex');
-};
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,10 +27,9 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    // Hash the stored password for comparison with the encrypted password from frontend
-    const hashedStoredPassword = hashPassword(user.password);
-    
-    if (hashedStoredPassword !== password) {
+    const passwordMatches = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatches) {
       return NextResponse.json({
         success: false,
         message: "Invalid credentials"

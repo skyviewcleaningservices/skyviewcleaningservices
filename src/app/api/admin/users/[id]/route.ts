@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
+import bcrypt from 'bcryptjs';
 
 // GET - Get specific user
 export async function GET(
@@ -76,7 +77,7 @@ export async function PATCH(
       role?: 'ADMIN' | 'STAFF' | 'MANAGER';
     } = {};
     if (username) updateData.username = username;
-    if (password && password.trim() !== '') updateData.password = password;
+    if (password && password.trim() !== '') updateData.password = await bcrypt.hash(password, 10);
     if (role && ['ADMIN', 'STAFF', 'MANAGER'].includes(role)) {
       updateData.role = role as 'ADMIN' | 'STAFF' | 'MANAGER';
     }
