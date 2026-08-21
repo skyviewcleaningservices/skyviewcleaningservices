@@ -45,6 +45,7 @@ export default function AttendanceView() {
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [savingAdvanceFor, setSavingAdvanceFor] = useState<number | null>(null);
   const [unlockedForEdit, setUnlockedForEdit] = useState(false);
+  const [advancesUnlocked, setAdvancesUnlocked] = useState(false);
 
   const [year, month] = selectedMonth.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -153,8 +154,7 @@ export default function AttendanceView() {
     setAdvances(prev => ({ ...prev, [employeeId]: value }));
   };
 
-  const saveAdvance = async (employeeId: number) => {
-    const amount = parseFloat(advances[employeeId] || '0') || 0;
+  const persistAdvance = async (employeeId: number, amount: number) => {
     setSavingAdvanceFor(employeeId);
     try {
       await authFetch('/api/admin/advances', {
@@ -167,6 +167,18 @@ export default function AttendanceView() {
     } finally {
       setSavingAdvanceFor(null);
     }
+  };
+
+  const saveAdvance = (employeeId: number) => {
+    const amount = parseFloat(advances[employeeId] || '0') || 0;
+    persistAdvance(employeeId, amount);
+  };
+
+  const addToAdvance = (employeeId: number, delta: number) => {
+    const current = parseFloat(advances[employeeId] || '0') || 0;
+    const next = current + delta;
+    setAdvances(prev => ({ ...prev, [employeeId]: String(next) }));
+    persistAdvance(employeeId, next);
   };
 
   const activeEmployees = employees.filter(e => e.status === 'ACTIVE');
@@ -187,6 +199,7 @@ export default function AttendanceView() {
           onChange={(e) => {
             setSelectedMonth(e.target.value);
             setUnlockedForEdit(false);
+            setAdvancesUnlocked(false);
           }}
           className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white"
         />
@@ -270,12 +283,22 @@ export default function AttendanceView() {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {selectedMonth}</h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Monthly-rate staff are (monthly salary ÷ 30) × days worked; daily-rate staff are days worked × rate. Hourly/Per Job aren&apos;t computed from attendance alone.
-            Total Pay is gross salary minus any advance taken this month.
-          </p>
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {selectedMonth}</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Monthly-rate staff are (monthly salary ÷ 30) × days worked; daily-rate staff are days worked × rate. Hourly/Per Job aren&apos;t computed from attendance alone.
+              Total Pay is gross salary minus any advance taken this month. {advancesUnlocked ? 'Advance is unlocked — click Save when done.' : 'Advance is locked. Click Edit to change it.'}
+            </p>
+          </div>
+          <button
+            onClick={() => setAdvancesUnlocked(prev => !prev)}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap ${
+              advancesUnlocked ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+            }`}
+          >
+            {advancesUnlocked ? 'Save' : 'Edit'}
+          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -313,15 +336,36 @@ export default function AttendanceView() {
                       {salary !== null ? `₹${salary.toLocaleString('en-IN')}` : '—'}
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-500">
-                      <input
-                        type="text"
-                        placeholder="0"
-                        value={advances[employee.id] || ''}
-                        onChange={(e) => handleAdvanceChange(employee.id, e.target.value)}
-                        onBlur={() => saveAdvance(employee.id)}
-                        disabled={savingAdvanceFor === employee.id}
-                        className="w-24 px-2 py-1 border border-gray-300 rounded-md text-gray-700 disabled:opacity-50"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="0"
+                          value={advances[employee.id] || ''}
+                          onChange={(e) => handleAdvanceChange(employee.id, e.target.value)}
+                          onBlur={() => saveAdvance(employee.id)}
+                          readOnly={!advancesUnlocked}
+                          disabled={savingAdvanceFor === employee.id}
+                          title={!advancesUnlocked ? 'Click Edit to change the advance' : undefined}
+                          className={`w-20 px-2 py-1 border border-gray-300 rounded-md text-gray-700 disabled:opacity-50 ${
+                            !advancesUnlocked ? 'bg-gray-100 cursor-not-allowed' : ''
+                          }`}
+                        />
+                        {advancesUnlocked && (
+                          <div className="flex gap-1">
+                            {[100, 200, 500].map(amount => (
+                              <button
+                                key={amount}
+                                type="button"
+                                onClick={() => addToAdvance(employee.id, amount)}
+                                disabled={savingAdvanceFor === employee.id}
+                                className="px-1.5 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+                              >
+                                +{amount}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className={`px-6 py-3 text-sm font-semibold ${totalPay !== null && totalPay < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                       {totalPay !== null ? `₹${totalPay.toLocaleString('en-IN')}` : '—'}
