@@ -63,16 +63,26 @@ export const getValidToken = (): string | null => {
 };
 
 // fetch wrapper that attaches the admin session token — use for any call to a
-// protected /api/admin/* or /api/bookings* route.
-export const authFetch = (input: string, init: RequestInit = {}): Promise<Response> => {
+// protected /api/admin/* or /api/bookings* route. If the server rejects the
+// token (expired, or left over from before a deploy that changed how tokens
+// are issued/verified), clears the stale session and sends the user back to
+// login instead of leaving every action failing silently.
+export const authFetch = async (input: string, init: RequestInit = {}): Promise<Response> => {
   const token = getValidToken();
-  return fetch(input, {
+  const response = await fetch(input, {
     ...init,
     headers: {
       ...init.headers,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
+
+  if (response.status === 401) {
+    clearTokenData();
+    redirectToLogin();
+  }
+
+  return response;
 };
 
 export const getTokenExpiryTime = (): number | null => {
