@@ -113,7 +113,9 @@ export default function AttendanceView() {
 
   const calculateSalary = (employee: Employee, worked: number): number | null => {
     if (!employee.salaryAmount) return null;
-    if (employee.salaryType === 'MONTHLY') return employee.salaryAmount;
+    // Prorated against a flat 30-day month, not the actual days in the
+    // selected month — matches the per-day rate this business already uses.
+    if (employee.salaryType === 'MONTHLY') return Math.round((employee.salaryAmount / 30) * worked);
     if (employee.salaryType === 'DAILY') return employee.salaryAmount * worked;
     return null; // Hourly / Per Job aren't derivable from day-level attendance alone
   };
@@ -200,7 +202,7 @@ export default function AttendanceView() {
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {selectedMonth}</h3>
           <p className="text-xs text-gray-500 mt-1">
-            Monthly-rate staff get their fixed amount; daily-rate staff are days worked × rate. Hourly/Per Job aren&apos;t computed from attendance alone.
+            Monthly-rate staff are (monthly salary ÷ 30) × days worked; daily-rate staff are days worked × rate. Hourly/Per Job aren&apos;t computed from attendance alone.
           </p>
         </div>
         <div className="overflow-x-auto">
