@@ -593,47 +593,47 @@ export default function AdminDashboard() {
           <WeekStrip bookings={allBookings} />
 
           {/* Navigation Bar */}
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <div className="flex items-center justify-between">
-              {/* Tabs */}
-              <nav className="flex space-x-6">
-                {(Object.keys(TAB_LABELS) as AdminTab[]).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => handleTabChange(tab)}
-                    disabled={tabLoading}
-                    className={`py-2 px-3 rounded-md font-semibold text-sm transition-colors flex items-center ${
-                      activeTab === tab
-                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    } ${tabLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {tabLoading && activeTab === tab ? (
-                      <>
-                        <div className="w-3 h-3 border border-indigo-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Loading...
-                      </>
-                    ) : (
-                      `${TAB_LABELS[tab]} (${tabCounts[tab]})`
-                    )}
-                  </button>
-                ))}
-              </nav>
-              
-              {/* Actions */}
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search bookings..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 pr-4 py-2 w-64 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 space-y-3">
+            {/* Tabs */}
+            <nav className="flex items-center gap-2 overflow-x-auto">
+              {(Object.keys(TAB_LABELS) as AdminTab[]).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => handleTabChange(tab)}
+                  disabled={tabLoading}
+                  className={`py-2 px-3 rounded-md font-semibold text-sm transition-colors flex items-center whitespace-nowrap ${
+                    activeTab === tab
+                      ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  } ${tabLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {tabLoading && activeTab === tab ? (
+                    <>
+                      <div className="w-3 h-3 border border-indigo-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    `${TAB_LABELS[tab]} (${tabCounts[tab]})`
+                  )}
+                </button>
+              ))}
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search bookings..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 pr-4 py-2 w-64 max-w-full border border-gray-300 rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <div className="flex items-center flex-wrap gap-2">
                 <button
                   onClick={() => setShowAddBookingModal(true)}
                   className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center text-sm font-medium transition-colors"
