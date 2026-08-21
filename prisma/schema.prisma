@@ -74,6 +74,7 @@ model Employee {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   attendance            Attendance[]
+  salaryAdvances        SalaryAdvance[]
 }
 
 // One row per day an employee worked — a day with no row means they didn't
@@ -86,6 +87,20 @@ model Attendance {
   createdAt  DateTime @default(now())
 
   @@unique([employeeId, date])
+}
+
+// One row per employee per month — the total advance taken that month,
+// subtracted from calculated salary to get total pay.
+model SalaryAdvance {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  month      String // "YYYY-MM"
+  amount     Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([employeeId, month])
 }
 
 enum BookingStatus {

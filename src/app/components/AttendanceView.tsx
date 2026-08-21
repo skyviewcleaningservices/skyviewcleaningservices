@@ -16,6 +16,11 @@ interface AttendanceRecord {
   date: string;
 }
 
+interface AdvanceRecord {
+  employeeId: number;
+  amount: number;
+}
+
 const SALARY_TYPE_LABELS: Record<string, string> = {
   MONTHLY: 'Monthly',
   DAILY: 'Daily',
@@ -34,9 +39,11 @@ export default function AttendanceView() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [presentDays, setPresentDays] = useState<Set<string>>(new Set());
+  const [advances, setAdvances] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [savingAdvanceFor, setSavingAdvanceFor] = useState<number | null>(null);
 
   const [year, month] = selectedMonth.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -46,15 +53,17 @@ export default function AttendanceView() {
     setLoading(true);
     setError(null);
     try {
-      const [employeesRes, attendanceRes] = await Promise.all([
+      const [employeesRes, attendanceRes, advancesRes] = await Promise.all([
         authFetch('/api/admin/employees'),
         authFetch(`/api/admin/attendance?month=${selectedMonth}`),
+        authFetch(`/api/admin/advances?month=${selectedMonth}`),
       ]);
 
-      if (!employeesRes.ok || !attendanceRes.ok) throw new Error('Failed to load');
+      if (!employeesRes.ok || !attendanceRes.ok || !advancesRes.ok) throw new Error('Failed to load');
 
       const employeesData = await employeesRes.json();
       const attendanceData = await attendanceRes.json();
+      const advancesData = await advancesRes.json();
 
       setEmployees(employeesData.employees);
 
@@ -64,6 +73,12 @@ export default function AttendanceView() {
         days.add(key(record.employeeId, day));
       }
       setPresentDays(days);
+
+      const advanceMap: Record<number, string> = {};
+      for (const advance of advancesData.advances as AdvanceRecord[]) {
+        advanceMap[advance.employeeId] = String(advance.amount);
+      }
+      setAdvances(advanceMap);
     } catch (err) {
       setError('Error loading attendance data');
     } finally {
@@ -118,6 +133,27 @@ export default function AttendanceView() {
     if (employee.salaryType === 'MONTHLY') return Math.round((employee.salaryAmount / 30) * worked);
     if (employee.salaryType === 'DAILY') return employee.salaryAmount * worked;
     return null; // Hourly / Per Job aren't derivable from day-level attendance alone
+  };
+
+  const handleAdvanceChange = (employeeId: number, value: string) => {
+    if (value !== '' && !/^\d*\.?\d*$/.test(value)) return;
+    setAdvances(prev => ({ ...prev, [employeeId]: value }));
+  };
+
+  const saveAdvance = async (employeeId: number) => {
+    const amount = parseFloat(advances[employeeId] || '0') || 0;
+    setSavingAdvanceFor(employeeId);
+    try {
+      await authFetch('/api/admin/advances', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employeeId, month: selectedMonth, amount }),
+      });
+    } catch (err) {
+      // Leave the typed value as-is — worst case it re-saves next blur
+    } finally {
+      setSavingAdvanceFor(null);
+    }
   };
 
   const activeEmployees = employees.filter(e => e.status === 'ACTIVE');
@@ -203,6 +239,7 @@ export default function AttendanceView() {
           <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {selectedMonth}</h3>
           <p className="text-xs text-gray-500 mt-1">
             Monthly-rate staff are (monthly salary ÷ 30) × days worked; daily-rate staff are days worked × rate. Hourly/Per Job aren&apos;t computed from attendance alone.
+            Total Pay is gross salary minus any advance taken this month.
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -212,18 +249,22 @@ export default function AttendanceView() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days Worked</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculated Salary</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gross Salary</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Advance Taken</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Pay</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {activeEmployees.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">No active employees.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">No active employees.</td>
                 </tr>
               )}
               {activeEmployees.map(employee => {
                 const worked = daysWorked(employee.id);
                 const salary = calculateSalary(employee, worked);
+                const advance = parseFloat(advances[employee.id] || '0') || 0;
+                const totalPay = salary !== null ? salary - advance : null;
                 return (
                   <tr key={employee.id}>
                     <td className="px-6 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{employee.name}</td>
@@ -233,8 +274,22 @@ export default function AttendanceView() {
                         ? `₹${employee.salaryAmount.toLocaleString('en-IN')} (${SALARY_TYPE_LABELS[employee.salaryType || ''] || '—'})`
                         : '—'}
                     </td>
-                    <td className="px-6 py-3 text-sm font-semibold text-gray-900">
+                    <td className="px-6 py-3 text-sm text-gray-500">
                       {salary !== null ? `₹${salary.toLocaleString('en-IN')}` : '—'}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-500">
+                      <input
+                        type="text"
+                        placeholder="0"
+                        value={advances[employee.id] || ''}
+                        onChange={(e) => handleAdvanceChange(employee.id, e.target.value)}
+                        onBlur={() => saveAdvance(employee.id)}
+                        disabled={savingAdvanceFor === employee.id}
+                        className="w-24 px-2 py-1 border border-gray-300 rounded-md text-gray-700 disabled:opacity-50"
+                      />
+                    </td>
+                    <td className={`px-6 py-3 text-sm font-semibold ${totalPay !== null && totalPay < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                      {totalPay !== null ? `₹${totalPay.toLocaleString('en-IN')}` : '—'}
                     </td>
                   </tr>
                 );
