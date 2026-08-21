@@ -51,17 +51,17 @@ export default function AttendanceView() {
   const daysInMonth = new Date(year, month, 0).getDate();
   const dayNumbers = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => i + 1), [daysInMonth]);
 
-  // Days already gone by default lock their checkbox — prevents accidentally
-  // rewriting attendance history while scrolling the grid. Today and any
-  // future day in the selected month stay editable without unlocking.
-  const isPastDay = useCallback((day: number) => {
+  // Only today's checkbox is editable without unlocking — every other day
+  // (past or future) is locked by default, so attendance can't be marked
+  // ahead of time or rewritten in passing while scrolling the grid.
+  const isLockedDay = useCallback((day: number) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const cellDate = new Date(year, month - 1, day);
-    return cellDate < today;
+    return cellDate.getTime() !== today.getTime();
   }, [year, month]);
 
-  const hasPastDays = dayNumbers.some(isPastDay);
+  const hasLockedDays = dayNumbers.some(isLockedDay);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -209,13 +209,13 @@ export default function AttendanceView() {
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
             <h3 className="text-lg font-medium text-gray-900">Daily Attendance</h3>
-            {hasPastDays && (
+            {hasLockedDays && (
               <p className="text-xs text-gray-500 mt-0.5">
-                {unlockedForEdit ? 'Past days are unlocked — click Save when done.' : 'Past days are locked. Click Edit to change them.'}
+                {unlockedForEdit ? 'All days are unlocked — click Save when done.' : 'Only today can be marked directly. Click Edit to change other days.'}
               </p>
             )}
           </div>
-          {hasPastDays && (
+          {hasLockedDays && (
             <button
               onClick={() => setUnlockedForEdit(prev => !prev)}
               className={`px-3 py-1.5 rounded-md text-sm font-medium ${
@@ -258,7 +258,7 @@ export default function AttendanceView() {
                   </td>
                   {dayNumbers.map(day => {
                     const k = key(employee.id, day);
-                    const locked = isPastDay(day) && !unlockedForEdit;
+                    const locked = isLockedDay(day) && !unlockedForEdit;
                     return (
                       <td key={day} className="px-1.5 py-2 text-center">
                         <input
@@ -266,7 +266,7 @@ export default function AttendanceView() {
                           checked={presentDays.has(k)}
                           disabled={savingKey === k || locked}
                           onChange={() => toggleDay(employee.id, day)}
-                          title={locked ? 'Click Edit to change past attendance' : undefined}
+                          title={locked ? 'Click Edit to mark attendance for a day other than today' : undefined}
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50"
                         />
                       </td>
