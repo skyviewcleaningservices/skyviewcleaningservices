@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SkyView Cleaning Services
 
-## Getting Started
+Booking site for a house-cleaning business, built with Next.js (App Router) and Prisma/Postgres. Customers submit a booking through a modal on the homepage; the booking is stored in the database and the admin is notified over WhatsApp (Twilio). Admins manage bookings and staff accounts from `/admin`.
 
-First, run the development server:
+## Tech stack
+
+- **Next.js 15** (App Router, React 19, TypeScript)
+- **Prisma** ORM with **PostgreSQL** (hosted on Neon)
+- **Tailwind CSS**
+- **Twilio WhatsApp Business API** for admin booking notifications
+- Deployed on **Vercel**
+
+## Project layout
+
+- `src/app/` — pages, layouts, and API routes (`src/app/api/**/route.ts`)
+- `src/app/components/` — client components (booking modal, admin dashboard, login, etc.)
+- `src/lib/` — shared server/client modules: `prisma.ts` (Prisma client singleton), `whatsapp.ts` (Twilio WhatsApp service), `tokenUtils.ts` (admin session token helpers)
+- `prisma/` — schema and migrations
+
+## Environment variables
+
+Set these in `.env` locally and in your deployment platform's dashboard (never commit real values):
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | Postgres connection string |
+| `TWILIO_ACCOUNT_SID` | Twilio account SID |
+| `TWILIO_AUTH_TOKEN` | Twilio auth token |
+| `TWILIO_WHATSAPP_FROM` | Twilio WhatsApp sender number, e.g. `whatsapp:+14155238886` |
+| `ADMIN_WHATSAPP_PHONE` | Number that receives new-booking notifications, e.g. `whatsapp:+91...` |
+| `TWILIO_TEMPLATE_CONTENT_SID` | ContentSid of the approved WhatsApp template used for the admin notification |
+
+## Local development
 
 ```bash
+npm install
+npx prisma generate
+npx prisma migrate dev   # applies schema, creates the local dev database
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Prisma
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx prisma generate       # regenerate client after a schema change
+npx prisma migrate dev    # create/apply a migration in development
+npx prisma migrate deploy # apply migrations in production
+npx prisma studio         # browse the database
+```
 
-## Learn More
+## Twilio WhatsApp template
 
-To learn more about Next.js, take a look at the following resources:
+Admin notifications are sent via a Twilio Content Template (`TWILIO_TEMPLATE_CONTENT_SID`). To set one up:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Twilio Console → Messaging → Content Editor → create a template with variables for name, service, date, and time (`{{1}}`–`{{4}}`).
+2. Copy the resulting ContentSid into `TWILIO_TEMPLATE_CONTENT_SID`.
+3. In sandbox mode, the recipient number must first join the sandbox by sending `join <sandbox-code>` to the Twilio WhatsApp number.
+4. For production, you need an approved WhatsApp Business API sender and approved templates (sandbox numbers/templates won't work).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+The app deploys to Vercel (`vercel.json` sets the build/install commands and API function timeout). Environment variables must be set in the **Vercel dashboard** — do not add secrets to `vercel.json` or commit them anywhere in the repo.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+vercel --prod
+npx prisma migrate deploy   # after deploying, apply any pending migrations
+```
