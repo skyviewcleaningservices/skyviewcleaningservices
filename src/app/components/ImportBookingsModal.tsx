@@ -231,11 +231,27 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
                 </div>
               )}
 
+              {isImporting && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>Importing bookings...</span>
+                    <span>{progress} / {rows.length} ({Math.round((progress / rows.length) * 100)}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${Math.round((progress / rows.length) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  disabled={isImporting}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
