@@ -73,6 +73,19 @@ model Employee {
   status                EmployeeStatus @default(ACTIVE)
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
+  attendance            Attendance[]
+}
+
+// One row per day an employee worked — a day with no row means they didn't
+// work it. Backs both the attendance checkboxes and the monthly salary calc.
+model Attendance {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date       DateTime
+  createdAt  DateTime @default(now())
+
+  @@unique([employeeId, date])
 }
 
 enum BookingStatus {

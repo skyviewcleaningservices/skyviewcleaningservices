@@ -1,0 +1,246 @@
+'use client';
+
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { authFetch } from '@/lib/tokenUtils';
+
+interface Employee {
+  id: number;
+  name: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  salaryAmount: number | null;
+  salaryType: 'MONTHLY' | 'DAILY' | 'HOURLY' | 'PER_JOB' | null;
+}
+
+interface AttendanceRecord {
+  employeeId: number;
+  date: string;
+}
+
+const SALARY_TYPE_LABELS: Record<string, string> = {
+  MONTHLY: 'Monthly',
+  DAILY: 'Daily',
+  HOURLY: 'Hourly',
+  PER_JOB: 'Per Job',
+};
+
+const getCurrentMonth = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const key = (employeeId: number, day: number) => `${employeeId}-${day}`;
+
+export default function AttendanceView() {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
+  const [presentDays, setPresentDays] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [savingKey, setSavingKey] = useState<string | null>(null);
+
+  const [year, month] = selectedMonth.split('-').map(Number);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const dayNumbers = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => i + 1), [daysInMonth]);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [employeesRes, attendanceRes] = await Promise.all([
+        authFetch('/api/admin/employees'),
+        authFetch(`/api/admin/attendance?month=${selectedMonth}`),
+      ]);
+
+      if (!employeesRes.ok || !attendanceRes.ok) throw new Error('Failed to load');
+
+      const employeesData = await employeesRes.json();
+      const attendanceData = await attendanceRes.json();
+
+      setEmployees(employeesData.employees);
+
+      const days = new Set<string>();
+      for (const record of attendanceData.records as AttendanceRecord[]) {
+        const day = new Date(record.date).getUTCDate();
+        days.add(key(record.employeeId, day));
+      }
+      setPresentDays(days);
+    } catch (err) {
+      setError('Error loading attendance data');
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const toggleDay = async (employeeId: number, day: number) => {
+    const k = key(employeeId, day);
+    const wasPresent = presentDays.has(k);
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    setSavingKey(k);
+    setPresentDays(prev => {
+      const next = new Set(prev);
+      if (wasPresent) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+
+    try {
+      const res = await authFetch('/api/admin/attendance', {
+        method: wasPresent ? 'DELETE' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employeeId, date: dateStr }),
+      });
+      if (!res.ok) throw new Error('Failed');
+    } catch (err) {
+      // Roll back on failure
+      setPresentDays(prev => {
+        const next = new Set(prev);
+        if (wasPresent) next.add(k);
+        else next.delete(k);
+        return next;
+      });
+    } finally {
+      setSavingKey(null);
+    }
+  };
+
+  const daysWorked = (employeeId: number) =>
+    dayNumbers.filter(day => presentDays.has(key(employeeId, day))).length;
+
+  const calculateSalary = (employee: Employee, worked: number): number | null => {
+    if (!employee.salaryAmount) return null;
+    if (employee.salaryType === 'MONTHLY') return employee.salaryAmount;
+    if (employee.salaryType === 'DAILY') return employee.salaryAmount * worked;
+    return null; // Hourly / Per Job aren't derivable from day-level attendance alone
+  };
+
+  const activeEmployees = employees.filter(e => e.status === 'ACTIVE');
+
+  if (loading) return <div className="text-center py-4">Loading attendance...</div>;
+  if (error) return <div className="text-red-600 text-center py-4">{error}</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Attendance</h2>
+          <p className="text-sm text-gray-500 mt-1">Check a day to mark that employee as worked.</p>
+        </div>
+        <input
+          type="month"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white"
+        />
+      </div>
+
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">Daily Attendance</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="sticky left-0 bg-gray-50 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Employee
+                </th>
+                {dayNumbers.map(day => (
+                  <th key={day} className="px-1.5 py-2 text-center text-xs font-medium text-gray-500 w-8">
+                    {day}
+                  </th>
+                ))}
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Days Worked
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {activeEmployees.length === 0 && (
+                <tr>
+                  <td colSpan={daysInMonth + 2} className="px-6 py-8 text-center text-sm text-gray-500">
+                    No active employees to track.
+                  </td>
+                </tr>
+              )}
+              {activeEmployees.map(employee => (
+                <tr key={employee.id}>
+                  <td className="sticky left-0 bg-white px-4 py-2 text-sm font-medium text-gray-900 whitespace-nowrap">
+                    {employee.name}
+                  </td>
+                  {dayNumbers.map(day => {
+                    const k = key(employee.id, day);
+                    return (
+                      <td key={day} className="px-1.5 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={presentDays.has(k)}
+                          disabled={savingKey === k}
+                          onChange={() => toggleDay(employee.id, day)}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50"
+                        />
+                      </td>
+                    );
+                  })}
+                  <td className="px-4 py-2 text-center text-sm font-semibold text-gray-900">
+                    {daysWorked(employee.id)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {selectedMonth}</h3>
+          <p className="text-xs text-gray-500 mt-1">
+            Monthly-rate staff get their fixed amount; daily-rate staff are days worked × rate. Hourly/Per Job aren&apos;t computed from attendance alone.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days Worked</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculated Salary</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              {activeEmployees.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">No active employees.</td>
+                </tr>
+              )}
+              {activeEmployees.map(employee => {
+                const worked = daysWorked(employee.id);
+                const salary = calculateSalary(employee, worked);
+                return (
+                  <tr key={employee.id}>
+                    <td className="px-6 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{employee.name}</td>
+                    <td className="px-6 py-3 text-sm text-gray-500">{worked}</td>
+                    <td className="px-6 py-3 text-sm text-gray-500">
+                      {employee.salaryAmount
+                        ? `₹${employee.salaryAmount.toLocaleString('en-IN')} (${SALARY_TYPE_LABELS[employee.salaryType || ''] || '—'})`
+                        : '—'}
+                    </td>
+                    <td className="px-6 py-3 text-sm font-semibold text-gray-900">
+                      {salary !== null ? `₹${salary.toLocaleString('en-IN')}` : '—'}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
