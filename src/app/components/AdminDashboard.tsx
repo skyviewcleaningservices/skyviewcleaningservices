@@ -357,14 +357,47 @@ const WeekStrip = memo(function WeekStrip({ bookings }: { bookings: Booking[] })
   );
 });
 
-const TableHeader = memo(function TableHeader() {
-  const headers = ['Customer', 'Service', 'Date & Time', 'Status', 'Payment Amount', 'Payment Type', 'Remarks', 'Actions'];
+type SortField = 'customer' | 'date';
+type SortDir = 'asc' | 'desc';
+
+const TableHeader = memo(function TableHeader({
+  sortField,
+  sortDir,
+  onSort,
+}: {
+  sortField: SortField;
+  sortDir: SortDir;
+  onSort: (field: SortField) => void;
+}) {
+  const headers: { label: string; field?: SortField }[] = [
+    { label: 'Customer', field: 'customer' },
+    { label: 'Service' },
+    { label: 'Date & Time', field: 'date' },
+    { label: 'Status' },
+    { label: 'Payment Amount' },
+    { label: 'Payment Type' },
+    { label: 'Remarks' },
+    { label: 'Actions' },
+  ];
   return (
     <thead className="bg-gray-50">
       <tr>
-        {headers.map((header) => (
-          <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-            {header}
+        {headers.map(({ label, field }) => (
+          <th key={label} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            {field ? (
+              <button
+                type="button"
+                onClick={() => onSort(field)}
+                className="flex items-center gap-1 hover:text-gray-900"
+              >
+                {label}
+                <span className="text-[10px]">
+                  {sortField === field ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}
+                </span>
+              </button>
+            ) : (
+              label
+            )}
           </th>
         ))}
       </tr>
@@ -387,21 +420,42 @@ export default function AdminDashboard() {
   const [historyPhone, setHistoryPhone] = useState<string | null>(null);
   const [showAddBookingModal, setShowAddBookingModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  const handleSort = useCallback((field: SortField) => {
+    if (field === sortField) {
+      setSortDir(prevDir => (prevDir === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDir(field === 'date' ? 'desc' : 'asc');
+    }
+  }, [sortField]);
 
   const lastUpdateCache = useRef<Record<string, any>>({});
   const fetchAbortRef = useRef<AbortController | null>(null);
 
   const filteredBookings = useMemo(() => {
-    if (!searchTerm.trim()) return bookings;
-    const term = searchTerm.toLowerCase();
-    return bookings.filter(
-      b =>
-        b.name.toLowerCase().includes(term) ||
-        b.phone.includes(term) ||
-        b.email.toLowerCase().includes(term) ||
-        b.serviceType.toLowerCase().includes(term)
-    );
-  }, [bookings, searchTerm]);
+    const term = searchTerm.trim().toLowerCase();
+    const filtered = term
+      ? bookings.filter(
+          b =>
+            b.name.toLowerCase().includes(term) ||
+            b.phone.includes(term) ||
+            b.email.toLowerCase().includes(term) ||
+            b.serviceType.toLowerCase().includes(term)
+        )
+      : bookings;
+
+    const sorted = [...filtered].sort((a, b) => {
+      const cmp = sortField === 'date'
+        ? new Date(a.preferredDate).getTime() - new Date(b.preferredDate).getTime()
+        : a.name.localeCompare(b.name);
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+
+    return sorted;
+  }, [bookings, searchTerm, sortField, sortDir]);
 
   const tabCounts = useMemo(() => {
     const classified = classifyBookings(allBookings);
@@ -706,7 +760,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <table className="min-w-full divide-y divide-gray-200">
-                <TableHeader />
+                <TableHeader sortField={sortField} sortDir={sortDir} onSort={handleSort} />
                 <tbody className="bg-white divide-y divide-gray-100">
                   {filteredBookings.map(b => (
                     <BookingRow
