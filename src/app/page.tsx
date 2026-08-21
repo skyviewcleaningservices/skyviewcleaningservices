@@ -91,7 +91,6 @@ export default function Home() {
               <button
                 onClick={() => setIsLoginModalOpen(true)}
                 className="text-indigo-600 dark:text-indigo-400 border border-indigo-600 dark:border-indigo-400 px-6 py-2 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
-                style={{ display: 'none' }}
               >
                 Admin Login
               </button>
