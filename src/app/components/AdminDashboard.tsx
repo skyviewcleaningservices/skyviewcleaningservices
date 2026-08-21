@@ -72,6 +72,15 @@ const TAB_LABELS: Record<AdminTab, string> = {
 };
 
 // ---- Utility Functions ----
+// Explicit dd/mm/yyyy — toLocaleDateString() alone follows the browser's
+// locale, which isn't reliably dd/mm/yyyy for every admin.
+const formatDateDMY = (d: string) => {
+  const date = new Date(d);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}/${date.getFullYear()}`;
+};
+
 const getToday = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -291,7 +300,7 @@ const BookingRow = memo(function BookingRow({
               onClick={() => window.open(`/admin/booking/${booking.id}`, '_blank')}
               className="text-indigo-600 hover:text-indigo-900 text-xs font-medium"
             >
-              View Details
+              View / Edit
             </button>
             <button
               onClick={() => onViewHistory(booking.phone)}
@@ -767,7 +776,7 @@ export default function AdminDashboard() {
                       key={b.id}
                       booking={b}
                       updateBookingStatus={updateBookingStatus}
-                      formatDate={(d: string) => new Date(d).toLocaleDateString()}
+                      formatDate={formatDateDMY}
                       isUpdating={updatingBookings.has(b.id)}
                       onViewHistory={setHistoryPhone}
                     />
