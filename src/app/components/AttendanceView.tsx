@@ -44,10 +44,23 @@ export default function AttendanceView() {
   const [error, setError] = useState<string | null>(null);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [savingAdvanceFor, setSavingAdvanceFor] = useState<number | null>(null);
+  const [unlockedForEdit, setUnlockedForEdit] = useState(false);
 
   const [year, month] = selectedMonth.split('-').map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
   const dayNumbers = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => i + 1), [daysInMonth]);
+
+  // Days already gone by default lock their checkbox — prevents accidentally
+  // rewriting attendance history while scrolling the grid. Today and any
+  // future day in the selected month stay editable without unlocking.
+  const isPastDay = useCallback((day: number) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cellDate = new Date(year, month - 1, day);
+    return cellDate < today;
+  }, [year, month]);
+
+  const hasPastDays = dayNumbers.some(isPastDay);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -171,14 +184,34 @@ export default function AttendanceView() {
         <input
           type="month"
           value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
+          onChange={(e) => {
+            setSelectedMonth(e.target.value);
+            setUnlockedForEdit(false);
+          }}
           className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white"
         />
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Daily Attendance</h3>
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">Daily Attendance</h3>
+            {hasPastDays && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                {unlockedForEdit ? 'Past days are unlocked — click Save when done.' : 'Past days are locked. Click Edit to change them.'}
+              </p>
+            )}
+          </div>
+          {hasPastDays && (
+            <button
+              onClick={() => setUnlockedForEdit(prev => !prev)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium ${
+                unlockedForEdit ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+              }`}
+            >
+              {unlockedForEdit ? 'Save' : 'Edit'}
+            </button>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="divide-y divide-gray-200">
@@ -212,13 +245,15 @@ export default function AttendanceView() {
                   </td>
                   {dayNumbers.map(day => {
                     const k = key(employee.id, day);
+                    const locked = isPastDay(day) && !unlockedForEdit;
                     return (
                       <td key={day} className="px-1.5 py-2 text-center">
                         <input
                           type="checkbox"
                           checked={presentDays.has(k)}
-                          disabled={savingKey === k}
+                          disabled={savingKey === k || locked}
                           onChange={() => toggleDay(employee.id, day)}
+                          title={locked ? 'Click Edit to change past attendance' : undefined}
                           className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50"
                         />
                       </td>
