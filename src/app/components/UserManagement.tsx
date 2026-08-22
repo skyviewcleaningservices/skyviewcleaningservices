@@ -93,8 +93,6 @@ export default function UserManagement() {
         dataToSend.password = formData.password;
       }
       
-      console.log('Sending user data:', dataToSend);
-      
       const response = await authFetch(url, {
         method,
         headers: {

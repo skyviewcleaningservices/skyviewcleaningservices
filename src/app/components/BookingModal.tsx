@@ -173,11 +173,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
     // Don't validate if not exactly 10 digits
     if (!value || digitsOnly.length !== 10) {
-      console.log('Phone validation skipped: Not 10 digits', { value, digitsOnly, length: digitsOnly.length });
       return;
     }
-
-    console.log('Phone validation triggered: 10 digits detected', { value, digitsOnly });
 
     // Set validating state
     setIsValidating(true);
@@ -195,15 +192,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       });
 
       const result = await response.json();
-      console.log('Validation API response:', result);
 
       if (result.success) {
         const fieldValidation = result.validation.phone;
         if (fieldValidation.exists) {
           setValidationMessage(fieldValidation.message);
-          console.log('Returning customer detected:', fieldValidation.message);
-        } else {
-          console.log('New customer - no previous bookings found');
         }
       }
     } catch (error) {

@@ -46,7 +46,7 @@ export const redirectToLogin = (): void => {
   }
 };
 
-export const getValidToken = (): string | null => {
+const getValidToken = (): string | null => {
   if (checkTokenValidity()) {
     return localStorage.getItem('adminToken');
   }
@@ -76,7 +76,7 @@ export const authFetch = async (input: string, init: RequestInit = {}): Promise<
   return response;
 };
 
-export const getTokenExpiryTime = (): number | null => {
+const getTokenExpiryTime = (): number | null => {
   const tokenData = localStorage.getItem('adminTokenData');
   if (!tokenData) {
     return null;
@@ -90,7 +90,7 @@ export const getTokenExpiryTime = (): number | null => {
   }
 };
 
-export const getTimeUntilExpiry = (): number | null => {
+const getTimeUntilExpiry = (): number | null => {
   const expiryTime = getTokenExpiryTime();
   if (!expiryTime) {
     return null;
@@ -122,7 +122,6 @@ export const setupTokenExpiryRedirect = (expiresAt: number): void => {
   if (timeUntilExpiry > 0) {
     setTimeout(() => {
       clearTokenData();
-      console.log('Token expired, redirecting to login page');
       redirectToLogin();
     }, timeUntilExpiry);
   }
