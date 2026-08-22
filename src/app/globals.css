@@ -44,9 +44,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /*
  * Shared dark-mode-aware component classes for the admin dashboard.
- * Use these instead of repeating bg-white/text-gray-*/dark:* utility
- * strings inline — keeps every card, table, form, and button consistent
- * and means a contrast fix only has to happen in one place.
+ * Use these instead of repeating light/dark utility class pairs inline
+ * on every card, table, form, and button — a contrast fix then only
+ * has to happen in one place.
  */
 @layer components {
   /* Card-style container (modals, panel sections) */
