@@ -31,6 +31,10 @@ const heroImages = [
 
 const PHONE_DISPLAY = '+91 96230 29057';
 const PHONE_TEL = 'tel:+919623029057';
+const WHATSAPP_NUMBER = '919623029057';
+const buildWhatsAppLink = (message: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+const BOOKING_REQUEST_MESSAGE = 'I wanted to book a cleaning service.';
+const CALLBACK_REQUEST_MESSAGE = 'Hi SkyView Cleaning Services! Could you please call me back? I have a question about your cleaning services.';
 
 const testimonials = [
   { initial: 'P', name: 'Priya Sharma', location: 'Pune, Maharashtra', quote: 'Amazing service! My apartment looks brand new. The team was professional and thorough.' },
@@ -80,6 +84,7 @@ function HeroSlideshow() {
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showWhatsAppOptions, setShowWhatsAppOptions] = useState(false);
 
   // Already signed in with a valid session — skip straight to the dashboard
   // instead of asking for credentials again.
@@ -553,17 +558,65 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Floating call button — reachable from anywhere on the page, no scrolling needed */}
-      <a
-        href={PHONE_TEL}
-        aria-label="Call SkyView Cleaning Services"
-        className="fixed bottom-6 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 hover:bg-indigo-700 hover:scale-105 transition-all duration-300"
-      >
-        <span className="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-30" aria-hidden="true" />
-        <svg className="w-6 h-6 relative" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-        </svg>
-      </a>
+      {/* Floating contact buttons — WhatsApp + Call, both reachable from anywhere, no scrolling needed */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+        {showWhatsAppOptions && (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 p-2 w-64">
+            <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-3 pt-2 pb-1">Chat on WhatsApp</p>
+            <a
+              href={buildWhatsAppLink(BOOKING_REQUEST_MESSAGE)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setShowWhatsAppOptions(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+                <svg className="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Request a Booking</span>
+            </a>
+            <a
+              href={buildWhatsAppLink(CALLBACK_REQUEST_MESSAGE)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setShowWhatsAppOptions(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
+                <svg className="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Request a Callback</span>
+            </a>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setShowWhatsAppOptions(prev => !prev)}
+          aria-label="Chat on WhatsApp"
+          aria-expanded={showWhatsAppOptions}
+          className="flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-lg shadow-green-600/40 hover:bg-[#20bd5a] hover:scale-105 transition-all duration-300"
+        >
+          <svg className="w-7 h-7" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+            <path d="M16.004 3C9.377 3 4 8.373 4 15c0 2.36.687 4.56 1.872 6.41L4 29l7.77-1.833A11.94 11.94 0 0016.004 27C22.63 27 28 21.627 28 15S22.63 3 16.004 3zm0 21.7a9.66 9.66 0 01-4.933-1.352l-.354-.21-4.61 1.088 1.112-4.494-.23-.366A9.66 9.66 0 015.3 15c0-5.905 4.8-10.7 10.704-10.7 5.905 0 10.7 4.795 10.7 10.7 0 5.905-4.795 10.7-10.7 10.7zm5.87-8.02c-.322-.161-1.905-.94-2.2-1.047-.295-.108-.51-.161-.724.161-.215.322-.833 1.047-1.02 1.262-.188.215-.376.242-.698.08-.322-.16-1.36-.501-2.59-1.598-.958-.854-1.605-1.909-1.793-2.231-.188-.322-.02-.496.141-.656.145-.144.322-.376.484-.564.161-.188.215-.322.322-.537.107-.215.054-.403-.027-.564-.08-.161-.724-1.744-.992-2.389-.261-.628-.527-.543-.724-.553l-.617-.011c-.215 0-.564.08-.86.403-.295.322-1.127 1.101-1.127 2.685s1.154 3.114 1.315 3.33c.161.215 2.271 3.468 5.502 4.864.769.332 1.369.53 1.837.678.771.245 1.474.211 2.03.128.619-.093 1.905-.779 2.174-1.53.269-.752.269-1.396.188-1.53-.08-.134-.295-.215-.617-.376z" />
+          </svg>
+        </button>
+
+        <a
+          href={PHONE_TEL}
+          aria-label="Call SkyView Cleaning Services"
+          className="relative flex items-center justify-center w-14 h-14 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 hover:bg-indigo-700 hover:scale-105 transition-all duration-300"
+        >
+          <span className="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-30" aria-hidden="true" />
+          <svg className="w-6 h-6 relative" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+        </a>
+      </div>
 
       {/* Booking Modal */}
       <BookingModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
