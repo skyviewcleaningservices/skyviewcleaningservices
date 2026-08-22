@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
 import { startPdf } from '@/lib/pdf';
 import { autoTable } from 'jspdf-autotable';
@@ -9,6 +9,7 @@ import type { jsPDF } from 'jspdf';
 interface Booking {
   id: number;
   serviceType: string;
+  flatType: string;
   area?: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
   paymentAmount?: number;
@@ -31,11 +32,13 @@ interface CollectionPoint {
   count: number;
 }
 
-const SERVICE_TYPE_LABELS: Record<string, string> = {
-  'regular-cleaning': 'General Cleaning',
-  'deep-cleaning': 'Deep Cleaning',
-  'full-deep-cleaning': 'Full Deep Cleaning',
-};
+// Only these four tiers — Studio/Penthouse are excluded from this report by design.
+const FLAT_TIERS: { key: string; label: string }[] = [
+  { key: 'ONE_BHK', label: '1 BHK' },
+  { key: 'TWO_BHK', label: '2 BHK' },
+  { key: 'THREE_BHK', label: '3 BHK' },
+  { key: 'FOUR_BHK', label: '4 BHK' },
+];
 
 const PAYMENT_TYPE_LABELS: Record<string, string> = {
   CASH: 'Cash',
@@ -83,6 +86,20 @@ function buildMonthlyCollections(bookings: Booking[]): CollectionPoint[] {
     .slice(-12);
 }
 
+// Booking counts per flat tier (1/2/3/4 BHK only) for one calendar year —
+// always returns all four tiers, in order, even when a tier has zero bookings.
+function buildFlatTierRowsForYear(bookings: Booking[], year: number): Row[] {
+  const rows = new Map(FLAT_TIERS.map(t => [t.key, { label: t.label, count: 0, revenue: 0 }]));
+  for (const b of bookings) {
+    if (new Date(b.preferredDate).getFullYear() !== year) continue;
+    const row = rows.get(b.flatType);
+    if (!row) continue;
+    row.count += 1;
+    row.revenue += b.paymentAmount || 0;
+  }
+  return FLAT_TIERS.map(t => rows.get(t.key)!);
+}
+
 // Same, grouped by calendar year.
 function buildYearlyCollections(bookings: Booking[]): CollectionPoint[] {
   const map = new Map<string, CollectionPoint>();
@@ -97,11 +114,14 @@ function buildYearlyCollections(bookings: Booking[]): CollectionPoint[] {
   return Array.from(map.values()).sort((a, b) => a.key.localeCompare(b.key));
 }
 
-function BarTable({ title, rows, valueKey }: { title: string; rows: Row[]; valueKey: 'count' | 'revenue' }) {
+function BarTable({ title, rows, valueKey, extra }: { title: string; rows: Row[]; valueKey: 'count' | 'revenue'; extra?: ReactNode }) {
   const max = Math.max(1, ...rows.map(r => r[valueKey]));
   return (
     <div className="bg-white shadow rounded-lg p-6">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">{title}</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+        {extra}
+      </div>
       {rows.length === 0 ? (
         <p className="text-sm text-gray-400">No data yet.</p>
       ) : (
@@ -236,9 +256,24 @@ export default function ReportsView() {
     [bookings]
   );
 
-  const byServiceType = useMemo(
-    () => buildRows(notCancelled, b => SERVICE_TYPE_LABELS[b.serviceType] || b.serviceType),
-    [notCancelled]
+  const availableYears = useMemo(() => {
+    const years = new Set(notCancelled.map(b => new Date(b.preferredDate).getFullYear()));
+    return Array.from(years).sort((a, b) => b - a);
+  }, [notCancelled]);
+
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+
+  // Default to the most recent year with data, once it's known — but only
+  // set it once, so picking an older year doesn't get overwritten on refetch.
+  useEffect(() => {
+    if (selectedYear === null && availableYears.length > 0) {
+      setSelectedYear(availableYears[0]);
+    }
+  }, [availableYears, selectedYear]);
+
+  const byFlatTier = useMemo(
+    () => (selectedYear === null ? [] : buildFlatTierRowsForYear(notCancelled, selectedYear)),
+    [notCancelled, selectedYear]
   );
 
   const byArea = useMemo(
@@ -337,7 +372,24 @@ export default function ReportsView() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <BarTable title="Revenue by payment method" rows={byPaymentType} valueKey="revenue" />
-        <BarTable title="Bookings by service tier" rows={byServiceType} valueKey="count" />
+        <BarTable
+          title="Bookings by flat type"
+          rows={byFlatTier}
+          valueKey="count"
+          extra={
+            availableYears.length > 0 && selectedYear !== null ? (
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {availableYears.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            ) : null
+          }
+        />
       </div>
 
       <BarTable title="Bookings by Pune area" rows={byArea} valueKey="count" />
