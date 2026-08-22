@@ -29,6 +29,15 @@ const heroImages = [
   }
 ];
 
+const PHONE_DISPLAY = '+91 96230 29057';
+const PHONE_TEL = 'tel:+919623029057';
+
+const testimonials = [
+  { initial: 'P', name: 'Priya Sharma', location: 'Pune, Maharashtra', quote: 'Amazing service! My apartment looks brand new. The team was professional and thorough.' },
+  { initial: 'R', name: 'Rajni Shivpuje', location: 'Pune, Maharashtra', quote: 'Best cleaning service in Pune! They cleaned my entire house in just 3 hours. Highly recommended!' },
+  { initial: 'A', name: 'Anjali Patel', location: 'Pune, Maharashtra', quote: 'Professional, punctual, and perfect results. My office has never looked cleaner!' },
+];
+
 function HeroSlideshow() {
   const [current, setCurrent] = useState(0);
 
@@ -102,6 +111,15 @@ export default function Home() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#services" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Services</a>
               <a href="#contact" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Contact</a>
+              <a
+                href={PHONE_TEL}
+                className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                {PHONE_DISPLAY}
+              </a>
               <button
                 onClick={handleAdminLoginClick}
                 className="text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-slate-600 px-5 py-2 rounded-full hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -115,12 +133,23 @@ export default function Home() {
                 Book Now
               </button>
             </div>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="md:hidden text-sm font-semibold bg-indigo-600 text-white px-4 py-2 rounded-full"
-            >
-              Book Now
-            </button>
+            <div className="flex md:hidden items-center gap-2">
+              <a
+                href={PHONE_TEL}
+                aria-label="Call SkyView Cleaning Services"
+                className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 dark:border-slate-600 text-indigo-600 dark:text-indigo-400"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </a>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="text-sm font-semibold bg-indigo-600 text-white px-4 py-2 rounded-full"
+              >
+                Book Now
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -357,7 +386,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Stats Strip */}
+      <section className="py-14 bg-indigo-50/70 dark:bg-slate-800/70 border-y border-indigo-100 dark:border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { value: '5,000+', label: 'Happy Customers' },
+              { value: '10,000+', label: 'Cleanings Done' },
+              { value: '4.8★', label: 'Average Rating' },
+              { value: '24/7', label: 'Support' },
+            ].map(stat => (
+              <div key={stat.label} className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">{stat.value}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 lg:py-24 bg-white dark:bg-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Customer stories</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-3">
+              Loved by homes across Pune
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {testimonials.map(t => (
+              <div key={t.name} className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-6 border border-gray-100 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                <div className="flex text-amber-400 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">&quot;{t.quote}&quot;</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {t.initial}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{t.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t.location}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
       <section className="py-20 lg:py-24 bg-gradient-to-br from-indigo-600 to-violet-700 dark:from-indigo-700 dark:to-violet-900 text-white relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -366,134 +449,20 @@ export default function Home() {
           }}></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-5">
-            Ready to Transform Your Space?
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to transform your space?
           </h2>
-
-          <p className="text-xl mb-10 text-indigo-100 dark:text-indigo-200 max-w-3xl mx-auto">
-            Book your cleaning service today and experience the difference professional cleaning makes. We&apos;ve proudly served over 5,000 customers, most of whom rate us 4.5 stars or higher.
+          <p className="text-lg mb-9 text-indigo-100 dark:text-indigo-200">
+            Book in minutes — our team handles the rest.
           </p>
-
-          {/* Trust Badges */}
-          <div className="flex flex-wrap justify-center items-center gap-4 mb-12">
-            <div className="flex items-center space-x-2 bg-white/10 rounded-full px-4 py-2">
-              <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span className="text-sm font-medium">100% Satisfaction</span>
-            </div>
-            <div className="flex items-center space-x-2 bg-white/10 rounded-full px-4 py-2">
-              <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-              </svg>
-              <span className="text-sm font-medium">Insured & Bonded</span>
-            </div>
-            <div className="flex items-center space-x-2 bg-white/10 rounded-full px-4 py-2">
-              <svg className="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span className="text-sm font-medium">Eco-Friendly</span>
-            </div>
-          </div>
-
-          {/* Customer Testimonials */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12 max-w-4xl mx-auto">
-            <div className="bg-white/10 dark:bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-white/10">
-              <div className="flex items-center mb-3">
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-              </div>
-              <p className="text-sm text-indigo-100 dark:text-indigo-200 mb-3">"Amazing service! My apartment looks brand new. The team was professional and thorough."</p>
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-indigo-400 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-xs font-bold">P</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Priya Sharma</p>
-                  <p className="text-xs text-indigo-200">Pune, Maharashtra</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 dark:bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-white/10">
-              <div className="flex items-center mb-3">
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-              </div>
-              <p className="text-sm text-indigo-100 dark:text-indigo-200 mb-3">"Best cleaning service in Pune! They cleaned my entire house in just 3 hours. Highly recommended!"</p>
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-indigo-400 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-xs font-bold">R</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Rajni Shivpuje</p>
-                  <p className="text-xs text-indigo-200">Pune, Maharashtra</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 dark:bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 hover:bg-white/20 dark:hover:bg-white/10">
-              <div className="flex items-center mb-3">
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-              </div>
-              <p className="text-sm text-indigo-100 dark:text-indigo-200 mb-3">"Professional, punctual, and perfect results. My office has never looked cleaner!"</p>
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-indigo-400 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-xs font-bold">A</span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Anjali Patel</p>
-                  <p className="text-xs text-indigo-200">Pune, Maharashtra</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-400 mb-1">5,000+</div>
-              <div className="text-sm text-indigo-200">Happy Customers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-400 mb-1">10,000+</div>
-              <div className="text-sm text-indigo-200">Cleanings Done</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-400 mb-1">4.8★</div>
-              <div className="text-sm text-indigo-200">Average Rating</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-amber-400 mb-1">24/7</div>
-              <div className="text-sm text-indigo-200">Support</div>
-            </div>
-          </div>
-
-          {/* CTA Button */}
           <div className="space-y-4">
-          <button
-            onClick={() => setIsModalOpen(true)}
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="bg-white text-indigo-700 px-9 py-4 rounded-full font-semibold hover:bg-amber-50 transition-all duration-300 text-lg shadow-xl shadow-black/10 hover:shadow-2xl transform hover:-translate-y-1"
-          >
-            Book Your Cleaning Now
-          </button>
+            >
+              Book Your Cleaning Now
+            </button>
             <p className="text-sm text-indigo-200 dark:text-indigo-300">
               ⚡ Instant booking &nbsp;·&nbsp; 🎯 Same day service available &nbsp;·&nbsp; 💰 No hidden fees
             </p>
@@ -522,7 +491,7 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Phone</h3>
-              <p className="text-gray-600 dark:text-gray-300">+91 9623029057</p>
+              <a href={PHONE_TEL} className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{PHONE_DISPLAY}</a>
             </div>
             <div className="text-center bg-white dark:bg-slate-700 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -531,7 +500,7 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Email</h3>
-              <p className="text-gray-600 dark:text-gray-300 break-all">skyviewcleaningservices@gmail.com</p>
+              <a href="mailto:skyviewcleaningservices@gmail.com" className="text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors break-all">skyviewcleaningservices@gmail.com</a>
             </div>
             <div className="text-center bg-white dark:bg-slate-700 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -584,12 +553,24 @@ export default function Home() {
         </div>
       </footer>
 
+      {/* Floating call button — reachable from anywhere on the page, no scrolling needed */}
+      <a
+        href={PHONE_TEL}
+        aria-label="Call SkyView Cleaning Services"
+        className="fixed bottom-6 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 hover:bg-indigo-700 hover:scale-105 transition-all duration-300"
+      >
+        <span className="absolute inset-0 rounded-full bg-indigo-500 animate-ping opacity-30" aria-hidden="true" />
+        <svg className="w-6 h-6 relative" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+        </svg>
+      </a>
+
       {/* Booking Modal */}
       <BookingModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      
+
       {/* Login Modal */}
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={(token, user) => {
           // Redirect to admin dashboard
