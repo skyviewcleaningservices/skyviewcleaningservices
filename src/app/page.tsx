@@ -33,7 +33,7 @@ const PHONE_DISPLAY = '+91 96230 29057';
 const PHONE_TEL = 'tel:+919623029057';
 const WHATSAPP_NUMBER = '919623029057';
 const buildWhatsAppLink = (message: string) => `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-const BOOKING_REQUEST_MESSAGE = 'I wanted to book a cleaning service.';
+const BOOKING_REQUEST_MESSAGE = 'Hi SkyView Cleaning Services! I would like to book a cleaning service.';
 const CALLBACK_REQUEST_MESSAGE = 'Hi SkyView Cleaning Services! Could you please call me back? I have a question about your cleaning services.';
 
 const testimonials = [
