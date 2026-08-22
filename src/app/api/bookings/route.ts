@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, requireAdminOrManager, isAdminPayload } from '@/lib/auth';
-import { SERVED_PUNE_AREAS } from '@/lib/areas';
 
 export async function GET(request: NextRequest) {
   const auth = requireAuth(request);
@@ -97,13 +96,6 @@ export async function POST(request: NextRequest) {
         !formData.frequency || !formData.date || !formData.time || !formData.flatType) {
       return NextResponse.json(
         { success: false, message: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    if (!formData.area || !SERVED_PUNE_AREAS.includes(formData.area)) {
-      return NextResponse.json(
-        { success: false, message: "We don't currently serve this area yet." },
         { status: 400 }
       );
     }

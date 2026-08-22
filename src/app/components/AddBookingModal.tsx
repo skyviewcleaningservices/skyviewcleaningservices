@@ -143,12 +143,6 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
       setError('Please enter a 10-digit phone number.');
       return;
     }
-    // Only enforced for new bookings — editing shouldn't be blocked by an
-    // older record's area not matching today's served-area list.
-    if (!isEditing && (!formData.area || formData.area === 'Other')) {
-      setError('Please select a served area.');
-      return;
-    }
 
     setIsSubmitting(true);
     try {
