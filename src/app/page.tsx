@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import BookingModal from './components/BookingModal';
 import LoginModal from './components/LoginModal';
+import { checkTokenValidity } from '@/lib/tokenUtils';
 
 // Hero slideshow component — five distinct shots, not repeats of the same two
 const heroImages = [
@@ -71,6 +72,16 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  // Already signed in with a valid session — skip straight to the dashboard
+  // instead of asking for credentials again.
+  const handleAdminLoginClick = () => {
+    if (checkTokenValidity()) {
+      window.location.href = '/admin';
+    } else {
+      setIsLoginModalOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Navigation */}
@@ -92,7 +103,7 @@ export default function Home() {
               <a href="#services" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Services</a>
               <a href="#contact" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Contact</a>
               <button
-                onClick={() => setIsLoginModalOpen(true)}
+                onClick={handleAdminLoginClick}
                 className="text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-slate-600 px-5 py-2 rounded-full hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
               >
                 Admin Login
