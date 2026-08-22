@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import BookingModal from './components/BookingModal';
 import LoginModal from './components/LoginModal';
+import AiAssistant from './components/AiAssistant';
 import { checkTokenValidity } from '@/lib/tokenUtils';
 
 // Hero slideshow component — five distinct shots, not repeats of the same two
@@ -590,8 +591,10 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Floating contact buttons — WhatsApp + Call, both reachable from anywhere, no scrolling needed */}
+      {/* Floating contact buttons — AI Assistant + WhatsApp + Call, all reachable from anywhere, no scrolling needed */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+        <AiAssistant />
+
         {showWhatsAppOptions && (
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 p-2 w-64">
             <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-3 pt-2 pb-1">Chat on WhatsApp</p>
