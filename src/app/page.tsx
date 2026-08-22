@@ -99,32 +99,53 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-700/80">
+      <nav className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-gray-200/70 dark:border-slate-700/70 shadow-sm shadow-gray-900/[0.03]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 group">
               <img
                 src="/logo.png"
                 alt="SkyView Logo"
-                className="w-11 h-11"
+                className="w-11 h-11 transition-transform duration-300 group-hover:scale-105"
               />
               <div className="leading-tight">
                 <p className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">SkyView</p>
                 <p className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-widest -mt-0.5">Cleaning Services</p>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#services" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Services</a>
-              <a href="#contact" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Contact</a>
-              <a
-                href={PHONE_TEL}
-                className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                {PHONE_DISPLAY}
-              </a>
+            <div className="hidden md:flex items-center gap-6">
+              <div className="flex items-center gap-7">
+                <a href="#services" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Services</a>
+                <a href="#contact" className="relative text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-indigo-600 after:transition-all hover:after:w-full">Contact</a>
+              </div>
+
+              <div className="h-6 w-px bg-gray-200 dark:bg-slate-700" aria-hidden="true" />
+
+              <div className="flex items-center gap-1 bg-gray-50 dark:bg-slate-800/80 rounded-full pl-1.5 pr-4 py-1.5 border border-gray-100 dark:border-slate-700">
+                <a
+                  href={buildWhatsAppLink(BOOKING_REQUEST_MESSAGE)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Chat on WhatsApp"
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5a] hover:scale-105 transition-all"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 32 32" fill="currentColor">
+                    <path d="M16.004 3C9.377 3 4 8.373 4 15c0 2.36.687 4.56 1.872 6.41L4 29l7.77-1.833A11.94 11.94 0 0016.004 27C22.63 27 28 21.627 28 15S22.63 3 16.004 3zm0 21.7a9.66 9.66 0 01-4.933-1.352l-.354-.21-4.61 1.088 1.112-4.494-.23-.366A9.66 9.66 0 015.3 15c0-5.905 4.8-10.7 10.704-10.7 5.905 0 10.7 4.795 10.7 10.7 0 5.905-4.795 10.7-10.7 10.7zm5.87-8.02c-.322-.161-1.905-.94-2.2-1.047-.295-.108-.51-.161-.724.161-.215.322-.833 1.047-1.02 1.262-.188.215-.376.242-.698.08-.322-.16-1.36-.501-2.59-1.598-.958-.854-1.605-1.909-1.793-2.231-.188-.322-.02-.496.141-.656.145-.144.322-.376.484-.564.161-.188.215-.322.322-.537.107-.215.054-.403-.027-.564-.08-.161-.724-1.744-.992-2.389-.261-.628-.527-.543-.724-.553l-.617-.011c-.215 0-.564.08-.86.403-.295.322-1.127 1.101-1.127 2.685s1.154 3.114 1.315 3.33c.161.215 2.271 3.468 5.502 4.864.769.332 1.369.53 1.837.678.771.245 1.474.211 2.03.128.619-.093 1.905-.779 2.174-1.53.269-.752.269-1.396.188-1.53-.08-.134-.295-.215-.617-.376z" />
+                  </svg>
+                </a>
+                <a
+                  href={PHONE_TEL}
+                  className="flex items-center gap-2 text-sm font-semibold text-indigo-700 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  {PHONE_DISPLAY}
+                </a>
+              </div>
+
+              <div className="h-6 w-px bg-gray-200 dark:bg-slate-700" aria-hidden="true" />
+
               <button
                 onClick={handleAdminLoginClick}
                 className="text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-slate-600 px-5 py-2 rounded-full hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -133,24 +154,35 @@ export default function Home() {
               </button>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="text-sm font-semibold bg-indigo-600 dark:bg-indigo-500 text-white px-6 py-2.5 rounded-full shadow-sm shadow-indigo-600/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-md hover:shadow-indigo-600/40 hover:-translate-y-0.5 transition-all"
+                className="text-sm font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-500 dark:to-violet-500 text-white px-6 py-2.5 rounded-full shadow-md shadow-indigo-600/25 hover:shadow-lg hover:shadow-indigo-600/35 hover:-translate-y-0.5 transition-all"
               >
                 Book Now
               </button>
             </div>
             <div className="flex md:hidden items-center gap-2">
               <a
+                href={buildWhatsAppLink(BOOKING_REQUEST_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Chat on WhatsApp"
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-[#25D366] text-white shadow-sm shadow-[#25D366]/30"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 32 32" fill="currentColor">
+                  <path d="M16.004 3C9.377 3 4 8.373 4 15c0 2.36.687 4.56 1.872 6.41L4 29l7.77-1.833A11.94 11.94 0 0016.004 27C22.63 27 28 21.627 28 15S22.63 3 16.004 3zm0 21.7a9.66 9.66 0 01-4.933-1.352l-.354-.21-4.61 1.088 1.112-4.494-.23-.366A9.66 9.66 0 015.3 15c0-5.905 4.8-10.7 10.704-10.7 5.905 0 10.7 4.795 10.7 10.7 0 5.905-4.795 10.7-10.7 10.7zm5.87-8.02c-.322-.161-1.905-.94-2.2-1.047-.295-.108-.51-.161-.724.161-.215.322-.833 1.047-1.02 1.262-.188.215-.376.242-.698.08-.322-.16-1.36-.501-2.59-1.598-.958-.854-1.605-1.909-1.793-2.231-.188-.322-.02-.496.141-.656.145-.144.322-.376.484-.564.161-.188.215-.322.322-.537.107-.215.054-.403-.027-.564-.08-.161-.724-1.744-.992-2.389-.261-.628-.527-.543-.724-.553l-.617-.011c-.215 0-.564.08-.86.403-.295.322-1.127 1.101-1.127 2.685s1.154 3.114 1.315 3.33c.161.215 2.271 3.468 5.502 4.864.769.332 1.369.53 1.837.678.771.245 1.474.211 2.03.128.619-.093 1.905-.779 2.174-1.53.269-.752.269-1.396.188-1.53-.08-.134-.295-.215-.617-.376z" />
+                </svg>
+              </a>
+              <a
                 href={PHONE_TEL}
                 aria-label="Call SkyView Cleaning Services"
-                className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 dark:border-slate-600 text-indigo-600 dark:text-indigo-400"
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
               </a>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="text-sm font-semibold bg-indigo-600 text-white px-4 py-2 rounded-full"
+                className="text-sm font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-2 rounded-full shadow-sm shadow-indigo-600/30"
               >
                 Book Now
               </button>
