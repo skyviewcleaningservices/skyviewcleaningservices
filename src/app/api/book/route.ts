@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import WhatsAppBusinessAPI from '@/lib/whatsapp';
-import { SERVED_PUNE_AREAS } from '@/lib/areas';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.json();
 
-    // Hard service-area check — the booking form already blocks this, but
-    // that's only client-side, so enforce it here too before writing anything.
-    if (!formData.area || !SERVED_PUNE_AREAS.includes(formData.area)) {
+    // Only the phone number is mandatory for a public booking.
+    const digitsOnly = typeof formData.phone === 'string' ? formData.phone.replace(/\D/g, '') : '';
+    if (digitsOnly.length !== 10) {
+      return NextResponse.json(
+        { success: false, message: 'A valid 10-digit mobile number is required.' },
+        { status: 400 }
+      );
+    }
+
+    // Area is optional — only reject when the customer explicitly told us
+    // their area isn't one we serve.
+    if (formData.area === 'Other') {
       return NextResponse.json(
         {
           success: false,
@@ -22,14 +30,15 @@ export async function POST(request: NextRequest) {
     // Check for existing customer
     let existingCustomer = null;
     try {
+      // Match on phone, and on email only when one was actually given — an
+      // empty-string email would otherwise match every other blank-email
+      // booking and wrongly flag brand-new customers as returning ones.
+      const matchConditions: Array<{ phone: string } | { email: string }> = [{ phone: formData.phone }];
+      if (formData.email) matchConditions.push({ email: formData.email });
+
       // Find the most recent booking by this customer
       existingCustomer = await prisma.booking.findFirst({
-        where: {
-          OR: [
-            { email: formData.email },
-            { phone: formData.phone }
-          ]
-        },
+        where: { OR: matchConditions },
         orderBy: {
           createdAt: 'desc'
         }
@@ -53,19 +62,24 @@ export async function POST(request: NextRequest) {
         additionalServices: formData.additionalServices
       });
 
+      // preferredDate is a required column — when the customer skips it (it's
+      // optional on the form), fall back to today's date as a placeholder;
+      // we'll call them to confirm the actual date anyway.
+      const preferredDate = formData.date ? new Date(formData.date) : new Date();
+
       booking = await prisma.booking.create({
         data: {
-          name: formData.name,
+          name: formData.name || '',
           email: formData.email || null,
           phone: formData.phone,
-          address: formData.address,
+          address: formData.address || '',
           area: formData.area || null,
-          serviceType: formData.serviceType,
-          frequency: formData.frequency,
-          preferredDate: new Date(formData.date),
-          preferredTime: formData.time,
-          flatType: formData.flatType,
-          additionalServices: JSON.stringify(formData.additionalServices),
+          serviceType: formData.serviceType || 'deep-cleaning',
+          frequency: formData.frequency || 'one-time',
+          preferredDate,
+          preferredTime: formData.time || '',
+          flatType: formData.flatType || 'ONE_BHK',
+          additionalServices: JSON.stringify(formData.additionalServices || []),
           specialInstructions: formData.specialInstructions || null,
         },
       });
@@ -125,7 +139,8 @@ export async function POST(request: NextRequest) {
 
     if (existingCustomer) {
       isReturningCustomer = true;
-      responseMessage = `Welcome back, ${formData.name}! Thank you for choosing SkyView Cleaning Services again. We will contact you soon to confirm your appointment.`;
+      const greeting = formData.name ? `Welcome back, ${formData.name}!` : 'Welcome back!';
+      responseMessage = `${greeting} Thank you for choosing SkyView Cleaning Services again. We will contact you soon to confirm your appointment.`;
     }
 
     // Return success response

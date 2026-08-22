@@ -157,7 +157,7 @@ export class WhatsAppBusinessAPI {
   }
 
   private formatAdminMessage(bookingData: BookingData): string {
-    return `Name: ${bookingData.name},
+    return `Name: ${bookingData.name || 'Not provided'},
     Phone: ${bookingData.phone}`;
   }
 

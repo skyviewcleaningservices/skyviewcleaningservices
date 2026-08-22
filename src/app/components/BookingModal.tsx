@@ -21,17 +21,6 @@ interface SuccessData {
   };
 }
 
-interface PriceRate {
-  flatType: string;
-  serviceType: string;
-  price: number | null;
-}
-
-interface AddOnPrice {
-  name: string;
-  price: number | null;
-}
-
 const ADD_ON_SERVICES = [
   'Window Cleaning',
   'Oven Cleaning',
@@ -43,9 +32,6 @@ const ADD_ON_SERVICES = [
 ];
 
 const STEPS = ['Service', 'Property', 'Schedule', 'You'];
-
-const formatPrice = (amount: number) =>
-  `₹${amount.toLocaleString('en-IN')}`;
 
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [formData, setFormData] = useState({
@@ -63,7 +49,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     specialInstructions: '',
   });
   const [currentStep, setCurrentStep] = useState(0);
-  const [stepError, setStepError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -71,40 +56,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [emailError, setEmailError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
-  const [rates, setRates] = useState<PriceRate[]>([]);
-  const [addOnPrices, setAddOnPrices] = useState<AddOnPrice[]>([]);
-
-  // Fetch the current rate card once on mount
-  useEffect(() => {
-    fetch('/api/pricing')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setRates(data.rates);
-          setAddOnPrices(data.addOns);
-        }
-      })
-      .catch(error => console.error('Error fetching pricing:', error));
-  }, []);
-
-  // Live price estimate for the currently selected service + flat type + add-ons.
-  // Returns null when any needed rate hasn't been set yet ("Price on request").
-  const estimatedPrice = (() => {
-    if (rates.length === 0) return undefined; // still loading
-
-    const baseRate = rates.find(
-      r => r.flatType === formData.flatType && r.serviceType === formData.serviceType
-    );
-    if (!baseRate || baseRate.price === null) return null;
-
-    let total = baseRate.price;
-    for (const service of formData.additionalServices) {
-      const addOn = addOnPrices.find(a => a.name === service);
-      if (!addOn || addOn.price === null) return null;
-      total += addOn.price;
-    }
-    return total;
-  })();
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -271,32 +222,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     }));
   };
 
-  // Required-field guard for each step, run before advancing with Next.
-  const validateStep = (step: number): string | null => {
-    if (step === 1) {
-      if (!formData.area) return 'Please select your area.';
-      if (formData.area === 'Other') return "Sorry, we don't currently serve this area — we can't take this booking yet.";
-      if (!formData.address.trim()) return 'Please enter your address.';
-    }
-    if (step === 2) {
-      if (!formData.date) return 'Please select a preferred date.';
-      if (!formData.time) return 'Please select a preferred time.';
-    }
-    return null;
-  };
-
+  // Only the phone number is mandatory — every other step is a free click-through.
   const handleNext = () => {
-    const error = validateStep(currentStep);
-    if (error) {
-      setStepError(error);
-      return;
-    }
-    setStepError('');
     setCurrentStep(step => Math.min(step + 1, STEPS.length - 1));
   };
 
   const handleBack = () => {
-    setStepError('');
     setCurrentStep(step => Math.max(step - 1, 0));
   };
 
@@ -309,19 +240,16 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       return;
     }
 
-    // Validate that the selected date is not in the past
-    if (!formData.date) {
-      alert('Please select a preferred date.');
-      return;
-    }
+    // A date is optional, but if one was picked it can't be in the past.
+    if (formData.date) {
+      const selectedDate = new Date(formData.date + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    const selectedDate = new Date(formData.date + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
-
-    if (selectedDate < today) {
-      alert('Please select a date that is not in the past.');
-      return;
+      if (selectedDate < today) {
+        alert('Please select a date that is not in the past.');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -382,14 +310,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       serviceType: 'deep-cleaning',
       frequency: 'one-time',
       date: '',
-      time: '10:00',
+      time: '',
       flatType: 'ONE_BHK',
       additionalServices: [],
       specialInstructions: '',
     });
 
     setCurrentStep(0);
-    setStepError('');
 
     // Clear validation message and timeout
     setValidationMessage('');
@@ -398,15 +325,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   };
 
   if (!isOpen) return null;
-
-  const priceBanner = currentStep >= 1 && estimatedPrice !== undefined && (
-    <div className="bg-indigo-50 border border-indigo-200 rounded-md p-4 flex items-center justify-between">
-      <span className="text-sm font-medium text-indigo-900">Estimated total</span>
-      <span className="text-lg font-bold text-indigo-700">
-        {estimatedPrice === null ? 'Price on request' : formatPrice(estimatedPrice)}
-      </span>
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -438,11 +356,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {stepError && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-sm text-red-700">{stepError}</p>
-              </div>
-            )}
 
             {/* Step 1: Service */}
             {currentStep === 0 && (
@@ -544,12 +457,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   </div>
                   <div>
                     <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">
-                      Area in Pune *
+                      Area in Pune
                     </label>
                     <select
                       id="area"
                       name="area"
-                      required
                       value={formData.area}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -559,19 +471,17 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                         <option key={area} value={area}>{area}</option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">We currently only serve these Pune areas — if yours isn&apos;t listed, we&apos;re not able to take your booking yet.</p>
                   </div>
                 </div>
 
                 <div>
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                    Address *
+                    Address
                   </label>
                   <input
                     type="text"
                     id="address"
                     name="address"
-                    required
                     value={formData.address}
                     onChange={handleInputChange}
                     placeholder="Flat / street details"
@@ -579,7 +489,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   />
                 </div>
 
-                {priceBanner}
               </div>
             )}
 
@@ -589,13 +498,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
-                      Preferred Date *
+                      Preferred Date
                     </label>
                     <input
                       type="date"
                       id="date"
                       name="date"
-                      required
                       min={getTodayDate()}
                       value={formData.date}
                       onChange={(e) => {
@@ -617,12 +525,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   </div>
                   <div>
                     <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
-                      Preferred Time *
+                      Preferred Time
                     </label>
                     <select
                       id="time"
                       name="time"
-                      required
                       value={formData.time}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -642,7 +549,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   </div>
                 </div>
 
-                {priceBanner}
               </div>
             )}
 
@@ -652,13 +558,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name *
+                      Full Name
                     </label>
                     <input
                       type="text"
                       id="name"
                       name="name"
-                      required
                       value={formData.name}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -752,7 +657,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   />
                 </div>
 
-                {priceBanner}
               </div>
             )}
 
@@ -793,11 +697,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     disabled={isSubmitting}
                     className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting
-                      ? 'Submitting...'
-                      : typeof estimatedPrice === 'number'
-                        ? `Book Now — ${formatPrice(estimatedPrice)}`
-                        : 'Book Now'}
+                    {isSubmitting ? 'Submitting...' : 'Book Now'}
                   </button>
                 )}
               </div>
@@ -825,16 +725,16 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p><strong>Name:</strong> {formData.name}</p>
+                  <p><strong>Name:</strong> {formData.name || 'Not provided'}</p>
                   <p><strong>Phone:</strong> {formData.phone}</p>
                   <p><strong>Email:</strong> {formData.email || 'Not provided'}</p>
-                  <p><strong>Address:</strong> {formData.address}</p>
+                  <p><strong>Address:</strong> {formData.address || 'Not provided'}</p>
                 </div>
                 <div>
                   <p><strong>Service:</strong> {formData.serviceType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
                   <p><strong>Frequency:</strong> {formData.frequency.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                  <p><strong>Date:</strong> {formData.date}</p>
-                  <p><strong>Time:</strong> {formData.time}</p>
+                  <p><strong>Date:</strong> {formData.date || 'To be confirmed'}</p>
+                  <p><strong>Time:</strong> {formData.time || 'To be confirmed'}</p>
                 </div>
               </div>
               {formData.additionalServices.length > 0 && (
