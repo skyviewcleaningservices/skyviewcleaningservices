@@ -58,7 +58,7 @@ export async function PATCH(
 
     // Required (NOT NULL) columns — an empty string is fine, but null would
     // violate the schema, so these are never converted to null.
-    ['name', 'email', 'phone', 'address', 'serviceType', 'frequency',
+    ['name', 'phone', 'address', 'serviceType', 'frequency',
      'preferredTime', 'flatType', 'additionalServices',
     ].forEach((field) => {
       if (formData[field] !== undefined) {
@@ -66,8 +66,8 @@ export async function PATCH(
       }
     });
 
-    // Actually-nullable columns
-    ['remarks', 'paymentAmount', 'specialInstructions', 'statusReason', 'area'
+    // Actually-nullable columns (email is optional — only phone is required)
+    ['email', 'remarks', 'paymentAmount', 'specialInstructions', 'statusReason', 'area'
     ].forEach((field) => {
       if (formData[field] !== undefined) {
         updateData[field] = formData[field] || null;

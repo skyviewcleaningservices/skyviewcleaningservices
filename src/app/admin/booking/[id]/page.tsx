@@ -7,7 +7,7 @@ import { authFetch } from '@/lib/tokenUtils';
 interface Booking {
   id: number;
   name: string;
-  email: string;
+  email: string | null;
   phone: string;
   address: string;
   area?: string;

@@ -12,7 +12,7 @@ import { autoTable } from 'jspdf-autotable';
 interface Booking {
   id: number;
   name: string;
-  email: string;
+  email: string | null;
   phone: string;
   address: string;
   area?: string;
@@ -458,7 +458,7 @@ export default function AdminDashboard() {
           b =>
             b.name.toLowerCase().includes(term) ||
             b.phone.includes(term) ||
-            b.email.toLowerCase().includes(term) ||
+            (b.email || '').toLowerCase().includes(term) ||
             b.serviceType.toLowerCase().includes(term)
         )
       : bookings;

@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       booking = await prisma.booking.create({
         data: {
           name: formData.name,
-          email: formData.email,
+          email: formData.email || null,
           phone: formData.phone,
           address: formData.address,
           area: formData.area || null,

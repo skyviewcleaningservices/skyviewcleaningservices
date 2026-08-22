@@ -19,7 +19,7 @@ model User {
 model Booking {
   id                  Int           @id @default(autoincrement())
   name                String
-  email               String
+  email               String?
   phone               String
   address             String
   serviceType         String
