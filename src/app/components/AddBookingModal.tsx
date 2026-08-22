@@ -448,7 +448,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
                 rows={2}
                 value={formData.specialInstructions}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
