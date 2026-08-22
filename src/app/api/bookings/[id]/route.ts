@@ -56,21 +56,28 @@ export async function PATCH(
       updateData.paymentType = formData.paymentType;
     }
 
-    // ✅ Handle nullable fields
-    ['remarks', 'paymentAmount', 'name', 'email', 'phone', 'address',
-     'serviceType', 'frequency', 'preferredTime', 'flatType',
-     'additionalServices', 'specialInstructions', 'statusReason', 'area'
+    // Required (NOT NULL) columns — an empty string is fine, but null would
+    // violate the schema, so these are never converted to null.
+    ['name', 'email', 'phone', 'address', 'serviceType', 'frequency',
+     'preferredTime', 'flatType', 'additionalServices',
+    ].forEach((field) => {
+      if (formData[field] !== undefined) {
+        updateData[field] = formData[field];
+      }
+    });
+
+    // Actually-nullable columns
+    ['remarks', 'paymentAmount', 'specialInstructions', 'statusReason', 'area'
     ].forEach((field) => {
       if (formData[field] !== undefined) {
         updateData[field] = formData[field] || null;
       }
     });
 
-    // ✅ Safely parse date
-    if (formData.preferredDate !== undefined) {
-      updateData.preferredDate = formData.preferredDate
-        ? new Date(formData.preferredDate)
-        : null;
+    // preferredDate is required too — only update it when a valid date is
+    // given, never null it out.
+    if (formData.preferredDate) {
+      updateData.preferredDate = new Date(formData.preferredDate);
     }
 
     const booking = await prisma.booking.update({
