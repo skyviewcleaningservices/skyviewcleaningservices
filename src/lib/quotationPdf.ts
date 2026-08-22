@@ -40,7 +40,7 @@ export function generateQuotationPdf(doc: QuotationDoc): jsPDF {
   pdf.setFontSize(9);
   pdf.setTextColor(100);
   pdf.text('Ranjan Society, near PDCC Bank, Shukrawar Peth, Pune - 411002', 14, 24);
-  pdf.text('+91 9623707524', 14, 29);
+  pdf.text('+91 9623029057', 14, 29);
 
   // Document title + number/date, right-aligned
   pdf.setFontSize(16);

@@ -522,7 +522,7 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Phone</h3>
-              <p className="text-gray-600 dark:text-gray-300">+91 9623707524</p>
+              <p className="text-gray-600 dark:text-gray-300">+91 9623029057</p>
             </div>
             <div className="text-center bg-white dark:bg-slate-700 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
               <div className="w-12 h-12 bg-indigo-600 dark:bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">

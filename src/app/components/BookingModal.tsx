@@ -762,7 +762,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <h5 className="font-semibold text-indigo-800 mb-2">What&apos;s Next?</h5>
               <ul className="text-sm text-indigo-700 space-y-1">
                 <li>• We&apos;ll contact you within 3 hours to confirm your Booking</li>
-                <li>• For any changes, please call us at +91 9623707524</li>
+                <li>• For any changes, please call us at +91 9623029057</li>
               </ul>
             </div>
 

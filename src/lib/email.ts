@@ -53,7 +53,7 @@ export class EmailService {
         subject: 'Time for your next SkyView clean?',
         text: `Hi ${details.name},
 
-It's been about ${monthsAgo} month${monthsAgo === 1 ? '' : 's'} since your last ${details.serviceType} with SkyView Cleaning Services. If you'd like to book your next clean, just reply to this email or call us at +91 9623707524.
+It's been about ${monthsAgo} month${monthsAgo === 1 ? '' : 's'} since your last ${details.serviceType} with SkyView Cleaning Services. If you'd like to book your next clean, just reply to this email or call us at +91 9623029057.
 
 Thanks for choosing SkyView!`,
       });
