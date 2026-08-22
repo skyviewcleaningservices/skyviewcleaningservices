@@ -392,26 +392,26 @@ export default function EmployeeManagement() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Employees ({employees.length})</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-indigo-50/70">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aadhar</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PAN</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">Emergency Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Name</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Role</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Joined</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Aadhar</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">PAN</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100 w-48">Emergency Contact</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Salary</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Status</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100">
               {employees.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-6 py-8 text-center text-sm text-gray-500">
@@ -420,7 +420,7 @@ export default function EmployeeManagement() {
                 </tr>
               )}
               {employees.map((employee) => (
-                <tr key={employee.id}>
+                <tr key={employee.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{employee.name}</div>
                     <div className="text-sm text-gray-500">{employee.phone}</div>

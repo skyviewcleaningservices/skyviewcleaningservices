@@ -257,31 +257,31 @@ export default function UserManagement() {
       )}
 
       {/* Users Table */}
-              <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Users</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-indigo-50/70">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
                   Username
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
                   Created
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100">
               {users.map((user) => (
-                <tr key={user.id}>
+                <tr key={user.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {user.username}
                   </td>

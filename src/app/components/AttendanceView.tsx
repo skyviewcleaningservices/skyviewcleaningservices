@@ -210,7 +210,7 @@ export default function AttendanceView() {
         />
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
             <h3 className="text-lg font-medium text-gray-900">Daily Attendance</h3>
@@ -233,17 +233,17 @@ export default function AttendanceView() {
         </div>
         <div className="overflow-x-auto">
           <table className="divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-indigo-50/70">
               <tr>
-                <th className="sticky left-0 bg-gray-50 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="sticky left-0 bg-indigo-50/70 px-4 py-2.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider whitespace-nowrap border-b-2 border-indigo-100">
                   Employee
                 </th>
                 {dayNumbers.map(day => (
-                  <th key={day} className="px-1.5 py-2 text-center text-xs font-medium text-gray-500 w-8">
+                  <th key={day} className="px-1.5 py-2.5 text-center text-xs font-medium text-indigo-900/60 w-8 border-b-2 border-indigo-100">
                     {day}
                   </th>
                 ))}
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                <th className="px-4 py-2.5 text-center text-xs font-semibold text-indigo-900/80 uppercase tracking-wider whitespace-nowrap border-b-2 border-indigo-100">
                   Days Worked
                 </th>
               </tr>
@@ -257,8 +257,8 @@ export default function AttendanceView() {
                 </tr>
               )}
               {activeEmployees.map(employee => (
-                <tr key={employee.id}>
-                  <td className="sticky left-0 bg-white px-4 py-2 text-sm font-medium text-gray-900 whitespace-nowrap">
+                <tr key={employee.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/40 transition-colors">
+                  <td className="sticky left-0 bg-inherit px-4 py-2 text-sm font-medium text-gray-900 whitespace-nowrap">
                     {employee.name}
                   </td>
                   {dayNumbers.map(day => {
@@ -287,7 +287,7 @@ export default function AttendanceView() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <div>
             <h3 className="text-lg font-medium text-gray-900">Salary Calculation — {formatMonthLabel(selectedMonth)}</h3>
@@ -306,14 +306,14 @@ export default function AttendanceView() {
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-indigo-50/70">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Days Worked</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gross Salary</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Advance Taken</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider bg-indigo-50">Total Pay</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Employee</th>
+                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Days Worked</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Rate</th>
+                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Gross Salary</th>
+                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Advance Taken</th>
+                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900 uppercase tracking-wider bg-indigo-100 border-b-2 border-indigo-200">Total Pay</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -328,7 +328,7 @@ export default function AttendanceView() {
                 const advance = parseFloat(advances[employee.id] || '0') || 0;
                 const totalPay = salary !== null ? salary - advance : null;
                 return (
-                  <tr key={employee.id} className="hover:bg-gray-50">
+                  <tr key={employee.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
                     <td className="px-6 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{employee.name}</td>
                     <td className="px-6 py-3 text-sm text-gray-500 text-right tabular-nums">{worked}</td>
                     <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">
@@ -380,7 +380,7 @@ export default function AttendanceView() {
             </tbody>
             {activeEmployees.length > 0 && (
               <tfoot>
-                <tr className="border-t-2 border-gray-200 bg-gray-50">
+                <tr className="border-t-2 border-indigo-200 bg-indigo-50/70">
                   <td colSpan={5} className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
                     Total payroll for {formatMonthLabel(selectedMonth)}
                   </td>

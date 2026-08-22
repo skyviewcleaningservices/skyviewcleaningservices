@@ -53,6 +53,13 @@ const STATUS_OPTIONS = [
   { value: 'CANCELLED', label: 'Cancelled' }
 ] as const;
 
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: 'border-amber-300 bg-amber-50 text-amber-800',
+  CONFIRMED: 'border-blue-300 bg-blue-50 text-blue-800',
+  COMPLETED: 'border-green-300 bg-green-50 text-green-800',
+  CANCELLED: 'border-gray-300 bg-gray-100 text-gray-600',
+};
+
 const PAYMENT_OPTIONS = [
   { value: '', label: 'Select Type' },
   { value: 'CASH', label: 'Cash' },
@@ -210,7 +217,7 @@ const BookingRow = memo(function BookingRow({
   }, [booking.id, booking.remarks, booking.paymentAmount, booking.paymentType, updateBookingStatus]);
 
   return (
-    <tr className={`hover:bg-gray-50 ${isOverdue ? 'bg-red-50' : ''}`}>
+    <tr className={`odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors ${isOverdue ? '!bg-red-50' : ''}`}>
       <td className="px-6 py-4 whitespace-nowrap">
         <div>
           <div className="text-sm font-medium text-gray-900">{booking.name}</div>
@@ -236,7 +243,7 @@ const BookingRow = memo(function BookingRow({
         <select
           value={booking.status}
           onChange={handleStatusChange}
-          className={`border border-gray-300 rounded-md px-2 py-1 text-sm w-32 text-gray-700 ${isOverdue ? 'border-red-300' : ''}`}
+          className={`border rounded-full px-3 py-1 text-xs font-semibold w-32 transition-colors ${STATUS_COLORS[booking.status]} ${isOverdue ? '!border-red-400' : ''}`}
         >
           {STATUS_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>{label}</option>
@@ -389,15 +396,15 @@ const TableHeader = memo(function TableHeader({
     { label: 'Actions' },
   ];
   return (
-    <thead className="bg-gray-50">
+    <thead className="bg-indigo-50/70">
       <tr>
         {headers.map(({ label, field }) => (
-          <th key={label} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+          <th key={label} className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
             {field ? (
               <button
                 type="button"
                 onClick={() => onSort(field)}
-                className="flex items-center gap-1 hover:text-gray-900"
+                className="flex items-center gap-1 hover:text-indigo-700"
               >
                 {label}
                 <span className="text-[10px]">
@@ -642,7 +649,7 @@ export default function AdminDashboard() {
     <>
       <div className="max-w-7xl mx-auto">
         {/* Main Dashboard */}
-        <div className="bg-white shadow-sm rounded-lg border border-gray-200">
+        <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
           <WeekStrip bookings={allBookings} />
 
           {/* Navigation Bar */}

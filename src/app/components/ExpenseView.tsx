@@ -337,20 +337,20 @@ export default function ExpenseView() {
         </div>
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Expenses — {formatMonthLabel(selectedMonth)}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-indigo-50/70">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Date</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Description</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Category</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Payment</th>
+                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Amount</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -360,7 +360,7 @@ export default function ExpenseView() {
                 </tr>
               )}
               {expenses.map(expense => (
-                <tr key={expense.id} className="hover:bg-gray-50">
+                <tr key={expense.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
                   <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">{formatDate(expense.date)}</td>
                   <td className="px-6 py-3 text-sm font-medium text-gray-900">{expense.description}</td>
                   <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">{expense.category || '—'}</td>
@@ -381,7 +381,7 @@ export default function ExpenseView() {
             </tbody>
             {expenses.length > 0 && (
               <tfoot>
-                <tr className="border-t-2 border-gray-200 bg-gray-50">
+                <tr className="border-t-2 border-indigo-200 bg-indigo-50/70">
                   <td colSpan={4} className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
                     Total for {formatMonthLabel(selectedMonth)}
                   </td>
