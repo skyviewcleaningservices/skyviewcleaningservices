@@ -64,6 +64,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState('');
 
   // Re-sync the form each time the modal opens — it stays mounted between
@@ -72,6 +73,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
   useEffect(() => {
     if (!isOpen) return;
     setError('');
+    setShowDeleteConfirm(false);
     if (editingBooking) {
       setFormData({
         name: editingBooking.name,
@@ -117,6 +119,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
   const handleClose = () => {
     setFormData(EMPTY_FORM);
     setError('');
+    setShowDeleteConfirm(false);
     onClose();
   };
 
@@ -181,7 +184,6 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
 
   const handleDelete = async () => {
     if (!editingBooking) return;
-    if (!window.confirm(`Delete the booking for ${editingBooking.name}? This cannot be undone.`)) return;
 
     setIsDeleting(true);
     setError('');
@@ -194,9 +196,11 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
         onCreated();
         onClose();
       } else {
+        setShowDeleteConfirm(false);
         setError(result.message || 'Failed to delete booking.');
       }
     } catch (err) {
+      setShowDeleteConfirm(false);
       setError('Failed to delete booking. Please try again.');
     } finally {
       setIsDeleting(false);
@@ -204,6 +208,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
   };
 
   return (
+    <>
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
@@ -440,7 +445,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
                 {isEditing && (
                   <button
                     type="button"
-                    onClick={handleDelete}
+                    onClick={() => setShowDeleteConfirm(true)}
                     disabled={isDeleting || isSubmitting}
                     className="px-4 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -469,5 +474,35 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
         </div>
       </div>
     </div>
+
+    {showDeleteConfirm && editingBooking && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg max-w-sm w-full p-6">
+          <h3 className="text-lg font-bold text-gray-900">Delete Booking?</h3>
+          <p className="mt-2 text-sm text-gray-600">
+            Are you sure you want to delete the booking for {editingBooking.name}?
+          </p>
+          <div className="mt-6 flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
