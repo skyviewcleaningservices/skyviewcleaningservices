@@ -137,6 +137,11 @@ export default function AdminLoginPage() {
                   placeholder="Enter password"
                 />
               </div>
+              <div className="mt-2 text-right">
+                <a href="/admin/forgot-password" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
+                  Forgot password?
+                </a>
+              </div>
             </div>
 
             <div>

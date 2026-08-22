@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { signAdminToken } from '@/lib/auth';
 
@@ -26,7 +27,8 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    if (user.password !== password) {
+    const passwordMatches = await bcrypt.compare(password, user.password);
+    if (!passwordMatches) {
       return NextResponse.json({
         success: false,
         message: "Invalid credentials"

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
@@ -12,12 +14,14 @@ export async function GET(
 
   try {
     const { id } = await params;
-    
+
     const user = await prisma.user.findUnique({
-      where: { id: parseInt(id) }, 
+      where: { id: parseInt(id) },
       select: {
         id: true,
         username: true,
+        email: true,
+        phone: true,
         role: true,
         createdAt: true,
         updatedAt: true
@@ -55,7 +59,7 @@ export async function PATCH(
 
   try {
     const { id } = await params;
-    const { username, password, role } = await request.json();
+    const { username, password, email, phone, role } = await request.json();
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -73,10 +77,14 @@ export async function PATCH(
     const updateData: {
       username?: string;
       password?: string;
+      email?: string | null;
+      phone?: string | null;
       role?: 'ADMIN' | 'STAFF' | 'MANAGER';
     } = {};
     if (username) updateData.username = username;
-    if (password && password.trim() !== '') updateData.password = password;
+    if (password && password.trim() !== '') updateData.password = await bcrypt.hash(password, 10);
+    if (email !== undefined) updateData.email = email || null;
+    if (phone !== undefined) updateData.phone = phone || null;
     if (role && ['ADMIN', 'STAFF', 'MANAGER'].includes(role)) {
       updateData.role = role as 'ADMIN' | 'STAFF' | 'MANAGER';
     }
@@ -88,6 +96,8 @@ export async function PATCH(
       select: {
         id: true,
         username: true,
+        email: true,
+        phone: true,
         role: true,
         createdAt: true,
         updatedAt: true
@@ -100,6 +110,13 @@ export async function PATCH(
       user: updatedUser
     });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const field = (error.meta?.target as string[] | undefined)?.[0] || 'field';
+      return NextResponse.json({
+        success: false,
+        message: `That ${field} is already in use by another user.`
+      }, { status: 400 });
+    }
     console.error('Error updating user:', error);
     return NextResponse.json({
       success: false,

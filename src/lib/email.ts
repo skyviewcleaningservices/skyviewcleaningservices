@@ -63,6 +63,27 @@ Thanks for choosing SkyView!`,
       return { success: false, error: error instanceof Error ? error.message : 'Failed to send email' };
     }
   }
+
+  public async sendOtpEmail(to: string, code: string): Promise<{ success: boolean; error?: string }> {
+    if (!this.transporter) {
+      return { success: false, error: 'Email is not configured' };
+    }
+
+    try {
+      await this.transporter.sendMail({
+        from: `"SkyView Cleaning Services" <${this.fromAddress}>`,
+        to,
+        subject: 'Your SkyView admin password reset code',
+        text: `Your password reset code is: ${code}
+
+This code expires in 10 minutes. If you didn't request this, you can ignore this email.`,
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending OTP email:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to send email' };
+    }
+  }
 }
 
 export default EmailService;

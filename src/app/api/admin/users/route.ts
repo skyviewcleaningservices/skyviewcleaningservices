@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { requireAdminOrManager, isAdminPayload } from '@/lib/auth';
 
@@ -12,6 +14,8 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         username: true,
+        email: true,
+        phone: true,
         role: true,
         createdAt: true,
         updatedAt: true
@@ -38,7 +42,7 @@ export async function POST(request: NextRequest) {
   if (!isAdminPayload(auth)) return auth;
 
   try {
-    const { username, password, role = 'STAFF' } = await request.json();
+    const { username, password, email, phone, role = 'STAFF' } = await request.json();
 
     // Validate input
     if (!username || !password) {
@@ -60,16 +64,22 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create new user
     const newUser = await prisma.user.create({
       data: {
         username,
-        password,
+        password: hashedPassword,
+        email: email || null,
+        phone: phone || null,
         role
       },
       select: {
         id: true,
         username: true,
+        email: true,
+        phone: true,
         role: true,
         createdAt: true,
         updatedAt: true
@@ -82,6 +92,13 @@ export async function POST(request: NextRequest) {
       user: newUser
     });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const field = (error.meta?.target as string[] | undefined)?.[0] || 'field';
+      return NextResponse.json({
+        success: false,
+        message: `That ${field} is already in use by another user.`
+      }, { status: 400 });
+    }
     console.error('Error creating user:', error);
     return NextResponse.json({
       success: false,

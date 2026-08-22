@@ -8,6 +8,8 @@ import Toast, { type ToastState } from './Toast';
 interface User {
   id: number;
   username: string;
+  email: string | null;
+  phone: string | null;
   role: 'ADMIN' | 'STAFF' | 'MANAGER';
   createdAt: string;
   updatedAt: string;
@@ -16,8 +18,12 @@ interface User {
 interface UserFormData {
   username: string;
   password: string;
+  email: string;
+  phone: string;
   role: 'ADMIN' | 'STAFF' | 'MANAGER';
 }
+
+const EMPTY_FORM: UserFormData = { username: '', password: '', email: '', phone: '', role: 'STAFF' };
 
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -28,11 +34,7 @@ export default function UserManagement() {
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
-  const [formData, setFormData] = useState<UserFormData>({
-    username: '',
-    password: '',
-    role: 'STAFF'
-  });
+  const [formData, setFormData] = useState<UserFormData>(EMPTY_FORM);
 
   useEffect(() => {
     fetchUsers();
@@ -85,14 +87,16 @@ export default function UserManagement() {
       // Prepare data to send
       const dataToSend: Partial<UserFormData> = {
         username: formData.username.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
         role: formData.role
       };
-      
+
       // Only include password if it's not empty (for new users or when updating)
       if (formData.password.trim()) {
         dataToSend.password = formData.password;
       }
-      
+
       const response = await authFetch(url, {
         method,
         headers: {
@@ -106,7 +110,7 @@ export default function UserManagement() {
         setToast({ message: data.message, type: 'success' });
         setShowAddForm(false);
         setEditingUser(null);
-        setFormData({ username: '', password: '', role: 'STAFF' });
+        setFormData(EMPTY_FORM);
         fetchUsers();
       } else {
         const errorData = await response.json();
@@ -123,6 +127,8 @@ export default function UserManagement() {
     setFormData({
       username: user.username,
       password: '',
+      email: user.email || '',
+      phone: user.phone || '',
       role: user.role
     });
     setShowAddForm(true);
@@ -187,7 +193,7 @@ export default function UserManagement() {
           onClick={() => {
             setShowAddForm(true);
             setEditingUser(null);
-            setFormData({ username: '', password: '', role: 'STAFF' });
+            setFormData(EMPTY_FORM);
           }}
           className="btn-primary"
         >
@@ -223,8 +229,34 @@ export default function UserManagement() {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 required={!editingUser}
+                minLength={8}
                 className="field-input"
               />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="field-label mb-2">
+                  Email <span className="text-subtle font-normal normal-case">(for forgot-password)</span>
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="field-input"
+                />
+              </div>
+              <div>
+                <label className="field-label mb-2">
+                  Phone <span className="text-subtle font-normal normal-case">(for forgot-password)</span>
+                </label>
+                <input
+                  type="tel"
+                  placeholder="10-digit mobile number"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  className="field-input"
+                />
+              </div>
             </div>
             <div>
               <label className="field-label mb-2">
@@ -252,7 +284,7 @@ export default function UserManagement() {
                 onClick={() => {
                   setShowAddForm(false);
                   setEditingUser(null);
-                  setFormData({ username: '', password: '', role: 'STAFF' });
+                  setFormData(EMPTY_FORM);
                 }}
                 className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
               >
@@ -279,6 +311,9 @@ export default function UserManagement() {
                   Role
                 </th>
                 <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
+                  Contact
+                </th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
                   Created
                 </th>
                 <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
@@ -296,6 +331,16 @@ export default function UserManagement() {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
                       {user.role}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+                    {user.email || user.phone ? (
+                      <>
+                        {user.email && <div>{user.email}</div>}
+                        {user.phone && <div>{user.phone}</div>}
+                      </>
+                    ) : (
+                      <span className="text-subtle">Not set</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                     {formatDate(user.createdAt)}
