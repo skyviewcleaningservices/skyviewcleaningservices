@@ -88,6 +88,17 @@ const formatDateDMY = (d: string) => {
   return `${day}/${month}/${date.getFullYear()}`;
 };
 
+// "ONE_BHK" -> "1BHK", etc. — flatType is a FlatType enum value from Prisma.
+const FLAT_TYPE_LABELS: Record<string, string> = {
+  ONE_BHK: '1BHK',
+  TWO_BHK: '2BHK',
+  THREE_BHK: '3BHK',
+  FOUR_BHK: '4BHK',
+  STUDIO: 'Studio',
+  PENTHOUSE: 'Penthouse',
+};
+const formatFlatType = (flatType: string) => FLAT_TYPE_LABELS[flatType] || flatType.replace('_', ' ');
+
 const getToday = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -116,6 +127,7 @@ export const DebouncedInput = memo(function DebouncedInput({
   type = 'text',
   placeholder,
   min,
+  multiline = false,
   className = "border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700"
 }: {
   value: string | number | undefined;
@@ -124,6 +136,7 @@ export const DebouncedInput = memo(function DebouncedInput({
   type?: string;
   placeholder?: string;
   min?: string;
+  multiline?: boolean;
   className?: string;
 }) {
   const [val, setVal] = useState(initialValue?.toString() || '');
@@ -150,6 +163,19 @@ export const DebouncedInput = memo(function DebouncedInput({
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  if (multiline) {
+    return (
+      <textarea
+        value={val}
+        rows={2}
+        placeholder={placeholder}
+        onChange={(e) => handleChange(e.target.value)}
+        onBlur={handleBlur}
+        className={className}
+      />
+    );
+  }
 
   return (
     <input
@@ -227,8 +253,7 @@ const BookingRow = memo(function BookingRow({
       <td className="px-6 py-4 max-w-[180px]">
         <div>
           <div className="text-sm font-medium text-gray-900 break-words" title={booking.serviceType}>{booking.serviceType}</div>
-          <div className="text-sm text-gray-500">{booking.frequency}</div>
-          <div className="text-sm text-gray-500">{booking.flatType.replace('_', ' ')}</div>
+          <div className="text-sm text-gray-500">{formatFlatType(booking.flatType)}</div>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
@@ -273,13 +298,14 @@ const BookingRow = memo(function BookingRow({
           ))}
         </select>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+      <td className="px-6 py-4 text-sm font-medium min-w-[180px]">
         <div className="relative">
           <DebouncedInput
-            type="text"
+            multiline
             value={booking.remarks}
             placeholder="Add remarks..."
             onChange={handleRemarksChange}
+            className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700 resize-y"
           />
           {isUpdating && <LoadingSpinner />}
         </div>
@@ -628,7 +654,7 @@ export default function AdminDashboard() {
         b.name,
         b.phone,
         b.area || '—',
-        `${b.serviceType} (${b.flatType.replace('_', ' ')})`,
+        `${b.serviceType} (${formatFlatType(b.flatType)})`,
         new Date(b.preferredDate).toLocaleDateString(),
         b.preferredTime,
         b.status,
