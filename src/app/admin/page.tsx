@@ -7,6 +7,7 @@ import EmployeeManagement from '../components/EmployeeManagement';
 import AttendanceView from '../components/AttendanceView';
 import ExpenseView from '../components/ExpenseView';
 import PricingManagement from '../components/PricingManagement';
+import QuotationView from '../components/QuotationView';
 import ReportsView from '../components/ReportsView';
 import ReminderView from '../components/ReminderView';
 import CrewView from '../components/CrewView';
@@ -22,7 +23,7 @@ interface AdminUser {
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'employees' | 'attendance' | 'expenses' | 'pricing' | 'reports' | 'reminders'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'users' | 'employees' | 'attendance' | 'expenses' | 'pricing' | 'quotations' | 'reports' | 'reminders'>('bookings');
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [sessionTimeLeft, setSessionTimeLeft] = useState<string | null>(null);
@@ -147,6 +148,12 @@ export default function AdminPage() {
           onClick: () => setActiveTab('pricing')
         },
         {
+          id: 'quotations',
+          label: 'Quotations',
+          isActive: activeTab === 'quotations',
+          onClick: () => setActiveTab('quotations')
+        },
+        {
           id: 'reports',
           label: 'Reports',
           isActive: activeTab === 'reports',
@@ -166,6 +173,7 @@ export default function AdminPage() {
       {activeTab === 'attendance' && <AttendanceView />}
       {activeTab === 'expenses' && <ExpenseView />}
       {activeTab === 'pricing' && <PricingManagement />}
+      {activeTab === 'quotations' && <QuotationView />}
       {activeTab === 'reports' && <ReportsView />}
       {activeTab === 'reminders' && <ReminderView />}
     </DashboardLayout>
