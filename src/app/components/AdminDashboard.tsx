@@ -24,20 +24,20 @@ interface Booking {
   additionalServices: string;
   specialInstructions?: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
-  statusReason?: string;
-  remarks?: string;
-  paymentAmount?: number;
-  paymentType?: 'CASH' | 'CARD' | 'UPI' | 'BANK_TRANSFER';
+  statusReason?: string | null;
+  remarks?: string | null;
+  paymentAmount?: number | null;
+  paymentType?: 'CASH' | 'CARD' | 'UPI' | 'BANK_TRANSFER' | null;
   createdAt: string;
   updatedAt: string;
 }
 type UpdateFn = (
   bookingId: number,
   status: Booking['status'],
-  remarks?: string,
-  paymentAmount?: number,
+  remarks?: string | null,
+  paymentAmount?: number | null,
   paymentType?: Booking['paymentType'],
-  statusReason?: string
+  statusReason?: string | null
 ) => Promise<void>;
 
 // ---- Constants ----
@@ -130,7 +130,7 @@ export const DebouncedInput = memo(function DebouncedInput({
   multiline = false,
   className = "border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700"
 }: {
-  value: string | number | undefined;
+  value: string | number | null | undefined;
   onChange: (val: string) => void;
   debounce?: number;
   type?: string;
@@ -204,12 +204,14 @@ const BookingRow = memo(function BookingRow({
   formatDate,
   isUpdating,
   onViewHistory,
+  onEdit,
 }: {
   booking: Booking;
   updateBookingStatus: UpdateFn;
   formatDate: (d: string) => string;
   isUpdating: boolean;
   onViewHistory: (phone: string) => void;
+  onEdit: (booking: Booking) => void;
 }) {
   const isOverdue = useMemo(() => {
     const today = getToday();
@@ -330,10 +332,10 @@ const BookingRow = memo(function BookingRow({
           )}
           <div className="flex gap-2">
             <button
-              onClick={() => window.open(`/admin/booking/${booking.id}`, '_blank')}
+              onClick={() => onEdit(booking)}
               className="text-indigo-600 hover:text-indigo-900 text-xs font-medium"
             >
-              View / Edit
+              Edit
             </button>
             <button
               onClick={() => onViewHistory(booking.phone)}
@@ -461,6 +463,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('upcoming');
   const [historyPhone, setHistoryPhone] = useState<string | null>(null);
   const [showAddBookingModal, setShowAddBookingModal] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -567,7 +570,15 @@ export default function AdminDashboard() {
 
   const updateBookingStatus = useCallback<UpdateFn>(
     async (bookingId, status, remarks, paymentAmount, paymentType, statusReason) => {
-      const payload = { status, remarks, paymentAmount, paymentType, statusReason };
+      // Coerce undefined -> null: JSON.stringify drops undefined keys entirely,
+      // which would silently no-op a "clear this field" edit on the server.
+      const payload = {
+        status,
+        remarks: remarks ?? null,
+        paymentAmount: paymentAmount ?? null,
+        paymentType: paymentType ?? null,
+        statusReason: statusReason ?? null,
+      };
       const last = lastUpdateCache.current[bookingId];
       if (last && JSON.stringify(last) === JSON.stringify(payload)) return;
 
@@ -812,6 +823,7 @@ export default function AdminDashboard() {
                       formatDate={formatDateDMY}
                       isUpdating={updatingBookings.has(b.id)}
                       onViewHistory={setHistoryPhone}
+                      onEdit={setEditingBooking}
                     />
                   ))}
                 </tbody>
@@ -850,8 +862,12 @@ export default function AdminDashboard() {
       )}
 
       <AddBookingModal
-        isOpen={showAddBookingModal}
-        onClose={() => setShowAddBookingModal(false)}
+        isOpen={showAddBookingModal || !!editingBooking}
+        editingBooking={editingBooking}
+        onClose={() => {
+          setShowAddBookingModal(false);
+          setEditingBooking(null);
+        }}
         onCreated={() => {
           fetchBookings(activeTab);
           fetchAllBookings();

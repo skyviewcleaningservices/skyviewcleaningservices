@@ -5,7 +5,7 @@ interface Booking {
   serviceType: string;
   preferredDate: string;
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
-  paymentAmount?: number;
+  paymentAmount?: number | null;
 }
 
 interface CustomerHistoryModalProps {

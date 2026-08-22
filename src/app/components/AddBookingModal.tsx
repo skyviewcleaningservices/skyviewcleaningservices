@@ -1,13 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
 import { PUNE_AREAS } from '@/lib/areas';
+
+interface BookingForEdit {
+  id: number;
+  name: string;
+  email: string | null;
+  phone: string;
+  address: string;
+  area?: string;
+  serviceType: string;
+  frequency: string;
+  preferredDate: string;
+  preferredTime: string;
+  flatType: string;
+  additionalServices: string;
+  specialInstructions?: string;
+}
 
 interface AddBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: () => void;
+  editingBooking?: BookingForEdit | null;
 }
 
 const ADD_ON_SERVICES = [
@@ -43,12 +60,40 @@ const EMPTY_FORM = {
   specialInstructions: '',
 };
 
-export default function AddBookingModal({ isOpen, onClose, onCreated }: AddBookingModalProps) {
+export default function AddBookingModal({ isOpen, onClose, onCreated, editingBooking }: AddBookingModalProps) {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Re-sync the form each time the modal opens — it stays mounted between
+  // opens, so this is the only point where we know whether we're editing an
+  // existing booking or starting a fresh one.
+  useEffect(() => {
+    if (!isOpen) return;
+    setError('');
+    if (editingBooking) {
+      setFormData({
+        name: editingBooking.name,
+        email: editingBooking.email || '',
+        phone: editingBooking.phone,
+        address: editingBooking.address,
+        area: editingBooking.area || '',
+        serviceType: editingBooking.serviceType,
+        frequency: editingBooking.frequency,
+        date: editingBooking.preferredDate ? new Date(editingBooking.preferredDate).toISOString().slice(0, 10) : '',
+        time: editingBooking.preferredTime,
+        flatType: editingBooking.flatType,
+        additionalServices: editingBooking.additionalServices ? JSON.parse(editingBooking.additionalServices) : [],
+        specialInstructions: editingBooking.specialInstructions || '',
+      });
+    } else {
+      setFormData(EMPTY_FORM);
+    }
+  }, [isOpen, editingBooking]);
+
   if (!isOpen) return null;
+
+  const isEditing = !!editingBooking;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -82,17 +127,40 @@ export default function AddBookingModal({ isOpen, onClose, onCreated }: AddBooki
       setError('Please enter a 10-digit phone number.');
       return;
     }
-    if (!formData.area || formData.area === 'Other') {
+    // Only enforced for new bookings — editing shouldn't be blocked by an
+    // older record's area not matching today's served-area list.
+    if (!isEditing && (!formData.area || formData.area === 'Other')) {
       setError('Please select a served area.');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await authFetch('/api/bookings', {
-        method: 'POST',
+      const url = isEditing ? `/api/bookings/${editingBooking.id}` : '/api/bookings';
+      const method = isEditing ? 'PATCH' : 'POST';
+      // The PATCH endpoint uses preferredDate/preferredTime (matching the DB
+      // column names), while POST /api/bookings uses date/time — map here.
+      const body = isEditing
+        ? {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            area: formData.area,
+            serviceType: formData.serviceType,
+            frequency: formData.frequency,
+            preferredDate: formData.date,
+            preferredTime: formData.time,
+            flatType: formData.flatType,
+            additionalServices: JSON.stringify(formData.additionalServices),
+            specialInstructions: formData.specialInstructions,
+          }
+        : formData;
+
+      const response = await authFetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
       const result = await response.json();
 
@@ -101,10 +169,10 @@ export default function AddBookingModal({ isOpen, onClose, onCreated }: AddBooki
         onCreated();
         onClose();
       } else {
-        setError(result.message || 'Failed to add booking.');
+        setError(result.message || `Failed to ${isEditing ? 'update' : 'add'} booking.`);
       }
     } catch (err) {
-      setError('Failed to add booking. Please try again.');
+      setError(`Failed to ${isEditing ? 'update' : 'add'} booking. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -115,7 +183,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated }: AddBooki
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Add Booking Manually</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{isEditing ? 'Edit Booking' : 'Add Booking Manually'}</h2>
             <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-2xl font-bold">
               ×
             </button>
@@ -275,7 +343,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated }: AddBooki
                   id="date"
                   name="date"
                   required
-                  min={getTodayDate()}
+                  min={isEditing ? undefined : getTodayDate()}
                   value={formData.date}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -355,7 +423,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated }: AddBooki
                 disabled={isSubmitting}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Adding...' : 'Add Booking'}
+                {isSubmitting ? (isEditing ? 'Saving...' : 'Adding...') : (isEditing ? 'Save Changes' : 'Add Booking')}
               </button>
             </div>
           </form>

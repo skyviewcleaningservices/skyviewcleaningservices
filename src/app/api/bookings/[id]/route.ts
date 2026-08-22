@@ -54,6 +54,8 @@ export async function PATCH(
     }
     if (allowedPaymentTypes.includes(formData.paymentType)) {
       updateData.paymentType = formData.paymentType;
+    } else if (formData.paymentType === null || formData.paymentType === '') {
+      updateData.paymentType = null;
     }
 
     // Required (NOT NULL) columns — an empty string is fine, but null would
