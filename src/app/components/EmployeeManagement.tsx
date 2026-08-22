@@ -215,7 +215,7 @@ export default function EmployeeManagement() {
       </div>
 
       {showAddForm && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
           </h3>
@@ -401,7 +401,7 @@ export default function EmployeeManagement() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Employees ({employees.length})</h3>
         </div>
@@ -420,7 +420,7 @@ export default function EmployeeManagement() {
                 <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-100">
               {employees.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-6 py-8 text-center text-sm text-gray-500">

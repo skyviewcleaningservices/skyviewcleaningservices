@@ -197,7 +197,7 @@ export default function UserManagement() {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             {editingUser ? 'Edit User' : 'Add New User'}
           </h3>
@@ -264,7 +264,7 @@ export default function UserManagement() {
       )}
 
       {/* Users Table */}
-              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+              <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Users</h3>
         </div>
@@ -286,7 +286,7 @@ export default function UserManagement() {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-100">
               {users.map((user) => (
                 <tr key={user.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

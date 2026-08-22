@@ -327,10 +327,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Book Your Cleaning Service</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Book Your Cleaning Service</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold"
             >
               ×
             </button>
@@ -342,11 +342,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               {STEPS.map((label, index) => (
                 <div
                   key={label}
-                  className={`flex-1 h-1.5 rounded-full ${index <= currentStep ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                  className={`flex-1 h-1.5 rounded-full ${index <= currentStep ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'}`}
                 />
               ))}
             </div>
-            <p className="text-xs font-medium text-gray-500">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
               Step {currentStep + 1} of {STEPS.length} — {STEPS[currentStep]}
             </p>
           </div>
@@ -358,7 +358,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Service Type
                     </label>
                     <select
@@ -366,7 +366,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       name="serviceType"
                       value={formData.serviceType}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="regular-cleaning">General Cleaning</option>
                       <option value="deep-cleaning">Deep Cleaning</option>
@@ -374,7 +374,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="frequency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Frequency
                     </label>
                     <select
@@ -382,7 +382,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       name="frequency"
                       value={formData.frequency}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="one-time">One Time</option>
                       <option value="quaterly">Every 3 months</option>
@@ -394,7 +394,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
                 {/* Additional Services */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Additional Services
                   </label>
 
@@ -418,9 +418,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                           checked={formData.additionalServices.includes(service)}
                           onChange={() => handleCheckboxChange(service)}
                           disabled={formData.serviceType === 'full-deep-cleaning'}
-                          className="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                        <span className="text-sm text-gray-700">{service}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{service}</span>
                       </label>
                     ))}
                   </div>
@@ -433,7 +433,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="flatType" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="flatType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Flat Type
                     </label>
                     <select
@@ -441,7 +441,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       name="flatType"
                       value={formData.flatType}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="ONE_BHK">1 BHK</option>
                       <option value="TWO_BHK">2 BHK</option>
@@ -452,7 +452,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="area" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Area in Pune
                     </label>
                     <select
@@ -460,7 +460,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       name="area"
                       value={formData.area}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="">Select your area</option>
                       {PUNE_AREAS.map((area) => (
@@ -471,7 +471,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 </div>
 
                 <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Address
                   </label>
                   <input
@@ -481,7 +481,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     value={formData.address}
                     onChange={handleInputChange}
                     placeholder="Flat / street details"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
@@ -493,7 +493,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Preferred Date
                     </label>
                     <input
@@ -516,11 +516,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
                         handleInputChange(e);
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
-                    <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="time" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Preferred Time
                     </label>
                     <select
@@ -528,7 +528,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       name="time"
                       value={formData.time}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="">Select a time</option>
                       <option value="8:00">8:00 AM</option>
@@ -553,7 +553,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Full Name
                     </label>
                     <input
@@ -562,11 +562,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-700 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Email
                     </label>
                     <input
@@ -575,12 +575,12 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      className={`w-full px-3 py-2 border rounded-md text-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                         emailError
-                          ? 'border-red-500 bg-red-50'
+                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
                           : formData.email && !emailError
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-gray-300'
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'
                       }`}
                     />
                     {emailError && (
@@ -593,9 +593,9 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Phone Number *
-                    <span className="text-xs text-gray-500 ml-1">(10 digits required for validation)</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">(10 digits required for validation)</span>
                   </label>
                   <div className="relative">
                     <input
@@ -607,11 +607,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       onChange={handleInputChange}
                       placeholder="Enter 10-digit mobile number"
                       maxLength={15}
-                      className={`w-full px-3 py-2 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${validationMessage
-                        ? 'border-green-500 bg-green-50'
+                      className={`w-full px-3 py-2 border rounded-md text-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${validationMessage
+                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                         : formData.phone.length === 10
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-300'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700'
                         }`}
                     />
                     {isValidating && (
@@ -639,7 +639,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
                 {/* Special Instructions */}
                 <div>
-                  <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="specialInstructions" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Special Instructions
                   </label>
                   <textarea
@@ -649,7 +649,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                     value={formData.specialInstructions}
                     onChange={handleInputChange}
                     placeholder="Any special requirements or instructions..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
@@ -663,7 +663,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   <button
                     type="button"
                     onClick={handleBack}
-                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     Back
                   </button>
@@ -674,7 +674,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     Cancel
                   </button>
@@ -714,13 +714,13 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Booking Successful! 🎉</h3>
-                  <p className="text-lg text-gray-600">{successData.message}</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Booking Successful! 🎉</h3>
+                  <p className="text-lg text-gray-600 dark:text-gray-300">{successData.message}</p>
                 </div>
 
                 {/* Booking Details */}
-                <div className="bg-gray-50 text-gray-700 dark:text-gray-300 rounded-lg p-6 mb-6">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h4>
+                <div className="bg-gray-50 dark:bg-gray-900/40 text-gray-700 dark:text-gray-300 rounded-lg p-6 mb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Booking Details</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p><strong>Name:</strong> {formData.name || 'Not provided'}</p>
@@ -738,7 +738,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   {formData.additionalServices.length > 0 && (
                     <div className="mt-4">
                       <p><strong>Additional Services:</strong></p>
-                      <ul className="list-disc list-inside text-sm text-gray-600">
+                      <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400">
                         {formData.additionalServices.map((service, index) => (
                           <li key={index}>{service}</li>
                         ))}
@@ -748,7 +748,7 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                   {formData.specialInstructions && (
                     <div className="mt-4">
                       <p><strong>Special Instructions:</strong></p>
-                      <p className="text-sm text-gray-600">{formData.specialInstructions}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{formData.specialInstructions}</p>
                     </div>
                   )}
                 </div>
@@ -799,8 +799,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Booking Not Submitted</h3>
-                  <p className="text-lg text-gray-600">{successData.message}</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Booking Not Submitted</h3>
+                  <p className="text-lg text-gray-600 dark:text-gray-300">{successData.message}</p>
                 </div>
 
                 {/* Action Buttons */}

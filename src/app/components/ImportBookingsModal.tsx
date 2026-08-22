@@ -192,31 +192,31 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
       <div className="bg-white dark:bg-gray-800 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">Import Customers</h2>
-            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-2xl font-bold">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Import Customers</h2>
+            <button onClick={handleClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl font-bold">
               ×
             </button>
           </div>
 
           {!result && (
             <>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Upload a CSV with columns for customer name, mobile number, last service date,
                 review, payment amount, and service given (address is optional). Each row is
                 added as a completed booking so it shows up in Booking Management and customer
                 history.
               </p>
 
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4">
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center mb-4">
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".csv,text/csv"
                   onChange={handleFileChange}
-                  className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"
+                  className="block w-full text-sm text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-600 file:text-white hover:file:bg-indigo-700"
                 />
                 {fileName && !error && (
-                  <p className="text-sm text-gray-600 mt-3">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-3">
                     <span className="font-medium">{fileName}</span> — {validRowCount} row{validRowCount === 1 ? '' : 's'} ready to import
                     {rows.length !== validRowCount && (
                       <span className="text-amber-600"> ({rows.length - validRowCount} missing name/phone will be skipped)</span>
@@ -233,11 +233,11 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
 
               {isImporting && (
                 <div className="mb-4">
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>Importing bookings...</span>
                     <span>{progress} / {rows.length} ({Math.round((progress / rows.length) * 100)}%)</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
                     <div
                       className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${Math.round((progress / rows.length) * 100)}%` }}
@@ -251,7 +251,7 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
                   type="button"
                   onClick={handleClose}
                   disabled={isImporting}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
@@ -307,7 +307,7 @@ export default function ImportBookingsModal({ isOpen, onClose, onImported }: Imp
                 <button
                   type="button"
                   onClick={reset}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Import Another File
                 </button>
