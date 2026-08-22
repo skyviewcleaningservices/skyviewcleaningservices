@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
 import ConfirmDialog from './ConfirmDialog';
+import Toast, { type ToastState } from './Toast';
 
 interface User {
   id: number;
@@ -26,6 +27,7 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
   const [formData, setFormData] = useState<UserFormData>({
     username: '',
     password: '',
@@ -64,12 +66,12 @@ export default function UserManagement() {
     
     // Validate required fields
     if (!formData.username.trim()) {
-      alert('Username is required');
+      setToast({ message: 'Username is required', type: 'error' });
       return;
     }
-    
+
     if (!editingUser && !formData.password.trim()) {
-      alert('Password is required for new users');
+      setToast({ message: 'Password is required for new users', type: 'error' });
       return;
     }
     
@@ -103,18 +105,18 @@ export default function UserManagement() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(data.message);
+        setToast({ message: data.message, type: 'success' });
         setShowAddForm(false);
         setEditingUser(null);
         setFormData({ username: '', password: '', role: 'STAFF' });
         fetchUsers();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message}`);
+        setToast({ message: errorData.message, type: 'error' });
       }
     } catch (err) {
       console.error('Error saving user:', err);
-      alert('Error saving user. Please try again.');
+      setToast({ message: 'Error saving user. Please try again.', type: 'error' });
     }
   };
 
@@ -139,15 +141,15 @@ export default function UserManagement() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(data.message);
+        setToast({ message: data.message, type: 'success' });
         setDeletingUser(null);
         fetchUsers();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message}`);
+        setToast({ message: errorData.message, type: 'error' });
       }
     } catch (err) {
-      alert('Error deleting user');
+      setToast({ message: 'Error deleting user', type: 'error' });
     } finally {
       setIsDeleting(false);
     }
@@ -331,6 +333,8 @@ export default function UserManagement() {
         onCancel={() => setDeletingUser(null)}
         onConfirm={handleDelete}
       />
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

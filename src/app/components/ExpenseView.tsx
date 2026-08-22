@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
 import ConfirmDialog from './ConfirmDialog';
+import Toast, { type ToastState } from './Toast';
 
 interface Expense {
   id: number;
@@ -81,6 +82,7 @@ export default function ExpenseView() {
   const [saving, setSaving] = useState(false);
   const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
@@ -112,7 +114,7 @@ export default function ExpenseView() {
     e.preventDefault();
 
     if (!formData.description.trim() || !formData.amount || !formData.date) {
-      alert('Description, amount, and date are required');
+      setToast({ message: 'Description, amount, and date are required', type: 'error' });
       return;
     }
 
@@ -128,16 +130,17 @@ export default function ExpenseView() {
       });
 
       if (response.ok) {
+        setToast({ message: editingExpense ? 'Expense updated' : 'Expense added', type: 'success' });
         setShowAddForm(false);
         setEditingExpense(null);
         setFormData(EMPTY_FORM);
         fetchExpenses();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message}`);
+        setToast({ message: errorData.message, type: 'error' });
       }
     } catch (err) {
-      alert('Error saving expense. Please try again.');
+      setToast({ message: 'Error saving expense. Please try again.', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -163,14 +166,15 @@ export default function ExpenseView() {
     try {
       const response = await authFetch(`/api/admin/expenses/${deletingExpense.id}`, { method: 'DELETE' });
       if (response.ok) {
+        setToast({ message: 'Expense deleted', type: 'success' });
         setDeletingExpense(null);
         fetchExpenses();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message}`);
+        setToast({ message: errorData.message, type: 'error' });
       }
     } catch (err) {
-      alert('Error deleting expense');
+      setToast({ message: 'Error deleting expense', type: 'error' });
     } finally {
       setIsDeleting(false);
     }
@@ -412,6 +416,8 @@ export default function ExpenseView() {
         onCancel={() => setDeletingExpense(null)}
         onConfirm={handleDelete}
       />
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

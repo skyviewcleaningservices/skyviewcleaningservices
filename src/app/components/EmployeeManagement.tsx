@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
 import ConfirmDialog from './ConfirmDialog';
+import Toast, { type ToastState } from './Toast';
 
 interface Employee {
   id: number;
@@ -78,6 +79,7 @@ export default function EmployeeManagement() {
   const [saving, setSaving] = useState(false);
   const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   useEffect(() => {
     fetchEmployees();
@@ -107,7 +109,7 @@ export default function EmployeeManagement() {
     e.preventDefault();
 
     if (!formData.name.trim() || !formData.phone.trim()) {
-      alert('Name and phone are required');
+      setToast({ message: 'Name and phone are required', type: 'error' });
       return;
     }
 
@@ -124,17 +126,17 @@ export default function EmployeeManagement() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(data.message);
+        setToast({ message: data.message, type: 'success' });
         setShowAddForm(false);
         setEditingEmployee(null);
         setFormData(EMPTY_FORM);
         fetchEmployees();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message}`);
+        setToast({ message: errorData.message, type: 'error' });
       }
     } catch (err) {
-      alert('Error saving employee. Please try again.');
+      setToast({ message: 'Error saving employee. Please try again.', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -168,15 +170,15 @@ export default function EmployeeManagement() {
       const response = await authFetch(`/api/admin/employees/${deletingEmployee.id}`, { method: 'DELETE' });
       if (response.ok) {
         const data = await response.json();
-        alert(data.message);
+        setToast({ message: data.message, type: 'success' });
         setDeletingEmployee(null);
         fetchEmployees();
       } else {
         const errorData = await response.json();
-        alert(`Error: ${errorData.message}`);
+        setToast({ message: errorData.message, type: 'error' });
       }
     } catch (err) {
-      alert('Error deleting employee');
+      setToast({ message: 'Error deleting employee', type: 'error' });
     } finally {
       setIsDeleting(false);
     }
@@ -475,6 +477,8 @@ export default function EmployeeManagement() {
         onCancel={() => setDeletingEmployee(null)}
         onConfirm={handleDelete}
       />
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }
