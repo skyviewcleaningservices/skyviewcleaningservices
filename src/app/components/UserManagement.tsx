@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
+import ConfirmDialog from './ConfirmDialog';
 
 interface User {
   id: number;
@@ -23,6 +24,8 @@ export default function UserManagement() {
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState<UserFormData>({
     username: '',
     password: '',
@@ -125,17 +128,19 @@ export default function UserManagement() {
     setShowAddForm(true);
   };
 
-  const handleDelete = async (userId: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
-    
+  const handleDelete = async () => {
+    if (!deletingUser) return;
+
+    setIsDeleting(true);
     try {
-      const response = await authFetch(`/api/admin/users/${userId}`, {
+      const response = await authFetch(`/api/admin/users/${deletingUser.id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
         const data = await response.json();
         alert(data.message);
+        setDeletingUser(null);
         fetchUsers();
       } else {
         const errorData = await response.json();
@@ -143,6 +148,8 @@ export default function UserManagement() {
       }
     } catch (err) {
       alert('Error deleting user');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -302,7 +309,7 @@ export default function UserManagement() {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(user.id)}
+                        onClick={() => setDeletingUser(user)}
                         className="text-red-600 hover:text-red-900"
                       >
                         Delete
@@ -315,6 +322,15 @@ export default function UserManagement() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deletingUser}
+        title="Delete User?"
+        message={`"${deletingUser?.username}" will be permanently deleted.`}
+        isConfirming={isDeleting}
+        onCancel={() => setDeletingUser(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

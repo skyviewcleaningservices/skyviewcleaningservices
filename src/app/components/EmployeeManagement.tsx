@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
+import ConfirmDialog from './ConfirmDialog';
 
 interface Employee {
   id: number;
@@ -75,6 +76,8 @@ export default function EmployeeManagement() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [formData, setFormData] = useState<EmployeeFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [deletingEmployee, setDeletingEmployee] = useState<Employee | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchEmployees();
@@ -157,14 +160,16 @@ export default function EmployeeManagement() {
     setShowAddForm(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this employee record?')) return;
+  const handleDelete = async () => {
+    if (!deletingEmployee) return;
 
+    setIsDeleting(true);
     try {
-      const response = await authFetch(`/api/admin/employees/${id}`, { method: 'DELETE' });
+      const response = await authFetch(`/api/admin/employees/${deletingEmployee.id}`, { method: 'DELETE' });
       if (response.ok) {
         const data = await response.json();
         alert(data.message);
+        setDeletingEmployee(null);
         fetchEmployees();
       } else {
         const errorData = await response.json();
@@ -172,6 +177,8 @@ export default function EmployeeManagement() {
       }
     } catch (err) {
       alert('Error deleting employee');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -450,7 +457,7 @@ export default function EmployeeManagement() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button onClick={() => handleEdit(employee)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                      <button onClick={() => handleDelete(employee.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                      <button onClick={() => setDeletingEmployee(employee)} className="text-red-600 hover:text-red-900">Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -459,6 +466,15 @@ export default function EmployeeManagement() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deletingEmployee}
+        title="Delete Employee?"
+        message={`${deletingEmployee?.name}'s record will be permanently deleted.`}
+        isConfirming={isDeleting}
+        onCancel={() => setDeletingEmployee(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

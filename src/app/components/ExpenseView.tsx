@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
+import ConfirmDialog from './ConfirmDialog';
 
 interface Expense {
   id: number;
@@ -78,6 +79,8 @@ export default function ExpenseView() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [formData, setFormData] = useState<ExpenseFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [deletingExpense, setDeletingExpense] = useState<Expense | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
@@ -153,11 +156,14 @@ export default function ExpenseView() {
     setShowAddForm(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this expense?')) return;
+  const handleDelete = async () => {
+    if (!deletingExpense) return;
+
+    setIsDeleting(true);
     try {
-      const response = await authFetch(`/api/admin/expenses/${id}`, { method: 'DELETE' });
+      const response = await authFetch(`/api/admin/expenses/${deletingExpense.id}`, { method: 'DELETE' });
       if (response.ok) {
+        setDeletingExpense(null);
         fetchExpenses();
       } else {
         const errorData = await response.json();
@@ -165,6 +171,8 @@ export default function ExpenseView() {
       }
     } catch (err) {
       alert('Error deleting expense');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -373,7 +381,7 @@ export default function ExpenseView() {
                   <td className="px-6 py-3 text-sm font-medium whitespace-nowrap">
                     <div className="flex space-x-2">
                       <button onClick={() => handleEdit(expense)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                      <button onClick={() => handleDelete(expense.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                      <button onClick={() => setDeletingExpense(expense)} className="text-red-600 hover:text-red-900">Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -395,6 +403,15 @@ export default function ExpenseView() {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!deletingExpense}
+        title="Delete Expense?"
+        message={`"${deletingExpense?.description}" will be permanently deleted.`}
+        isConfirming={isDeleting}
+        onCancel={() => setDeletingExpense(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

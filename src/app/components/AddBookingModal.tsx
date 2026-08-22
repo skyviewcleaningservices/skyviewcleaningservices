@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authFetch } from '@/lib/tokenUtils';
 import { PUNE_AREAS } from '@/lib/areas';
+import ConfirmDialog from './ConfirmDialog';
 
 interface BookingForEdit {
   id: number;
@@ -475,33 +476,15 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
       </div>
     </div>
 
-    {showDeleteConfirm && editingBooking && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg max-w-sm w-full p-6">
-          <h3 className="text-lg font-bold text-gray-900">Delete Booking?</h3>
-          <p className="mt-2 text-sm text-gray-600">
-            Are you sure you want to delete the booking for {editingBooking.name}?
-          </p>
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(false)}
-              disabled={isDeleting}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
-          </div>
-        </div>
-      </div>
+    {editingBooking && (
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete Booking?"
+        message={`${editingBooking.name}'s booking will be permanently deleted.`}
+        isConfirming={isDeleting}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+      />
     )}
     </>
   );
