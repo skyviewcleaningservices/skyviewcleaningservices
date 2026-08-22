@@ -38,6 +38,17 @@ const ADD_ON_SERVICES = [
   'Balcony Cleaning',
 ];
 
+// Legacy/imported bookings sometimes have an area value that only differs
+// from a served-area option by case (e.g. "kothrud" vs "Kothrud") — matched
+// case-insensitively so the <select> shows the right option selected. A
+// value that doesn't match any option at all falls back to blank — the
+// select must always hold a real option or nothing, never free text.
+const matchPuneArea = (area?: string) => {
+  if (!area) return '';
+  const match = PUNE_AREAS.find(a => a.toLowerCase() === area.trim().toLowerCase());
+  return match || '';
+};
+
 const getTodayDate = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -81,7 +92,7 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
         email: editingBooking.email || '',
         phone: editingBooking.phone,
         address: editingBooking.address,
-        area: editingBooking.area || '',
+        area: matchPuneArea(editingBooking.area),
         serviceType: editingBooking.serviceType,
         frequency: editingBooking.frequency,
         date: editingBooking.preferredDate ? new Date(editingBooking.preferredDate).toISOString().slice(0, 10) : '',

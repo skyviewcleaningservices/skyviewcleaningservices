@@ -5,6 +5,7 @@ import { authFetch } from '@/lib/tokenUtils';
 import { startPdf } from '@/lib/pdf';
 import { autoTable } from 'jspdf-autotable';
 import type { jsPDF } from 'jspdf';
+import { SERVED_PUNE_AREAS } from '@/lib/areas';
 
 interface Booking {
   id: number;
@@ -40,6 +41,16 @@ const FLAT_TIERS: { key: string; label: string }[] = [
   { key: 'FOUR_BHK', label: '4 BHK' },
 ];
 
+// Legacy/imported bookings can have area values that only differ by case
+// (e.g. "kothrud" vs "Kothrud"), which would otherwise show as separate rows.
+function canonicalizeArea(area: string | undefined): string {
+  if (!area || area === 'Other') return 'Other / Unspecified';
+  const trimmed = area.trim();
+  const match = SERVED_PUNE_AREAS.find(a => a.toLowerCase() === trimmed.toLowerCase());
+  if (match) return match;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
+
 const PAYMENT_TYPE_LABELS: Record<string, string> = {
   CASH: 'Cash',
   CARD: 'Card',
@@ -59,31 +70,29 @@ function buildRows(bookings: Booking[], keyFn: (b: Booking) => string): Row[] {
   return Array.from(map.values()).sort((a, b) => b.count - a.count);
 }
 
-// Amount actually collected (paymentAmount present), grouped by calendar month
-// of the service date — the most recent 12 months that have a collection.
-function buildMonthlyCollections(bookings: Booking[]): CollectionPoint[] {
-  const map = new Map<string, CollectionPoint>();
-  for (const b of bookings) {
-    if (b.paymentAmount == null) continue;
-    const d = new Date(b.preferredDate);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const point = map.get(key) || {
-      key,
-      label: d.toLocaleDateString('en-US', { year: 'numeric', month: 'short' }),
-      // Always includes the year (not just "Aug") — the 12-month window can
-      // span a year boundary, and the same month name would otherwise repeat
-      // with no way to tell which year's bar is which.
-      shortLabel: `${d.toLocaleDateString('en-US', { month: 'short' })} '${String(d.getFullYear()).slice(-2)}`,
+// Amount actually collected (paymentAmount present), grouped by calendar
+// month for one specific year — always all 12 months, Jan through Dec, even
+// where a month has no collections.
+function buildMonthlyCollectionsForYear(bookings: Booking[], year: number): CollectionPoint[] {
+  const points: CollectionPoint[] = Array.from({ length: 12 }, (_, i) => {
+    const monthDate = new Date(year, i, 1);
+    return {
+      key: `${year}-${String(i + 1).padStart(2, '0')}`,
+      label: monthDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' }),
+      shortLabel: monthDate.toLocaleDateString('en-US', { month: 'short' }),
       amount: 0,
       count: 0,
     };
+  });
+  for (const b of bookings) {
+    if (b.paymentAmount == null) continue;
+    const d = new Date(b.preferredDate);
+    if (d.getFullYear() !== year) continue;
+    const point = points[d.getMonth()];
     point.amount += b.paymentAmount;
     point.count += 1;
-    map.set(key, point);
   }
-  return Array.from(map.values())
-    .sort((a, b) => a.key.localeCompare(b.key))
-    .slice(-12);
+  return points;
 }
 
 // Booking counts per flat tier (1/2/3/4 BHK only) for one calendar year —
@@ -239,14 +248,6 @@ export default function ReportsView() {
 
   const notCancelled = useMemo(() => bookings.filter(b => b.status !== 'CANCELLED'), [bookings]);
 
-  const byMonth = useMemo(
-    () =>
-      buildRows(notCancelled, b =>
-        new Date(b.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
-      ).sort((a, b) => new Date(a.label).getTime() - new Date(b.label).getTime()),
-    [notCancelled]
-  );
-
   const byPaymentType = useMemo(
     () =>
       buildRows(
@@ -277,12 +278,38 @@ export default function ReportsView() {
   );
 
   const byArea = useMemo(
-    () => buildRows(notCancelled, b => (b.area && b.area !== 'Other' ? b.area : 'Other / Unspecified')),
+    () => buildRows(notCancelled, b => canonicalizeArea(b.area)),
     [notCancelled]
   );
 
-  const monthlyCollections = useMemo(() => buildMonthlyCollections(bookings), [bookings]);
-  const yearlyCollections = useMemo(() => buildYearlyCollections(bookings), [bookings]);
+  // Years that actually have a recorded collection — drives the "By month" dropdown.
+  const collectionYears = useMemo(() => {
+    const years = new Set(
+      bookings.filter(b => b.paymentAmount != null).map(b => new Date(b.preferredDate).getFullYear())
+    );
+    return Array.from(years).sort((a, b) => b - a);
+  }, [bookings]);
+
+  const [selectedCollectionYear, setSelectedCollectionYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (selectedCollectionYear === null && collectionYears.length > 0) {
+      setSelectedCollectionYear(collectionYears[0]);
+    }
+  }, [collectionYears, selectedCollectionYear]);
+
+  const monthlyCollections = useMemo(
+    () => (selectedCollectionYear === null ? [] : buildMonthlyCollectionsForYear(bookings, selectedCollectionYear)),
+    [bookings, selectedCollectionYear]
+  );
+
+  const [yearRange, setYearRange] = useState<3 | 5 | 'all'>(5);
+  const yearlyCollectionsAll = useMemo(() => buildYearlyCollections(bookings), [bookings]);
+  const yearlyCollections = useMemo(
+    () => (yearRange === 'all' ? yearlyCollectionsAll : yearlyCollectionsAll.slice(-yearRange)),
+    [yearlyCollectionsAll, yearRange]
+  );
+
   const totalCollected = useMemo(
     () => bookings.reduce((sum, b) => sum + (b.paymentAmount || 0), 0),
     [bookings]
@@ -297,7 +324,7 @@ export default function ReportsView() {
     doc.text(`Total collected to date: Rs. ${totalCollected.toLocaleString('en-IN')}`, 14, 38);
 
     doc.setFontSize(10);
-    doc.text('By month', 14, 48);
+    doc.text(`By month — ${selectedCollectionYear ?? ''}`, 14, 48);
     let nextY = drawCollectionsChartToPdf(doc, monthlyCollections, 52);
     autoTable(doc, {
       startY: nextY,
@@ -314,7 +341,7 @@ export default function ReportsView() {
       nextY = 20;
     }
     doc.setFontSize(10);
-    doc.text('By year', 14, nextY);
+    doc.text(`By year${yearRange === 'all' ? '' : ` (last ${yearRange})`}`, 14, nextY);
     nextY = drawCollectionsChartToPdf(doc, yearlyCollections, nextY + 4);
     autoTable(doc, {
       startY: nextY,
@@ -325,7 +352,7 @@ export default function ReportsView() {
     });
 
     doc.save(`skyview-collections-${new Date().toISOString().slice(0, 10)}.pdf`);
-  }, [monthlyCollections, yearlyCollections, totalCollected]);
+  }, [monthlyCollections, yearlyCollections, totalCollected, selectedCollectionYear, yearRange]);
 
   if (loading) return <div className="text-center py-4">Loading reports...</div>;
   if (error) return <div className="text-red-600 text-center py-4">{error}</div>;
@@ -353,22 +380,51 @@ export default function ReportsView() {
           </button>
         </div>
 
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">By month (last 12)</p>
-        {monthlyCollections.length === 0 ? (
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">By month</p>
+          {collectionYears.length > 0 && selectedCollectionYear !== null && (
+            <select
+              value={selectedCollectionYear}
+              onChange={(e) => setSelectedCollectionYear(Number(e.target.value))}
+              className="border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {collectionYears.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        {monthlyCollections.length === 0 || collectionYears.length === 0 ? (
           <p className="text-sm text-gray-400 mb-6">No payments recorded yet.</p>
         ) : (
           <div className="mb-6"><CollectionsChart points={monthlyCollections} /></div>
         )}
 
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">By year</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">By year</p>
+          <div className="flex gap-1">
+            {([3, 5, 'all'] as const).map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setYearRange(opt)}
+                className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
+                  yearRange === opt
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {opt === 'all' ? 'All' : `Last ${opt}`}
+              </button>
+            ))}
+          </div>
+        </div>
         {yearlyCollections.length === 0 ? (
           <p className="text-sm text-gray-400">No payments recorded yet.</p>
         ) : (
           <CollectionsChart points={yearlyCollections} height={160} />
         )}
       </div>
-
-      <BarTable title="Bookings & revenue by month" rows={byMonth} valueKey="revenue" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <BarTable title="Revenue by payment method" rows={byPaymentType} valueKey="revenue" />
