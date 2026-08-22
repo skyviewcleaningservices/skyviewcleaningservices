@@ -328,60 +328,77 @@ export default function QuotationView() {
             {/* Line items */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Items</label>
+
+              {/* Header row — same grid template as each item row below, so columns line up exactly */}
+              <div className="hidden md:grid md:grid-cols-12 gap-2 px-1 mb-1">
+                <span className="md:col-span-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</span>
+                <span className="md:col-span-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</span>
+                <span className="md:col-span-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty</span>
+                <span className="md:col-span-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rate</span>
+                <span className="md:col-span-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Amount</span>
+                <span className="md:col-span-1" />
+              </div>
+
               <div className="space-y-2">
-                {items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-start">
-                    <div className="md:col-span-4">
-                      <select
-                        value={item.product}
-                        onChange={(e) => handleItemChange(index, 'product', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
-                      >
-                        <option value="">Select a service</option>
-                        {PRODUCT_OPTIONS.map(option => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                      </select>
+                {items.map((item, index) => {
+                  const amount = (parseFloat(item.quantity) || 0) * (parseFloat(item.rate) || 0);
+                  return (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+                      <div className="md:col-span-3">
+                        <select
+                          value={item.product}
+                          onChange={(e) => handleItemChange(index, 'product', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                        >
+                          <option value="">Select a service</option>
+                          {PRODUCT_OPTIONS.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="md:col-span-3">
+                        <input
+                          type="text"
+                          placeholder="Description"
+                          value={item.description}
+                          onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                        />
+                      </div>
+                      <div className="md:col-span-1">
+                        <input
+                          type="text"
+                          placeholder="Qty"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value.replace(/[^0-9.]/g, ''))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <input
+                          type="text"
+                          placeholder="Rate"
+                          value={item.rate}
+                          onChange={(e) => handleItemChange(index, 'rate', e.target.value.replace(/[^0-9.]/g, ''))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                        />
+                      </div>
+                      <div className="md:col-span-2 px-3 py-2 text-sm text-gray-700 text-right tabular-nums">
+                        ₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                      <div className="md:col-span-1 flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeItemRow(index)}
+                          disabled={items.length === 1}
+                          className="text-red-500 hover:text-red-700 disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
-                    <div className="md:col-span-3">
-                      <input
-                        type="text"
-                        placeholder="Description"
-                        value={item.description}
-                        onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <input
-                        type="text"
-                        placeholder="Qty"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <input
-                        type="text"
-                        placeholder="Rate"
-                        value={item.rate}
-                        onChange={(e) => handleItemChange(index, 'rate', e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
-                      />
-                    </div>
-                    <div className="md:col-span-1 flex items-center justify-end h-full pt-2">
-                      <button
-                        type="button"
-                        onClick={() => removeItemRow(index)}
-                        disabled={items.length === 1}
-                        className="text-red-500 hover:text-red-700 disabled:opacity-30 disabled:cursor-not-allowed text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <button
                 type="button"
