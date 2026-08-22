@@ -13,6 +13,7 @@ interface SuccessData {
   bookingId?: string;
   isReturningCustomer: boolean;
   previousBookings: number;
+  success: boolean;
   whatsappNotifications?: {
     customerSent: boolean;
     adminSent: boolean;
@@ -261,14 +262,15 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
 
       if (result.success) {
         // Show success modal with booking details and WhatsApp status
-        setSuccessData(result);
+        setSuccessData({ ...result, success: true });
         setShowSuccessModal(true);
       } else {
         // Show error message if API fails
         setSuccessData({
           message: result.message || 'Failed to submit booking. Please try again.',
           isReturningCustomer: false,
-          previousBookings: 0
+          previousBookings: 0,
+          success: false,
         });
         setShowSuccessModal(true);
       }
@@ -278,7 +280,8 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       setSuccessData({
         message: 'Failed to submit booking. Please try again or contact us directly.',
         isReturningCustomer: false,
-        previousBookings: 0
+        previousBookings: 0,
+        success: false,
       });
       setShowSuccessModal(true);
     } finally {
@@ -703,88 +706,124 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
       {showSuccessModal && successData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="text-center mb-6">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Booking Successful! 🎉</h3>
-              <p className="text-lg text-gray-600">{successData.message}</p>
-            </div>
+            {successData.success ? (
+              <>
+                <div className="text-center mb-6">
+                  <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                    <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Booking Successful! 🎉</h3>
+                  <p className="text-lg text-gray-600">{successData.message}</p>
+                </div>
 
-            {/* Booking Details */}
-            <div className="bg-gray-50 text-gray-700 dark:text-gray-300 rounded-lg p-6 mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p><strong>Name:</strong> {formData.name || 'Not provided'}</p>
-                  <p><strong>Phone:</strong> {formData.phone}</p>
-                  <p><strong>Email:</strong> {formData.email || 'Not provided'}</p>
-                  <p><strong>Address:</strong> {formData.address || 'Not provided'}</p>
+                {/* Booking Details */}
+                <div className="bg-gray-50 text-gray-700 dark:text-gray-300 rounded-lg p-6 mb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p><strong>Name:</strong> {formData.name || 'Not provided'}</p>
+                      <p><strong>Phone:</strong> {formData.phone}</p>
+                      <p><strong>Email:</strong> {formData.email || 'Not provided'}</p>
+                      <p><strong>Address:</strong> {formData.address || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p><strong>Service:</strong> {formData.serviceType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                      <p><strong>Frequency:</strong> {formData.frequency.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                      <p><strong>Date:</strong> {formData.date || 'To be confirmed'}</p>
+                      <p><strong>Time:</strong> {formData.time || 'To be confirmed'}</p>
+                    </div>
+                  </div>
+                  {formData.additionalServices.length > 0 && (
+                    <div className="mt-4">
+                      <p><strong>Additional Services:</strong></p>
+                      <ul className="list-disc list-inside text-sm text-gray-600">
+                        {formData.additionalServices.map((service, index) => (
+                          <li key={index}>{service}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {formData.specialInstructions && (
+                    <div className="mt-4">
+                      <p><strong>Special Instructions:</strong></p>
+                      <p className="text-sm text-gray-600">{formData.specialInstructions}</p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <p><strong>Service:</strong> {formData.serviceType.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                  <p><strong>Frequency:</strong> {formData.frequency.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                  <p><strong>Date:</strong> {formData.date || 'To be confirmed'}</p>
-                  <p><strong>Time:</strong> {formData.time || 'To be confirmed'}</p>
-                </div>
-              </div>
-              {formData.additionalServices.length > 0 && (
-                <div className="mt-4">
-                  <p><strong>Additional Services:</strong></p>
-                  <ul className="list-disc list-inside text-sm text-gray-600">
-                    {formData.additionalServices.map((service, index) => (
-                      <li key={index}>{service}</li>
-                    ))}
+
+                {/* Booking ID and Status */}
+                {successData.bookingId && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <p className="text-sm text-blue-800">
+                      <strong>Booking ID:</strong> {successData.bookingId}
+                    </p>
+                    <p className="text-xs text-blue-600 mt-1">Please keep this ID for reference</p>
+                  </div>
+                )}
+                {/* Next Steps */}
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+                  <h5 className="font-semibold text-indigo-800 mb-2">What&apos;s Next?</h5>
+                  <ul className="text-sm text-indigo-700 space-y-1">
+                    <li>• We&apos;ll contact you within 3 hours to confirm your Booking</li>
+                    <li>• For any changes, please call us at +91 9623029057</li>
                   </ul>
                 </div>
-              )}
-              {formData.specialInstructions && (
-                <div className="mt-4">
-                  <p><strong>Special Instructions:</strong></p>
-                  <p className="text-sm text-gray-600">{formData.specialInstructions}</p>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleSuccessModalClose}
+                    className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                  >
+                    Done
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowSuccessModal(false);
+                      setSuccessData(null);
+                      // Keep the modal open for another booking
+                    }}
+                    className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 font-medium"
+                  >
+                    Book Another Service
+                  </button>
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center mb-6">
+                  <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                    <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Booking Not Submitted</h3>
+                  <p className="text-lg text-gray-600">{successData.message}</p>
+                </div>
 
-            {/* Booking ID and Status */}
-            {successData.bookingId && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-800">
-                  <strong>Booking ID:</strong> {successData.bookingId}
-                </p>
-                <p className="text-xs text-blue-600 mt-1">Please keep this ID for reference</p>
-              </div>
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => {
+                      setShowSuccessModal(false);
+                      setSuccessData(null);
+                      // Keep the form filled so they can fix the field that failed
+                    }}
+                    className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                  >
+                    Edit &amp; Try Again
+                  </button>
+                  <button
+                    onClick={handleSuccessModalClose}
+                    className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 font-medium"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
             )}
-            {/* Next Steps */}
-            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
-              <h5 className="font-semibold text-indigo-800 mb-2">What&apos;s Next?</h5>
-              <ul className="text-sm text-indigo-700 space-y-1">
-                <li>• We&apos;ll contact you within 3 hours to confirm your Booking</li>
-                <li>• For any changes, please call us at +91 9623029057</li>
-              </ul>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleSuccessModalClose}
-                className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-              >
-                Done
-              </button>
-              <button
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  setSuccessData(null);
-                  // Keep the modal open for another booking
-                }}
-                className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 font-medium"
-              >
-                Book Another Service
-              </button>
-            </div>
           </div>
         </div>
       )}
