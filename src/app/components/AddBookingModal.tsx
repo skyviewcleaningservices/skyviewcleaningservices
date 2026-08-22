@@ -63,6 +63,7 @@ const EMPTY_FORM = {
 export default function AddBookingModal({ isOpen, onClose, onCreated, editingBooking }: AddBookingModalProps) {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
 
   // Re-sync the form each time the modal opens — it stays mounted between
@@ -175,6 +176,30 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
       setError(`Failed to ${isEditing ? 'update' : 'add'} booking. Please try again.`);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!editingBooking) return;
+    if (!window.confirm(`Delete the booking for ${editingBooking.name}? This cannot be undone.`)) return;
+
+    setIsDeleting(true);
+    setError('');
+    try {
+      const response = await authFetch(`/api/bookings/${editingBooking.id}`, { method: 'DELETE' });
+      const result = await response.json();
+
+      if (result.success) {
+        setFormData(EMPTY_FORM);
+        onCreated();
+        onClose();
+      } else {
+        setError(result.message || 'Failed to delete booking.');
+      }
+    } catch (err) {
+      setError('Failed to delete booking. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -410,21 +435,35 @@ export default function AddBookingModal({ isOpen, onClose, onCreated, editingBoo
               />
             </div>
 
-            <div className="flex justify-end space-x-3 pt-2">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (isEditing ? 'Saving...' : 'Adding...') : (isEditing ? 'Save Changes' : 'Add Booking')}
-              </button>
+            <div className="flex justify-between items-center pt-2">
+              <div>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={isDeleting || isSubmitting}
+                    className="px-4 py-2 border border-red-300 text-red-600 rounded-md hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete Booking'}
+                  </button>
+                )}
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isDeleting}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (isEditing ? 'Saving...' : 'Adding...') : (isEditing ? 'Save Changes' : 'Add Booking')}
+                </button>
+              </div>
             </div>
           </form>
         </div>

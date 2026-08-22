@@ -99,6 +99,16 @@ const FLAT_TYPE_LABELS: Record<string, string> = {
 };
 const formatFlatType = (flatType: string) => FLAT_TYPE_LABELS[flatType] || flatType.replace('_', ' ');
 
+// preferredTime is stored as 24-hour "H:MM" (e.g. "14:00") — display as 12-hour.
+const formatTime12h = (time: string) => {
+  const [hStr, mStr] = time.split(':');
+  const h = parseInt(hStr, 10);
+  if (Number.isNaN(h)) return time;
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${(mStr || '00').padStart(2, '0')} ${period}`;
+};
+
 const getToday = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -263,7 +273,7 @@ const BookingRow = memo(function BookingRow({
           <div className={`text-sm font-medium ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
             {formatDate(booking.preferredDate)}
           </div>
-          <div className="text-sm text-gray-500">{booking.preferredTime}</div>
+          <div className="text-sm text-gray-500">{formatTime12h(booking.preferredTime)}</div>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -667,7 +677,7 @@ export default function AdminDashboard() {
         b.area || '—',
         `${b.serviceType} (${formatFlatType(b.flatType)})`,
         new Date(b.preferredDate).toLocaleDateString(),
-        b.preferredTime,
+        formatTime12h(b.preferredTime),
         b.status,
         b.paymentAmount != null ? `Rs. ${b.paymentAmount}` : '—',
         b.paymentType || '—',

@@ -96,3 +96,30 @@ export async function PATCH(
     }, 500);
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = requireAdminOrManager(request);
+  if (!isAdminPayload(auth)) return auth;
+
+  try {
+    const { id } = await params;
+
+    const existing = await prisma.booking.findUnique({ where: { id: parseInt(id) } });
+    if (!existing) {
+      return jsonResponse(false, { message: 'Booking not found' }, 404);
+    }
+
+    await prisma.booking.delete({ where: { id: parseInt(id) } });
+
+    return jsonResponse(true, { message: 'Booking deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting booking:', error);
+    return jsonResponse(false, {
+      message: 'Failed to delete booking',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, 500);
+  }
+}
