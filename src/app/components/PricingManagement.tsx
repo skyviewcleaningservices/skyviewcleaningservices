@@ -89,40 +89,40 @@ export default function PricingManagement() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-4">Loading pricing...</div>;
+    return <div className="text-center py-4 text-muted">Loading pricing...</div>;
   }
 
   if (error) {
-    return <div className="text-red-600 text-center py-4">Error: {error}</div>;
+    return <div className="text-red-600 dark:text-red-400 text-center py-4">Error: {error}</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Pricing</h2>
-        <p className="text-sm text-gray-500">Blank = shown to customers as &quot;Price on request&quot;</p>
+        <h2 className="text-2xl font-bold text-heading">Pricing</h2>
+        <p className="text-sm text-muted">Blank = shown to customers as &quot;Price on request&quot;</p>
       </div>
 
-      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Rate card (₹ by flat type × service)</h3>
+      <div className="panel-table">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-heading">Rate card (₹ by flat type × service)</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-50/70">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-indigo-50/70 dark:bg-indigo-950/40">
               <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Flat type</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Flat type</th>
                 {SERVICE_TYPE_ORDER.map(serviceType => (
-                  <th key={serviceType} className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
+                  <th key={serviceType} className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
                     {SERVICE_TYPE_LABELS[serviceType]}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="table-body">
               {FLAT_TYPE_ORDER.map(flatType => (
-                <tr key={flatType} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/40 transition-colors">
-                  <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={flatType} className="odd:bg-white dark:odd:bg-gray-800 even:bg-gray-50/60 dark:even:bg-gray-900/30 hover:bg-indigo-50/40 dark:hover:bg-indigo-900/20 transition-colors">
+                  <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-heading">
                     {FLAT_TYPE_LABELS[flatType]}
                   </td>
                   {SERVICE_TYPE_ORDER.map(serviceType => {
@@ -136,10 +136,10 @@ export default function PricingManagement() {
                             value={rate.price ?? undefined}
                             placeholder="—"
                             onChange={(val) => updateRatePrice(rate.id, val)}
-                            className="border border-gray-300 rounded-md px-2 py-1 text-sm w-28 text-gray-700"
+                            className="field-input w-28 px-2 py-1 text-sm"
                           />
                         ) : (
-                          <span className="text-sm text-gray-400">n/a</span>
+                          <span className="text-sm text-subtle">n/a</span>
                         )}
                       </td>
                     );
@@ -151,21 +151,21 @@ export default function PricingManagement() {
         </div>
       </div>
 
-      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Add-on prices (₹)</h3>
+      <div className="panel-table">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-heading">Add-on prices (₹)</h3>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {addOns.map(addOn => (
             <div key={addOn.id} className="px-6 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-900">{addOn.name}</span>
+              <span className="text-sm text-heading">{addOn.name}</span>
               <DebouncedInput
                 type="number"
                 min="0"
                 value={addOn.price ?? undefined}
                 placeholder="—"
                 onChange={(val) => updateAddOnPrice(addOn.id, val)}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm w-28 text-gray-700"
+                className="field-input w-28 px-2 py-1 text-sm"
               />
             </div>
           ))}

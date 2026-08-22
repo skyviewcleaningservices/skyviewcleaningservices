@@ -42,6 +42,76 @@ h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
 }
 
+/*
+ * Shared dark-mode-aware component classes for the admin dashboard.
+ * Use these instead of repeating bg-white/text-gray-*/dark:* utility
+ * strings inline — keeps every card, table, form, and button consistent
+ * and means a contrast fix only has to happen in one place.
+ */
+@layer components {
+  /* Card-style container (modals, panel sections) */
+  .panel {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow;
+  }
+
+  /* Card container that wraps a data table */
+  .panel-table {
+    @apply bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden;
+  }
+
+  .table-body {
+    @apply bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700;
+  }
+
+  .table-head {
+    @apply bg-gray-50 dark:bg-gray-900/40;
+  }
+
+  /* Text tiers, darkest to lightest */
+  .text-heading {
+    @apply text-gray-900 dark:text-white;
+  }
+
+  .text-body {
+    @apply text-gray-700 dark:text-gray-300;
+  }
+
+  .text-muted {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+
+  .text-subtle {
+    @apply text-gray-400 dark:text-gray-500;
+  }
+
+  /* Form fields */
+  .field-label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+  }
+
+  .field-input {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  }
+
+  /* Buttons */
+  .btn-outline {
+    @apply px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors;
+  }
+
+  /* Icon-only dismiss/close button */
+  .icon-btn-muted {
+    @apply text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300;
+  }
+}
+
 /* Ensure proper dark mode transitions */
 * {
   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;

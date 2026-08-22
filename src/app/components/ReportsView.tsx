@@ -126,26 +126,26 @@ function buildYearlyCollections(bookings: Booking[]): CollectionPoint[] {
 function BarTable({ title, rows, valueKey, extra }: { title: string; rows: Row[]; valueKey: 'count' | 'revenue'; extra?: ReactNode }) {
   const max = Math.max(1, ...rows.map(r => r[valueKey]));
   return (
-    <div className="bg-white shadow rounded-lg p-6">
+    <div className="panel p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-700">{title}</h3>
+        <h3 className="text-sm font-semibold text-body">{title}</h3>
         {extra}
       </div>
       {rows.length === 0 ? (
-        <p className="text-sm text-gray-400">No data yet.</p>
+        <p className="text-sm text-subtle">No data yet.</p>
       ) : (
         <div className="space-y-3">
           {rows.map(row => (
             <div key={row.label}>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-700">{row.label}</span>
-                <span className="text-gray-500">
+                <span className="text-body">{row.label}</span>
+                <span className="text-muted">
                   {valueKey === 'revenue'
                     ? `₹${row.revenue.toLocaleString('en-IN')} (${row.count} booking${row.count === 1 ? '' : 's'})`
                     : `${row.count} booking${row.count === 1 ? '' : 's'}`}
                 </span>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-indigo-500 rounded-full"
                   style={{ width: `${(row[valueKey] / max) * 100}%` }}
@@ -176,7 +176,7 @@ function CollectionsChart({ points, height = 200 }: { points: CollectionPoint[];
         aria-label={`Bar chart of amount collected per period: ${points.map(p => `${p.label} ₹${Math.round(p.amount)}`).join(', ')}`}
         className="w-full h-auto"
       >
-        <g className="text-gray-400" stroke="currentColor" strokeWidth="1">
+        <g className="text-gray-300 dark:text-gray-600" stroke="currentColor" strokeWidth="1">
           <line x1="0" y1={height - padBottom} x2={width} y2={height - padBottom} />
         </g>
         {points.map((p, i) => {
@@ -185,18 +185,18 @@ function CollectionsChart({ points, height = 200 }: { points: CollectionPoint[];
           const y = height - padBottom - barH;
           return (
             <g key={p.key}>
-              <rect x={x} y={y} width={barWidth} height={barH} rx="3" className="fill-indigo-500" />
-              <text x={x + barWidth / 2} y={y - 6} textAnchor="middle" fontSize="11" className="fill-gray-600" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <rect x={x} y={y} width={barWidth} height={barH} rx="3" className="fill-indigo-500 dark:fill-indigo-400" />
+              <text x={x + barWidth / 2} y={y - 6} textAnchor="middle" fontSize="11" className="fill-gray-600 dark:fill-gray-300" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {p.amount >= 1000 ? `₹${Math.round(p.amount / 1000)}k` : `₹${Math.round(p.amount)}`}
               </text>
-              <text x={x + barWidth / 2} y={height - 10} textAnchor="middle" fontSize="11" className="fill-gray-500">
+              <text x={x + barWidth / 2} y={height - 10} textAnchor="middle" fontSize="11" className="fill-gray-500 dark:fill-gray-400">
                 {p.shortLabel}
               </text>
             </g>
           );
         })}
       </svg>
-      <figcaption className="text-xs text-gray-400 mt-1">Amount collected, by period. Bars are proportional to the largest period shown.</figcaption>
+      <figcaption className="text-xs text-subtle mt-1">Amount collected, by period. Bars are proportional to the largest period shown.</figcaption>
     </figure>
   );
 }
@@ -354,24 +354,24 @@ export default function ReportsView() {
     doc.save(`skyview-collections-${new Date().toISOString().slice(0, 10)}.pdf`);
   }, [monthlyCollections, yearlyCollections, totalCollected, selectedCollectionYear, yearRange]);
 
-  if (loading) return <div className="text-center py-4">Loading reports...</div>;
-  if (error) return <div className="text-red-600 text-center py-4">{error}</div>;
+  if (loading) return <div className="text-center py-4 text-muted">Loading reports...</div>;
+  if (error) return <div className="text-red-600 dark:text-red-400 text-center py-4">{error}</div>;
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Reports</h2>
+      <h2 className="text-2xl font-bold text-heading">Reports</h2>
 
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="panel p-6">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h3 className="text-sm font-semibold text-gray-700">Collections</h3>
-            <p className="text-xs text-gray-500 mt-1">
-              Total collected to date: <span className="font-semibold text-gray-700">₹{totalCollected.toLocaleString('en-IN')}</span>
+            <h3 className="text-sm font-semibold text-body">Collections</h3>
+            <p className="text-xs text-muted mt-1">
+              Total collected to date: <span className="font-semibold text-body">₹{totalCollected.toLocaleString('en-IN')}</span>
             </p>
           </div>
           <button
             onClick={handleExportCollectionsPdf}
-            className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center text-xs font-medium transition-colors"
+            className="btn-outline px-3 py-1.5 flex items-center text-xs font-medium"
           >
             <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2h-4.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -381,12 +381,12 @@ export default function ReportsView() {
         </div>
 
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">By month</p>
+          <p className="text-xs font-medium text-muted uppercase tracking-wider">By month</p>
           {collectionYears.length > 0 && selectedCollectionYear !== null && (
             <select
               value={selectedCollectionYear}
               onChange={(e) => setSelectedCollectionYear(Number(e.target.value))}
-              className="border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="field-input w-auto px-2 py-1 text-xs"
             >
               {collectionYears.map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -395,13 +395,13 @@ export default function ReportsView() {
           )}
         </div>
         {monthlyCollections.length === 0 || collectionYears.length === 0 ? (
-          <p className="text-sm text-gray-400 mb-6">No payments recorded yet.</p>
+          <p className="text-sm text-subtle mb-6">No payments recorded yet.</p>
         ) : (
           <div className="mb-6"><CollectionsChart points={monthlyCollections} /></div>
         )}
 
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">By year</p>
+          <p className="text-xs font-medium text-muted uppercase tracking-wider">By year</p>
           <div className="flex gap-1">
             {([3, 5, 'all'] as const).map((opt) => (
               <button
@@ -411,7 +411,7 @@ export default function ReportsView() {
                 className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${
                   yearRange === opt
                     ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 {opt === 'all' ? 'All' : `Last ${opt}`}
@@ -420,7 +420,7 @@ export default function ReportsView() {
           </div>
         </div>
         {yearlyCollections.length === 0 ? (
-          <p className="text-sm text-gray-400">No payments recorded yet.</p>
+          <p className="text-sm text-subtle">No payments recorded yet.</p>
         ) : (
           <CollectionsChart points={yearlyCollections} height={160} />
         )}
@@ -437,7 +437,7 @@ export default function ReportsView() {
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(Number(e.target.value))}
-                className="border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="field-input w-auto px-2 py-1 text-xs"
               >
                 {availableYears.map((y) => (
                   <option key={y} value={y}>{y}</option>

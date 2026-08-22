@@ -54,10 +54,10 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'border-amber-300 bg-amber-50 text-amber-800',
-  CONFIRMED: 'border-blue-300 bg-blue-50 text-blue-800',
-  COMPLETED: 'border-green-300 bg-green-50 text-green-800',
-  CANCELLED: 'border-gray-300 bg-gray-100 text-gray-600',
+  PENDING: 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300',
+  CONFIRMED: 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+  COMPLETED: 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+  CANCELLED: 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
 };
 
 const PAYMENT_OPTIONS = [
@@ -138,7 +138,7 @@ export const DebouncedInput = memo(function DebouncedInput({
   placeholder,
   min,
   multiline = false,
-  className = "border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700"
+  className = "field-input px-2 py-1 text-sm"
 }: {
   value: string | number | null | undefined;
   onChange: (val: string) => void;
@@ -255,32 +255,32 @@ const BookingRow = memo(function BookingRow({
   }, [booking.id, booking.remarks, booking.paymentAmount, booking.paymentType, updateBookingStatus]);
 
   return (
-    <tr className={`odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors ${isOverdue ? '!bg-red-50' : ''}`}>
+    <tr className={`odd:bg-white dark:odd:bg-gray-800 even:bg-gray-50/60 dark:even:bg-gray-900/30 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20 transition-colors ${isOverdue ? '!bg-red-50 dark:!bg-red-900/20' : ''}`}>
       <td className="px-6 py-4 whitespace-nowrap">
         <div>
-          <div className="text-sm font-medium text-gray-900">{booking.name}</div>
-          <div className="text-sm text-gray-500">{booking.phone}</div>
+          <div className="text-sm font-medium text-heading">{booking.name}</div>
+          <div className="text-sm text-muted">{booking.phone}</div>
         </div>
       </td>
       <td className="px-6 py-4 max-w-[180px]">
         <div>
-          <div className="text-sm font-medium text-gray-900 break-words" title={booking.serviceType}>{booking.serviceType}</div>
-          <div className="text-sm text-gray-500">{formatFlatType(booking.flatType)}</div>
+          <div className="text-sm font-medium text-heading break-words" title={booking.serviceType}>{booking.serviceType}</div>
+          <div className="text-sm text-muted">{formatFlatType(booking.flatType)}</div>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div>
-          <div className={`text-sm font-medium ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+          <div className={`text-sm font-medium ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-heading'}`}>
             {formatDate(booking.preferredDate)}
           </div>
-          <div className="text-sm text-gray-500">{formatTime12h(booking.preferredTime)}</div>
+          <div className="text-sm text-muted">{formatTime12h(booking.preferredTime)}</div>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
         <select
           value={booking.status}
           onChange={handleStatusChange}
-          className={`border rounded-full px-3 py-1 text-xs font-semibold w-32 transition-colors ${STATUS_COLORS[booking.status]} ${isOverdue ? '!border-red-400' : ''}`}
+          className={`border rounded-full px-3 py-1 text-xs font-semibold w-32 transition-colors ${STATUS_COLORS[booking.status]} ${isOverdue ? '!border-red-400 dark:!border-red-600' : ''}`}
         >
           {STATUS_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>{label}</option>
@@ -303,7 +303,7 @@ const BookingRow = memo(function BookingRow({
         <select
           value={booking.paymentType || ''}
           onChange={handlePaymentTypeChange}
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700"
+          className="field-input px-2 py-1 text-sm"
         >
           {PAYMENT_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>{label}</option>
@@ -317,7 +317,7 @@ const BookingRow = memo(function BookingRow({
             value={booking.remarks}
             placeholder="Add remarks..."
             onChange={handleRemarksChange}
-            className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full text-gray-700 resize-y"
+            className="field-input px-2 py-1 text-sm resize-y"
           />
           {isUpdating && <LoadingSpinner />}
         </div>
@@ -328,13 +328,13 @@ const BookingRow = memo(function BookingRow({
             <div className="flex gap-1.5">
               <button
                 onClick={handleAccept}
-                className="text-xs font-medium px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200"
+                className="text-xs font-medium px-2 py-1 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50"
               >
                 ✓ Accept
               </button>
               <button
                 onClick={handleDecline}
-                className="text-xs font-medium px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
+                className="text-xs font-medium px-2 py-1 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50"
               >
                 ✕ Decline
               </button>
@@ -343,13 +343,13 @@ const BookingRow = memo(function BookingRow({
           <div className="flex gap-2">
             <button
               onClick={() => onEdit(booking)}
-              className="text-indigo-600 hover:text-indigo-900 text-xs font-medium"
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs font-medium"
             >
               Edit
             </button>
             <button
               onClick={() => onViewHistory(booking.phone)}
-              className="text-gray-500 hover:text-gray-800 text-xs font-medium"
+              className="text-muted hover:text-gray-800 dark:hover:text-gray-200 text-xs font-medium"
             >
               History
             </button>
@@ -382,8 +382,8 @@ const WeekStrip = memo(function WeekStrip({ bookings }: { bookings: Booking[] })
   }, [bookings]);
 
   return (
-    <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Next 7 days at a glance</p>
+    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 table-head">
+      <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Next 7 days at a glance</p>
       <div className="grid grid-cols-7 gap-2">
         {days.map(({ key, count, label }) => {
           const level = count >= FULL_THRESHOLD ? 'full' : count >= BUSY_THRESHOLD ? 'busy' : 'normal';
@@ -392,14 +392,14 @@ const WeekStrip = memo(function WeekStrip({ bookings }: { bookings: Booking[] })
               key={key}
               title={`${count} booking${count === 1 ? '' : 's'} on ${label}`}
               className={`rounded-md border px-2 py-2 text-center ${
-                level === 'full' ? 'bg-red-50 border-red-200' :
-                level === 'busy' ? 'bg-amber-50 border-amber-200' :
-                'bg-white border-gray-200'
+                level === 'full' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
+                level === 'busy' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' :
+                'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
               }`}
             >
-              <div className="text-[10px] font-semibold uppercase text-gray-500">{label}</div>
+              <div className="text-[10px] font-semibold uppercase text-muted">{label}</div>
               <div className={`text-lg font-bold ${
-                level === 'full' ? 'text-red-600' : level === 'busy' ? 'text-amber-600' : 'text-gray-900'
+                level === 'full' ? 'text-red-600 dark:text-red-400' : level === 'busy' ? 'text-amber-600 dark:text-amber-400' : 'text-heading'
               }`}>
                 {count}
               </div>
@@ -434,15 +434,15 @@ const TableHeader = memo(function TableHeader({
     { label: 'Actions' },
   ];
   return (
-    <thead className="bg-indigo-50/70">
+    <thead className="bg-indigo-50/70 dark:bg-indigo-950/40">
       <tr>
         {headers.map(({ label, field }) => (
-          <th key={label} className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
+          <th key={label} className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
             {field ? (
               <button
                 type="button"
                 onClick={() => onSort(field)}
-                className="flex items-center gap-1 hover:text-indigo-700"
+                className="flex items-center gap-1 hover:text-indigo-700 dark:hover:text-indigo-300"
               >
                 {label}
                 <span className="text-[10px]">
@@ -696,11 +696,11 @@ export default function AdminDashboard() {
     <>
       <div className="max-w-7xl mx-auto">
         {/* Main Dashboard */}
-        <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <div className="panel-table">
           <WeekStrip bookings={allBookings} />
 
           {/* Navigation Bar */}
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 space-y-3">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 table-head space-y-3">
             {/* Tabs */}
             <nav className="flex items-center gap-2 overflow-x-auto">
               {(Object.keys(TAB_LABELS) as AdminTab[]).map((tab) => (
@@ -710,8 +710,8 @@ export default function AdminDashboard() {
                   disabled={tabLoading}
                   className={`py-2 px-3 rounded-md font-semibold text-sm transition-colors flex items-center whitespace-nowrap ${
                     activeTab === tab
-                      ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
                   } ${tabLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {tabLoading && activeTab === tab ? (
@@ -734,16 +734,16 @@ export default function AdminDashboard() {
                   placeholder="Search bookings..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 pr-4 py-2 w-64 max-w-full border border-gray-300 rounded-lg text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="pl-9 pr-4 py-2 w-64 max-w-full border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-heading placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
-                <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
               <div className="flex items-center flex-wrap gap-2">
                 <button
                   onClick={() => setShowAddBookingModal(true)}
-                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center text-sm font-medium transition-colors"
+                  className="btn-outline rounded-lg flex items-center text-sm font-medium"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -752,7 +752,7 @@ export default function AdminDashboard() {
                 </button>
                 <button
                   onClick={() => setShowImportModal(true)}
-                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center text-sm font-medium transition-colors"
+                  className="btn-outline rounded-lg flex items-center text-sm font-medium"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 12v9m0-9l3 3m-3-3l-3 3" />
@@ -762,7 +762,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={handleExportCsv}
                   disabled={filteredBookings.length === 0}
-                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium transition-colors"
+                  className="btn-outline rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 10l5 5 5-5M12 15V3" />
@@ -772,7 +772,7 @@ export default function AdminDashboard() {
                 <button
                   onClick={handleExportPdf}
                   disabled={filteredBookings.length === 0}
-                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium transition-colors"
+                  className="btn-outline rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2h-4.586a1 1 0 01-.707-.293l-1.414-1.414A1 1 0 0011.586 3H5a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -806,10 +806,10 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             {error ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <span className="text-red-600">{error}</span>
+                <span className="text-red-600 dark:text-red-400">{error}</span>
                 <button
                   onClick={() => fetchBookings(activeTab, { showTabLoading: true })}
-                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium underline"
+                  className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium underline"
                 >
                   Try again
                 </button>
@@ -818,13 +818,13 @@ export default function AdminDashboard() {
               <div className="flex justify-center items-center py-12">
                 <div className="flex items-center space-x-3">
                   <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-gray-600 font-medium">Loading bookings...</span>
+                  <span className="text-muted font-medium">Loading bookings...</span>
                 </div>
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <TableHeader sortField={sortField} sortDir={sortDir} onSort={handleSort} />
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="table-body">
                   {filteredBookings.map(b => (
                     <BookingRow
                       key={b.id}
@@ -844,16 +844,16 @@ export default function AdminDashboard() {
           {/* Empty State */}
           {!error && !loading && !tabLoading && filteredBookings.length === 0 && (
             <div className="text-center py-16">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-heading mb-2">
                 {searchTerm.trim() ? 'No matching bookings' : `No ${TAB_LABELS[activeTab].toLowerCase()} bookings`}
               </h3>
-              <p className="text-gray-500">
-                {searchTerm.trim() 
+              <p className="text-muted">
+                {searchTerm.trim()
                   ? `No bookings found matching "${searchTerm}"`
                   : `There are no ${TAB_LABELS[activeTab].toLowerCase()} bookings at the moment.`
                 }

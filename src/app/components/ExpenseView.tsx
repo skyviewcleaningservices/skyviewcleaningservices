@@ -191,22 +191,22 @@ export default function ExpenseView() {
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [expenses]);
 
-  if (loading) return <div className="text-center py-4">Loading expenses...</div>;
-  if (error) return <div className="text-red-600 text-center py-4">{error}</div>;
+  if (loading) return <div className="text-center py-4 text-muted">Loading expenses...</div>;
+  if (error) return <div className="text-red-600 dark:text-red-400 text-center py-4">{error}</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Monthly Expenses</h2>
-          <p className="text-sm text-gray-500 mt-1">Track cab, materials, and other operating costs by month.</p>
+          <h2 className="text-2xl font-bold text-heading">Monthly Expenses</h2>
+          <p className="text-sm text-muted mt-1">Track cab, materials, and other operating costs by month.</p>
         </div>
         <div className="flex items-center gap-3">
           <input
             type="month"
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white"
+            className="field-input w-auto"
           />
           <button
             onClick={() => {
@@ -214,7 +214,7 @@ export default function ExpenseView() {
               setEditingExpense(null);
               setFormData({ ...EMPTY_FORM, date: todayDateInput() });
             }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            className="btn-primary"
           >
             Add Expense
           </button>
@@ -222,32 +222,32 @@ export default function ExpenseView() {
       </div>
 
       {showAddForm && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="panel p-6">
+          <h3 className="text-lg font-medium text-heading mb-4">
             {editingExpense ? 'Edit Expense' : 'Add Expense'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                <label className="field-label">Description *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Cab to Baner site, Cleaning supplies"
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label className="field-label">Category</label>
                 <input
                   type="text"
                   list="expense-categories"
                   placeholder="e.g. Cab/Transport, Material Cost"
                   value={formData.category}
                   onChange={(e) => handleInputChange('category', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
                 <datalist id="expense-categories">
                   {CATEGORY_SUGGESTIONS.map(cat => <option key={cat} value={cat} />)}
@@ -257,32 +257,32 @@ export default function ExpenseView() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
+                <label className="field-label">Amount *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. 500"
                   value={formData.amount}
                   onChange={(e) => handleInputChange('amount', e.target.value.replace(/[^0-9.]/g, ''))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                <label className="field-label">Date *</label>
                 <input
                   type="date"
                   required
                   value={formData.date}
                   onChange={(e) => handleInputChange('date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Type</label>
+                <label className="field-label">Payment Type</label>
                 <select
                   value={formData.paymentType}
                   onChange={(e) => handleInputChange('paymentType', e.target.value as ExpenseFormData['paymentType'])}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 >
                   <option value="">Select type</option>
                   <option value="CASH">Cash</option>
@@ -294,12 +294,12 @@ export default function ExpenseView() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <label className="field-label">Notes</label>
               <textarea
                 rows={2}
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input"
               />
             </div>
 
@@ -328,20 +328,20 @@ export default function ExpenseView() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white shadow rounded-lg p-5">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total — {formatMonthLabel(selectedMonth)}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1 tabular-nums">₹{totalForMonth.toLocaleString('en-IN')}</p>
+        <div className="panel p-5">
+          <p className="text-xs font-medium text-muted uppercase tracking-wider">Total — {formatMonthLabel(selectedMonth)}</p>
+          <p className="text-2xl font-bold text-heading mt-1 tabular-nums">₹{totalForMonth.toLocaleString('en-IN')}</p>
         </div>
-        <div className="bg-white shadow rounded-lg p-5 md:col-span-2">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">By Category</p>
+        <div className="panel p-5 md:col-span-2">
+          <p className="text-xs font-medium text-muted uppercase tracking-wider mb-2">By Category</p>
           {byCategory.length === 0 ? (
-            <p className="text-sm text-gray-400">No expenses yet</p>
+            <p className="text-sm text-subtle">No expenses yet</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {byCategory.map(([cat, amount]) => (
-                <span key={cat} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-medium">
+                <span key={cat} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
                   {cat}
-                  <span className="tabular-nums text-indigo-500">₹{amount.toLocaleString('en-IN')}</span>
+                  <span className="tabular-nums text-indigo-500 dark:text-indigo-400">₹{amount.toLocaleString('en-IN')}</span>
                 </span>
               ))}
             </div>
@@ -349,43 +349,43 @@ export default function ExpenseView() {
         </div>
       </div>
 
-      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Expenses — {formatMonthLabel(selectedMonth)}</h3>
+      <div className="panel-table">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-heading">Expenses — {formatMonthLabel(selectedMonth)}</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-50/70">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-indigo-50/70 dark:bg-indigo-950/40">
               <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Date</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Description</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Category</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Payment</th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Amount</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Actions</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Date</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Description</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Category</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Payment</th>
+                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Amount</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="table-body">
               {expenses.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">No expenses recorded for this month.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-muted">No expenses recorded for this month.</td>
                 </tr>
               )}
               {expenses.map(expense => (
-                <tr key={expense.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
-                  <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">{formatDate(expense.date)}</td>
-                  <td className="px-6 py-3 text-sm font-medium text-gray-900">{expense.description}</td>
-                  <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">{expense.category || '—'}</td>
-                  <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">
+                <tr key={expense.id} className="odd:bg-white dark:odd:bg-gray-800 even:bg-gray-50/60 dark:even:bg-gray-900/30 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20 transition-colors">
+                  <td className="px-6 py-3 text-sm text-muted whitespace-nowrap">{formatDate(expense.date)}</td>
+                  <td className="px-6 py-3 text-sm font-medium text-heading">{expense.description}</td>
+                  <td className="px-6 py-3 text-sm text-muted whitespace-nowrap">{expense.category || '—'}</td>
+                  <td className="px-6 py-3 text-sm text-muted whitespace-nowrap">
                     {expense.paymentType ? PAYMENT_LABELS[expense.paymentType] : '—'}
                   </td>
-                  <td className="px-6 py-3 text-sm font-semibold text-gray-900 text-right tabular-nums">
+                  <td className="px-6 py-3 text-sm font-semibold text-heading text-right tabular-nums">
                     ₹{expense.amount.toLocaleString('en-IN')}
                   </td>
                   <td className="px-6 py-3 text-sm font-medium whitespace-nowrap">
                     <div className="flex space-x-2">
-                      <button onClick={() => handleEdit(expense)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                      <button onClick={() => setDeletingExpense(expense)} className="text-red-600 hover:text-red-900">Delete</button>
+                      <button onClick={() => handleEdit(expense)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</button>
+                      <button onClick={() => setDeletingExpense(expense)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -393,11 +393,11 @@ export default function ExpenseView() {
             </tbody>
             {expenses.length > 0 && (
               <tfoot>
-                <tr className="border-t-2 border-indigo-200 bg-indigo-50/70">
-                  <td colSpan={4} className="px-6 py-3 text-sm font-semibold text-gray-700 text-right">
+                <tr className="border-t-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40">
+                  <td colSpan={4} className="px-6 py-3 text-sm font-semibold text-body text-right">
                     Total for {formatMonthLabel(selectedMonth)}
                   </td>
-                  <td className="px-6 py-3 text-sm font-bold text-gray-900 text-right tabular-nums bg-indigo-100">
+                  <td className="px-6 py-3 text-sm font-bold text-heading text-right tabular-nums bg-indigo-100 dark:bg-indigo-900/50">
                     ₹{totalForMonth.toLocaleString('en-IN')}
                   </td>
                   <td></td>

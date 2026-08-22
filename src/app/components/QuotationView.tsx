@@ -219,30 +219,30 @@ export default function QuotationView() {
     pdf.save(`${quotation.number}-${quotation.customerName.replace(/\s+/g, '-')}.pdf`);
   };
 
-  if (loading) return <div className="text-center py-4">Loading quotations...</div>;
-  if (error) return <div className="text-red-600 text-center py-4">{error}</div>;
+  if (loading) return <div className="text-center py-4 text-muted">Loading quotations...</div>;
+  if (error) return <div className="text-red-600 dark:text-red-400 text-center py-4">{error}</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Quotations & Invoices</h2>
-          <p className="text-sm text-gray-500 mt-1">Create a quotation or invoice for a customer and download it as a PDF.</p>
+          <h2 className="text-2xl font-bold text-heading">Quotations & Invoices</h2>
+          <p className="text-sm text-muted mt-1">Create a quotation or invoice for a customer and download it as a PDF.</p>
         </div>
         <button
           onClick={() => {
             setShowForm(true);
             resetForm();
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="btn-primary"
         >
           + New
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">New Quotation / Invoice</h3>
+        <div className="panel p-6">
+          <h3 className="text-lg font-medium text-heading mb-4">New Quotation / Invoice</h3>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex gap-2">
               {(['QUOTATION', 'INVOICE'] as const).map(type => (
@@ -253,7 +253,7 @@ export default function QuotationView() {
                   className={`px-4 py-2 rounded-md text-sm font-medium border ${
                     formData.type === type
                       ? 'bg-indigo-600 text-white border-indigo-600'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   {type === 'QUOTATION' ? 'Quotation' : 'Invoice'}
@@ -263,79 +263,79 @@ export default function QuotationView() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
+                <label className="field-label">Customer Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.customerName}
                   onChange={(e) => handleFormChange('customerName', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="field-label">Phone</label>
                 <input
                   type="tel"
                   value={formData.customerPhone}
                   onChange={(e) => handleFormChange('customerPhone', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="field-label">Email</label>
                 <input
                   type="email"
                   value={formData.customerEmail}
                   onChange={(e) => handleFormChange('customerEmail', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label className="field-label">Date</label>
                 <input
                   type="date"
                   value={formData.date}
                   onChange={(e) => handleFormChange('date', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <label className="field-label">Address</label>
               <textarea
                 rows={2}
                 value={formData.customerAddress}
                 onChange={(e) => handleFormChange('customerAddress', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer GST No.</label>
+              <label className="field-label">Customer GST No.</label>
               <input
                 type="text"
                 placeholder="e.g. 27AAAAA0000A1Z5"
                 value={formData.gstNumber}
                 onChange={(e) => handleFormChange('gstNumber', e.target.value)}
-                className="w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input md:w-1/2"
               />
             </div>
 
             {/* Line items */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Items</label>
+              <label className="block text-sm font-medium text-body mb-2">Items</label>
 
               {/* Header row — same grid template as each item row below, so columns line up exactly */}
               <div className="hidden md:grid md:grid-cols-12 gap-2 px-1 mb-1">
-                <span className="md:col-span-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</span>
-                <span className="md:col-span-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</span>
-                <span className="md:col-span-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty</span>
-                <span className="md:col-span-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rate</span>
-                <span className="md:col-span-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Amount</span>
+                <span className="md:col-span-3 text-xs font-semibold text-muted uppercase tracking-wider">Service</span>
+                <span className="md:col-span-3 text-xs font-semibold text-muted uppercase tracking-wider">Description</span>
+                <span className="md:col-span-1 text-xs font-semibold text-muted uppercase tracking-wider">Qty</span>
+                <span className="md:col-span-2 text-xs font-semibold text-muted uppercase tracking-wider">Rate</span>
+                <span className="md:col-span-2 text-xs font-semibold text-muted uppercase tracking-wider text-right">Amount</span>
                 <span className="md:col-span-1" />
               </div>
 
@@ -348,7 +348,7 @@ export default function QuotationView() {
                         <select
                           value={item.product}
                           onChange={(e) => handleItemChange(index, 'product', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                          className="field-input text-sm"
                         >
                           <option value="">Select a service</option>
                           {PRODUCT_OPTIONS.map(option => (
@@ -362,7 +362,7 @@ export default function QuotationView() {
                           placeholder="Description"
                           value={item.description}
                           onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                          className="field-input text-sm"
                         />
                       </div>
                       <div className="md:col-span-1">
@@ -371,7 +371,7 @@ export default function QuotationView() {
                           placeholder="Qty"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', e.target.value.replace(/[^0-9.]/g, ''))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                          className="field-input text-sm"
                         />
                       </div>
                       <div className="md:col-span-2">
@@ -380,10 +380,10 @@ export default function QuotationView() {
                           placeholder="Rate"
                           value={item.rate}
                           onChange={(e) => handleItemChange(index, 'rate', e.target.value.replace(/[^0-9.]/g, ''))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700 text-sm"
+                          className="field-input text-sm"
                         />
                       </div>
-                      <div className="md:col-span-2 px-3 py-2 text-sm text-gray-700 text-right tabular-nums">
+                      <div className="md:col-span-2 px-3 py-2 text-sm text-body text-right tabular-nums">
                         ₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </div>
                       <div className="md:col-span-1 flex items-center justify-end">
@@ -391,7 +391,7 @@ export default function QuotationView() {
                           type="button"
                           onClick={() => removeItemRow(index)}
                           disabled={items.length === 1}
-                          className="text-red-500 hover:text-red-700 disabled:opacity-30 disabled:cursor-not-allowed text-sm"
+                          className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-30 disabled:cursor-not-allowed text-sm"
                         >
                           Remove
                         </button>
@@ -403,60 +403,60 @@ export default function QuotationView() {
               <button
                 type="button"
                 onClick={addItemRow}
-                className="mt-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                className="mt-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
               >
                 + Add item
               </button>
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-medium text-body">
                 <input
                   type="checkbox"
                   checked={formData.applyGst}
                   onChange={(e) => handleFormChange('applyGst', e.target.checked)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-gray-600 rounded"
                 />
                 Add GST
               </label>
               {formData.applyGst && (
                 <div className="mt-2 w-full md:w-1/4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">GST %</label>
+                  <label className="field-label">GST %</label>
                   <input
                     type="text"
                     value={formData.gstPercent}
                     onChange={(e) => handleFormChange('gstPercent', e.target.value.replace(/[^0-9.]/g, ''))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                    className="field-input"
                   />
                 </div>
               )}
             </div>
 
             {/* Totals preview */}
-            <div className="bg-gray-50 rounded-md p-4 space-y-1 max-w-xs ml-auto text-sm">
-              <div className="flex justify-between text-gray-600">
+            <div className="bg-gray-50 dark:bg-gray-900/40 rounded-md p-4 space-y-1 max-w-xs ml-auto text-sm">
+              <div className="flex justify-between text-muted">
                 <span>Subtotal</span>
                 <span className="tabular-nums">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               {formData.applyGst && (
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-muted">
                   <span>GST ({gstPercentNum || 0}%)</span>
                   <span className="tabular-nums">₹{gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-200">
+              <div className="flex justify-between font-bold text-heading pt-1 border-t border-gray-200 dark:border-gray-700">
                 <span>Total</span>
                 <span className="tabular-nums">₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notes / Terms</label>
+              <label className="field-label">Notes / Terms</label>
               <textarea
                 rows={2}
                 value={formData.notes}
                 onChange={(e) => handleFormChange('notes', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input"
               />
             </div>
 
@@ -483,47 +483,47 @@ export default function QuotationView() {
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">History</h3>
+      <div className="panel-table">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-heading">History</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-50/70">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-indigo-50/70 dark:bg-indigo-950/40">
               <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Number</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Type</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Customer</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Date</th>
-                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Total</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Actions</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Number</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Type</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Customer</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Date</th>
+                <th className="px-6 py-3.5 text-right text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Total</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="table-body">
               {quotations.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">No quotations or invoices yet.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-muted">No quotations or invoices yet.</td>
                 </tr>
               )}
               {quotations.map(quotation => (
-                <tr key={quotation.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
-                  <td className="px-6 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{quotation.number}</td>
+                <tr key={quotation.id} className="odd:bg-white dark:odd:bg-gray-800 even:bg-gray-50/60 dark:even:bg-gray-900/30 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20 transition-colors">
+                  <td className="px-6 py-3 text-sm font-medium text-heading whitespace-nowrap">{quotation.number}</td>
                   <td className="px-6 py-3 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      quotation.type === 'INVOICE' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
+                      quotation.type === 'INVOICE' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
                     }`}>
                       {quotation.type === 'INVOICE' ? 'Invoice' : 'Quotation'}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-700">{quotation.customerName}</td>
-                  <td className="px-6 py-3 text-sm text-gray-500 whitespace-nowrap">{formatDate(quotation.date)}</td>
-                  <td className="px-6 py-3 text-sm font-semibold text-gray-900 text-right tabular-nums whitespace-nowrap">
+                  <td className="px-6 py-3 text-sm text-body">{quotation.customerName}</td>
+                  <td className="px-6 py-3 text-sm text-muted whitespace-nowrap">{formatDate(quotation.date)}</td>
+                  <td className="px-6 py-3 text-sm font-semibold text-heading text-right tabular-nums whitespace-nowrap">
                     ₹{quotation.total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="px-6 py-3 text-sm font-medium whitespace-nowrap">
                     <div className="flex space-x-3">
-                      <button onClick={() => handleDownload(quotation)} className="text-indigo-600 hover:text-indigo-900">Download</button>
-                      <button onClick={() => setDeletingQuotation(quotation)} className="text-red-600 hover:text-red-900">Delete</button>
+                      <button onClick={() => handleDownload(quotation)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Download</button>
+                      <button onClick={() => setDeletingQuotation(quotation)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
                     </div>
                   </td>
                 </tr>

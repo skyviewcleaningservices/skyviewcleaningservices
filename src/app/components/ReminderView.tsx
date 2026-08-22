@@ -23,10 +23,10 @@ const STATUS_OPTIONS = [
 ] as const;
 
 const STATUS_BADGE: Record<Booking['status'], string> = {
-  PENDING: 'bg-amber-100 text-amber-800',
-  CONFIRMED: 'bg-blue-100 text-blue-800',
-  COMPLETED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-gray-200 text-gray-600',
+  PENDING: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300',
+  CONFIRMED: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+  COMPLETED: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+  CANCELLED: 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
 };
 
 const getDateKey = (isoString: string) => isoString.slice(0, 10);
@@ -212,14 +212,14 @@ export default function ReminderView() {
     }
   };
 
-  if (loading) return <div className="text-center py-4">Loading reminders...</div>;
-  if (error) return <div className="text-red-600 text-center py-4">{error}</div>;
+  if (loading) return <div className="text-center py-4 text-muted">Loading reminders...</div>;
+  if (error) return <div className="text-red-600 dark:text-red-400 text-center py-4">{error}</div>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Reminders</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-2xl font-bold text-heading">Reminders</h2>
+        <p className="text-sm text-muted mt-1">
           Customers on a recurring plan who are due for their next clean, based on their last completed booking.
           Sending is manual — nothing goes out automatically.
         </p>
@@ -227,17 +227,17 @@ export default function ReminderView() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {upcomingByDay.map(({ label, dateKey, bookings: dayBookings }) => (
-          <div key={dateKey} className="bg-white shadow rounded-lg overflow-hidden flex flex-col">
-            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-              <h3 className="text-sm font-semibold text-gray-900">{label}</h3>
-              <p className="text-xs text-gray-500">
+          <div key={dateKey} className="panel overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 table-head">
+              <h3 className="text-sm font-semibold text-heading">{label}</h3>
+              <p className="text-xs text-muted">
                 {new Date(dateKey + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 {' · '}{dayBookings.length} booking{dayBookings.length === 1 ? '' : 's'}
               </p>
             </div>
-            <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
               {dayBookings.length === 0 && (
-                <div className="px-4 py-6 text-center text-xs text-gray-400">Nothing scheduled</div>
+                <div className="px-4 py-6 text-center text-xs text-subtle">Nothing scheduled</div>
               )}
               {dayBookings.map(booking => {
                 const isIncomplete = booking.status === 'PENDING' || booking.status === 'CONFIRMED';
@@ -245,8 +245,8 @@ export default function ReminderView() {
                   <div key={booking.id} className="px-4 py-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{booking.name}</p>
-                        <p className="text-xs text-gray-500">{formatTime(booking.preferredTime)} · {booking.serviceType}</p>
+                        <p className="text-sm font-medium text-heading truncate">{booking.name}</p>
+                        <p className="text-xs text-muted">{formatTime(booking.preferredTime)} · {booking.serviceType}</p>
                       </div>
                       {!isIncomplete && (
                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded whitespace-nowrap ${STATUS_BADGE[booking.status]}`}>
@@ -274,13 +274,13 @@ export default function ReminderView() {
         ))}
       </div>
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Due for a reminder ({dueCustomers.length})</h3>
+      <div className="panel overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-heading">Due for a reminder ({dueCustomers.length})</h3>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {dueCustomers.length === 0 && (
-            <div className="px-6 py-8 text-center text-sm text-gray-500">No one is due right now.</div>
+            <div className="px-6 py-8 text-center text-sm text-muted">No one is due right now.</div>
           )}
           {dueCustomers.map(customer => {
             const isSent = sentIds.has(customer.bookingId);
@@ -289,18 +289,18 @@ export default function ReminderView() {
             return (
               <div key={customer.bookingId} className="px-6 py-4 flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-sm font-medium text-heading">{customer.name}</div>
+                  <div className="text-xs text-muted">
                     {customer.email || 'No email on file'} · {customer.phone}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-muted mt-1">
                     {FREQUENCY_LABELS[customer.frequency] || customer.frequency} · last clean{' '}
                     {new Date(customer.lastCleanDate).toLocaleDateString()}
                   </div>
-                  {error && <div className="text-xs text-red-600 mt-1">{error}</div>}
+                  {error && <div className="text-xs text-red-600 dark:text-red-400 mt-1">{error}</div>}
                 </div>
                 {isSent ? (
-                  <span className="text-xs font-semibold px-3 py-1.5 rounded bg-green-100 text-green-700">
+                  <span className="text-xs font-semibold px-3 py-1.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
                     Sent
                   </span>
                 ) : (
@@ -308,7 +308,7 @@ export default function ReminderView() {
                     onClick={() => handleSend(customer)}
                     disabled={isSending || !customer.email}
                     title={!customer.email ? 'No email on file' : undefined}
-                    className="text-xs font-medium px-3 py-1.5 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-xs font-medium px-3 py-1.5 rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSending ? 'Sending...' : 'Send Reminder'}
                   </button>

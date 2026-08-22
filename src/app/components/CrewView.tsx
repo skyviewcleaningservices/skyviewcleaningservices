@@ -43,40 +43,40 @@ export default function CrewView() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="text-center py-8 text-gray-600">Loading today&apos;s jobs...</div>;
-  if (error) return <div className="text-center py-8 text-red-600">{error}</div>;
+  if (loading) return <div className="text-center py-8 text-muted">Loading today&apos;s jobs...</div>;
+  if (error) return <div className="text-center py-8 text-red-600 dark:text-red-400">{error}</div>;
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      <h2 className="text-xl font-bold text-gray-900">
+      <h2 className="text-xl font-bold text-heading">
         Today&apos;s Jobs
-        <span className="ml-2 text-base font-normal text-gray-500">({jobs.length})</span>
+        <span className="ml-2 text-base font-normal text-muted">({jobs.length})</span>
       </h2>
 
       {jobs.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200 text-gray-500">
+        <div className="text-center py-12 panel border border-gray-200 dark:border-gray-700 text-muted">
           No confirmed jobs for today.
         </div>
       )}
 
       <div className="space-y-3">
         {jobs.map(job => (
-          <div key={job.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+          <div key={job.id} className="panel border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex justify-between items-start mb-2">
-              <span className="text-lg font-bold text-indigo-700">{job.preferredTime}</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+              <span className="text-lg font-bold text-indigo-700 dark:text-indigo-400">{job.preferredTime}</span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                 {job.serviceType}
               </span>
             </div>
-            <div className="text-base font-medium text-gray-900">{job.name}</div>
-            <a href={`tel:${job.phone}`} className="text-sm text-indigo-600 underline">
+            <div className="text-base font-medium text-heading">{job.name}</div>
+            <a href={`tel:${job.phone}`} className="text-sm text-indigo-600 dark:text-indigo-400 underline">
               {job.phone}
             </a>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-sm text-muted mt-1">
               {job.address}
               {job.area && `, ${job.area}`}
             </div>
-            <div className="text-xs text-gray-400 mt-1">{job.flatType.replace('_', ' ')}</div>
+            <div className="text-xs text-subtle mt-1">{job.flatType.replace('_', ' ')}</div>
           </div>
         ))}
       </div>

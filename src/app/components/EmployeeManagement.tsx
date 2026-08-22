@@ -190,15 +190,15 @@ export default function EmployeeManagement() {
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
   };
 
-  if (loading) return <div className="text-center py-4">Loading employees...</div>;
-  if (error) return <div className="text-red-600 text-center py-4">Error: {error}</div>;
+  if (loading) return <div className="text-center py-4 text-muted">Loading employees...</div>;
+  if (error) return <div className="text-red-600 dark:text-red-400 text-center py-4">Error: {error}</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Employee Management</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <h2 className="text-2xl font-bold text-heading">Employee Management</h2>
+          <p className="text-sm text-muted mt-1">
             Aadhar and PAN numbers are masked in this list — full details are only shown when editing a record.
           </p>
         </div>
@@ -208,142 +208,142 @@ export default function EmployeeManagement() {
             setEditingEmployee(null);
             setFormData(EMPTY_FORM);
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="btn-primary"
         >
           Add Employee
         </button>
       </div>
 
       {showAddForm && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="panel p-6">
+          <h3 className="text-lg font-medium text-heading mb-4">
             {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <label className="field-label">Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                <label className="field-label">Phone *</label>
                 <input
                   type="tel"
                   required
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="field-label">Email</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="field-label">Role</label>
                 <input
                   type="text"
                   placeholder="e.g. Cleaner, Supervisor"
                   value={formData.role}
                   onChange={(e) => handleInputChange('role', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <label className="field-label">Address</label>
               <textarea
                 rows={2}
                 value={formData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input"
               />
             </div>
 
-            <div className="border-t pt-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Identity documents</p>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Identity documents</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Aadhar Number</label>
+                  <label className="field-label">Aadhar Number</label>
                   <input
                     type="text"
                     placeholder="12-digit Aadhar number"
                     value={formData.aadharNumber}
                     onChange={(e) => handleInputChange('aadharNumber', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                    className="field-input"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">PAN Card Number</label>
+                  <label className="field-label">PAN Card Number</label>
                   <input
                     type="text"
                     placeholder="e.g. ABCDE1234F"
                     value={formData.panNumber}
                     onChange={(e) => handleInputChange('panNumber', e.target.value.toUpperCase())}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                    className="field-input"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Emergency contact</p>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Emergency contact</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Name</label>
+                  <label className="field-label">Contact Name</label>
                   <input
                     type="text"
                     value={formData.emergencyContactName}
                     onChange={(e) => handleInputChange('emergencyContactName', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                    className="field-input"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
+                  <label className="field-label">Contact Phone</label>
                   <input
                     type="tel"
                     value={formData.emergencyContactPhone}
                     onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                    className="field-input"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Salary</p>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Salary</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Salary Amount</label>
+                  <label className="field-label">Salary Amount</label>
                   <input
                     type="text"
                     placeholder="e.g. 15000"
                     value={formData.salaryAmount}
                     onChange={(e) => handleInputChange('salaryAmount', e.target.value.replace(/[^0-9.]/g, ''))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                    className="field-input"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Salary Type</label>
+                  <label className="field-label">Salary Type</label>
                   <select
                     value={formData.salaryType}
                     onChange={(e) => handleInputChange('salaryType', e.target.value as EmployeeFormData['salaryType'])}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                    className="field-input"
                   >
                     <option value="">Select type</option>
                     <option value="MONTHLY">Monthly</option>
@@ -356,20 +356,20 @@ export default function EmployeeManagement() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
+                <label className="field-label">Joining Date</label>
                 <input
                   type="date"
                   value={formData.joiningDate}
                   onChange={(e) => handleInputChange('joiningDate', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="field-label">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value as 'ACTIVE' | 'INACTIVE')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                  className="field-input"
                 >
                   <option value="ACTIVE">Active</option>
                   <option value="INACTIVE">Inactive</option>
@@ -401,65 +401,65 @@ export default function EmployeeManagement() {
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Employees ({employees.length})</h3>
+      <div className="panel-table">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-heading">Employees ({employees.length})</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-50/70">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-indigo-50/70 dark:bg-indigo-950/40">
               <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Name</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Role</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Joined</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Aadhar</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">PAN</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100 w-48">Emergency Contact</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Salary</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Status</th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">Actions</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Name</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Role</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Joined</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Aadhar</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">PAN</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50 w-48">Emergency Contact</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Salary</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Status</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="table-body">
               {employees.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-gray-500">
+                  <td colSpan={9} className="px-6 py-8 text-center text-sm text-muted">
                     No employees added yet.
                   </td>
                 </tr>
               )}
               {employees.map((employee) => (
-                <tr key={employee.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
+                <tr key={employee.id} className="odd:bg-white dark:odd:bg-gray-800 even:bg-gray-50/60 dark:even:bg-gray-900/30 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{employee.name}</div>
-                    <div className="text-sm text-gray-500">{employee.phone}</div>
+                    <div className="text-sm font-medium text-heading">{employee.name}</div>
+                    <div className="text-sm text-muted">{employee.phone}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.role || '—'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(employee.joiningDate)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{mask(employee.aadharNumber)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{mask(employee.panNumber)}</td>
-                  <td className="px-6 py-4 w-48 text-sm text-gray-500 break-words">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{employee.role || '—'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">{formatDate(employee.joiningDate)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted font-mono">{mask(employee.aadharNumber)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted font-mono">{mask(employee.panNumber)}</td>
+                  <td className="px-6 py-4 w-48 text-sm text-muted break-words">
                     {employee.emergencyContactName || '—'}
                     {employee.emergencyContactPhone && (
-                      <span className="text-gray-400"> · {employee.emergencyContactPhone}</span>
+                      <span className="text-subtle"> · {employee.emergencyContactPhone}</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                     {employee.salaryAmount !== null
                       ? `₹${employee.salaryAmount.toLocaleString('en-IN')} ${employee.salaryType ? SALARY_TYPE_LABELS[employee.salaryType] : ''}`
                       : '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      employee.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'
+                      employee.status === 'ACTIVE' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                     }`}>
                       {employee.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
-                      <button onClick={() => handleEdit(employee)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                      <button onClick={() => setDeletingEmployee(employee)} className="text-red-600 hover:text-red-900">Delete</button>
+                      <button onClick={() => handleEdit(employee)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</button>
+                      <button onClick={() => setDeletingEmployee(employee)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
                     </div>
                   </td>
                 </tr>

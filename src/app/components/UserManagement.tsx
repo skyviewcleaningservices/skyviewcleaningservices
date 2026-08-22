@@ -163,33 +163,33 @@ export default function UserManagement() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'ADMIN': return 'bg-red-100 text-red-800';
-      case 'MANAGER': return 'bg-blue-100 text-blue-800';
-      case 'STAFF': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ADMIN': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+      case 'MANAGER': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+      case 'STAFF': return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+      default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
     }
   };
 
   if (loading) {
-    return <div className="text-center py-4">Loading users...</div>;
+    return <div className="text-center py-4 text-muted">Loading users...</div>;
   }
 
   if (error) {
-    return <div className="text-red-600 text-center py-4">Error: {error}</div>;
+    return <div className="text-red-600 dark:text-red-400 text-center py-4">Error: {error}</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+        <h2 className="text-2xl font-bold text-heading">User Management</h2>
         <button
           onClick={() => {
             setShowAddForm(true);
             setEditingUser(null);
             setFormData({ username: '', password: '', role: 'STAFF' });
           }}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="btn-primary"
         >
           Add New User
         </button>
@@ -197,13 +197,13 @@ export default function UserManagement() {
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="panel p-6">
+          <h3 className="text-lg font-medium text-heading mb-4">
             {editingUser ? 'Edit User' : 'Add New User'}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="field-label mb-2">
                 Username
               </label>
               <input
@@ -211,11 +211,11 @@ export default function UserManagement() {
                 value={formData.username}
                 onChange={(e) => handleInputChange('username', e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="field-label mb-2">
                 Password {editingUser && '(leave blank to keep current)'}
               </label>
               <input
@@ -223,17 +223,17 @@ export default function UserManagement() {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 required={!editingUser}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="field-label mb-2">
                 Role
               </label>
               <select
                 value={formData.role}
                 onChange={(e) => handleInputChange('role', e.target.value as 'ADMIN' | 'STAFF' | 'MANAGER')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-700"
+                className="field-input"
               >
                 <option value="STAFF">Staff</option>
                 <option value="MANAGER">Manager</option>
@@ -264,32 +264,32 @@ export default function UserManagement() {
       )}
 
       {/* Users Table */}
-              <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Users</h3>
+      <div className="panel-table">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-heading">Users</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-indigo-50/70">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-indigo-50/70 dark:bg-indigo-950/40">
               <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
                   Username
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
                   Role
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
                   Created
                 </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 uppercase tracking-wider border-b-2 border-indigo-100">
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-indigo-900/80 dark:text-indigo-300 uppercase tracking-wider border-b-2 border-indigo-100 dark:border-indigo-900/50">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="table-body">
               {users.map((user) => (
-                <tr key={user.id} className="odd:bg-white even:bg-gray-50/60 hover:bg-indigo-50/60 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={user.id} className="odd:bg-white dark:odd:bg-gray-800 even:bg-gray-50/60 dark:even:bg-gray-900/30 hover:bg-indigo-50/60 dark:hover:bg-indigo-900/20 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-heading">
                     {user.username}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -297,20 +297,20 @@ export default function UserManagement() {
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                     {formatDate(user.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEdit(user)}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => setDeletingUser(user)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                       >
                         Delete
                       </button>
